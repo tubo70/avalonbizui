@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html class="x-border-box x-strict x-viewport">
+<head>
+    <title>Panel</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../resources/css/ext-all-debug.css">
+    <script type="text/javascript" src="../avalon.js"></script>
+    <script type="text/javascript" src="../bizui.js"></script>
+    <script>
+        require("bizui.panel", function () {
+            avalon.define('test', function (vm) {
+                vm.abc = 0
+                vm.panelRefresh = function () {
+                    alert('refresh clicked')
+                }
+                vm.panelClose = function () {
+                    alert('panelClose clicked')
+                }
+                vm.panelHelp = function () {
+                    alert('panelHelp clicked')
+                }
+                vm.toolType = 'refresh'
+            })
+            avalon.scan()
+        })
+    </script>
+</head>
+<body ms-controller="test">
+
+<div ms-bizui="panel"
+     data-panel-height="500" data-panel-title="Test"
+     data-panel-width="500" data-panel-border="true" data-panel-tools="refresh|panelRefresh,close"
+     data-panel-split="false">
+    <!--<div ms-bizui="tool" data-tool-type="refresh" data-tool-disabled="true" data-tool-hidden="true"
+         data-tool-handler="closeClicked"></div>-->
+    <div>cde</div>
+</div>
+</body>
+</html>
