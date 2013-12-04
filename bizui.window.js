@@ -1,22 +1,25 @@
 /**
  * Created by quan on 13-12-1.
  */
+//TODO 增加自动居中
+//Todo 增加buttons配置，这个需要button完成之后
 define(['avalon', 'bizui.mask', 'bizui.tool', 'avalon.draggable'], function (avalon) {
     bizui.vmodels['window'] = avalon.mix(true, {}, bizui.vmodels['panel'], {
         $bizuiType: 'window',
-        closable: true,
+        closable: true,//可关闭的
         //closeAction:'hidden',//'destory'
-        draggable: true,
+        draggable: true,//是否可拖动
         headerHeight: 21,
-        ghost: false,
+        ghost: false,//拖动的时候启用影子
         modal: true,
-        resizable: true,
+        resizable: true,//是否可改变大小
         resizing: false,
         resizingLeft: 0,
         resizingTop: 0,
         resizingWidth: 0,
         resizingHeight: 0,
         dragging: false,
+        autoScroll:false,//内容区自动滚动条
         zIndex: 19000
 
     })
@@ -133,7 +136,7 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'avalon.draggable'], function (ava
         })
 
         var shadowTemplate = '<div ms-visible="!hidden && !dragging" class="x-css-shadow" role="presentation"' +
-            ' ms-css-z-index="zIndex" ms-css-left="left" ms-css-top="top+4" ms-css-width="width" ms-css-height="height-4" style="box-shadow: rgb(136, 136, 136) 0px 0px 4px;"></div>'
+            ' ms-css-z-index="zIndex" ms-css-left="left" ms-css-top="top+4" ms-css-width="width" ms-css-height="{{height<=4?\'\':height-4}}" style="box-shadow: rgb(136, 136, 136) 0px 0px 4px;"></div>'
         var shadowElement = avalon.parseHTML(shadowTemplate)
         document.body.appendChild(shadowElement)
         shadowElement = document.body.lastChild
@@ -147,7 +150,7 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'avalon.draggable'], function (ava
             ' style="text-align: left; left: 0px; top: 0px; margin: 0px;" ms-css-width="width-29">' +
             '<span class="x-window-header-text x-window-header-text-default">{{title}}</span></div>' +
             '<div   style="position:absolute !important;" ms-css-left="width-12-16"><div ms-bizui="tool" data-tool-handler="close" data-tool-type="close"></div></div></div></div></div></div>' +
-            '<div class="x-window-body x-window-body-default x-closable x-window-body-closable x-window-body-default-closable x-layout-fit" ms-attr-style="width: {{width-10}}px; height: {{height-headerHeight-9}}px; left: 0px; top: 20px;">' + element.innerHTML + '</div>' +
+            '<div class="x-window-body x-window-body-default x-closable x-window-body-closable x-window-body-default-closable x-layout-fit" ms-css-width="width-10" ms-css-height="{{height<=(headerHeight+9)?\'\':height-(headerHeight+9)}}" ms-css-overflow="{{autoScroll?\'auto\':\'\'}}" style="left: 0px; top: 20px;">' + element.innerHTML + '</div>' +
             '<div ms-if="resizable" data-position="north" ms-draggable="' + data.windowId + '" data-drag-drag="resizeDrag" data-drag-stop="resizeDragStop" data-drag-axis="y" class="x-resizable-handle x-window-handle x-resizable-handle-north x-unselectable"></div>' +
             '<div ms-if="resizable" data-position="south" ms-draggable="' + data.windowId + '" data-drag-drag="resizeDrag" data-drag-stop="resizeDragStop" data-drag-axis="y"  class="x-resizable-handle x-window-handle x-resizable-handle-south x-unselectable"></div>' +
             '<div ms-if="resizable" data-position="east" ms-draggable="' + data.windowId + '" data-drag-drag="resizeDrag" data-drag-stop="resizeDragStop" data-drag-axis="x" class="x-resizable-handle x-window-handle x-resizable-handle-east x-unselectable"></div>' +
@@ -168,8 +171,8 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'avalon.draggable'], function (ava
             $element.addClass('x-window x-layer x-window-default')
             avalon.innerHTML(element, windowTemplate)
             $element.attr('ms-class', 'x-closable x-window-closable x-window-default-closable:closable')
-            $element.attr('ms-css-width', 'width:width<0')
-            $element.attr('ms-css-height', 'height')
+            $element.attr('ms-css-width', '{{width<=0?\'\':width}}')
+            $element.attr('ms-css-height', '{{height<=0?\'\':height}}')
             $element.attr('ms-css-left', 'left')
             $element.attr('ms-css-top', 'top')
             $element.attr('ms-css-z-index', 'zIndex+1')
@@ -193,6 +196,14 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'avalon.draggable'], function (ava
             if (resizeElement) {
                 avalon.scan(resizeElement, [vmodel].concat(vmodels))
             }
+            avalon.nextTick(function () {
+                if (vmodel.width <= 0) {
+                    vmodel.width = $element.width()
+                }
+                if (vmodel.height <= 0) {
+                    vmodel.height = $element.height() + vmodel.headerHeight
+                }
+            })
         })
         return vmodel
     }
