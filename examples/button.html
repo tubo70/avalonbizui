@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html class="x-border-box x-strict x-viewport">
+<head>
+    <title>Button</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../resources/css/ext-all-debug.css">
+    <script type="text/javascript" src="../avalon.js"></script>
+    <script type="text/javascript" src="../bizui.js"></script>
+    <script>
+        require("bizui.button", function () {
+            var model = avalon.define('xxx', function (vm) {
+
+            })
+            model.click=function(){
+                alert('hi')
+            }
+            model.$model.click=model.click
+            avalon.scan()
+        })
+    </script>
+</head>
+<body ms-controller="xxx">
+Size:<br/>
+<div ms-bizui="button" data-button-text="Small and try to click me" data-button-handler="click"></div>
+<div ms-bizui="button" data-button-text="Medium" data-button-scale="medium"></div>
+<div ms-bizui="button" data-button-text="Large" data-button-scale="large"></div>
+<div ms-bizui="button" data-button-text="Custom" data-button-height="80"></div>
+<br/>
+icon<br/>
+<div ms-bizui="button" data-button-text="icon left" data-button-icon="../resources/themes/images/access/button/arrow.gif"></div>
+<div ms-bizui="button" data-button-text="icon right" data-button-icon-align="right" data-button-icon="../resources/themes/images/access/button/arrow.gif"></div>
+<div ms-bizui="button" data-button-text="icon top large" data-button-icon-align="top" data-button-scale="large" data-button-icon="../resources/themes/images/access/button/arrow.gif"></div>
+<div ms-bizui="button" data-button-text="icon bottom" data-button-icon-align="bottom" data-button-icon="../resources/themes/images/access/button/arrow.gif"></div>
+<br/>
+toggle<br/>
+<div ms-bizui="button" data-button-text="Toggle" data-button-enable-toggle="true"></div>
+</body>
+</html>
