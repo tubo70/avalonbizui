@@ -195,6 +195,11 @@
         unbind: function(el, type, fn, phase) {
             el.removeEventListener(eventMap[type] || type, fn || noop, !!phase)
         },
+        fire: function(el, name) {
+            var event = DOC.createEvent('Event')
+            event.initEvent(name, true, true)
+            el.dispatchEvent(event)
+        },
         css: function(node, name, value) {
             if (node instanceof avalon) {
                 var that = node
@@ -762,9 +767,7 @@
     }
 
     avalon.clearChild = function(node) {
-        while (node.firstChild) {
-            node.removeChild(node.firstChild)
-        }
+        node.textContent = ""//它能在IE10+,firefox, chrome中迅速清空元素节点，文档碎片的孩子
         return node
     }
     avalon.parseHTML = function(html) {
@@ -1223,7 +1226,9 @@
                             node: node,
                             value: node.nodeValue
                         }
-                        if (node.name === "ms-if") {
+                        if (binding.type === "repeat") {
+                            repeatBinding = binding
+                        } else if (node.name === "ms-if") {
                             ifBinding = binding
                         } else {
                             bindings.push(binding)
@@ -1233,6 +1238,12 @@
             }
         }
         bindings.sort(function(a, b) {
+            if (a.type === "duplex") {//确保duplex排在ms-value的后面
+                return Infinity
+            }
+            if (b.type == "duplex") {
+                return -Infinity
+            }
             return a.node.name > b.node.name
         })
         if (repeatBinding) {
@@ -1253,12 +1264,14 @@
 
     function executeBindings(bindings, vmodels, state) {
         bindings.forEach(function(data) {
-            data.state = state
-            bindingHandlers[data.type](data, vmodels)
-            if (data.remove) { //移除数据绑定，防止被二次解析
-                data.element.removeAttribute(data.node.name)
+            if (data.type === "widget" || vmodels.length) {//https://github.com/RubyLouvre/avalon/issues/171
+                data.state = state
+                bindingHandlers[data.type](data, vmodels)
+                if (data.remove) { //移除数据绑定，防止被二次解析
+                    data.element.removeAttribute(data.node.name)
+                }
+                data.remove = true
             }
-            data.remove = true
         })
         bindings.length = 0
     }
@@ -1679,12 +1692,15 @@
                         elem.setAttribute(attrName, val)
                     }
                 } else if (method === "include" && val) {
-                    var callback = getBindingCallback(elem.getAttribute("data-include-loaded"), vmodels)
-
+                    var rendered = getBindingCallback(elem.getAttribute("data-include-rendered"), vmodels)
+                    var loaded = getBindingCallback(elem.getAttribute("data-include-loaded"), vmodels)
                     function scanTemplate(text) {
+                        if (loaded) {
+                            text = loaded.apply(elem, [text].concat(vmodels))
+                        }
                         avalon.innerHTML(elem, text)
                         scanNodes(elem, vmodels, data.state)
-                        callback && callback.call(elem)
+                        rendered && rendered.call(elem)
                     }
                     if (data.param === "src") {
                         if (includeContents[val]) {
@@ -1694,7 +1710,7 @@
                             xhr.onload = function() {
                                 var s = xhr.status
                                 if (s >= 200 && s < 300 || s === 304) {
-                                    scanTemplate(elem, (includeContents[val] = xhr.responseText))
+                                    scanTemplate(includeContents[val] = xhr.responseText)
                                 }
                             }
                             xhr.open("GET", val, true)
@@ -1899,9 +1915,10 @@
                     if (method === "hover") { //在移出移入时切换类名
                         var event1 = "mouseenter"
                         var event2 = "mouseleave"
+                        var event3
                     } else { //在聚焦失焦中切换类名
                         elem.tabIndex = elem.tabIndex || -1
-                        event1 = "mousedown", event2 = "mouseup"
+                        event1 = "mousedown", event2 = "mouseup", event3 = "mouseleave"
                     }
                     $elem.bind(event1, function() {
                         toggle && $elem.addClass(className)
@@ -1909,6 +1926,11 @@
                     $elem.bind(event2, function() {
                         toggle && $elem.removeClass(className)
                     })
+                    if(event3){
+                        $elem.bind(event3, function() {
+                            toggle && $elem.removeClass(className)
+                        })
+                    }
                 }
 
             } else if (method === "class") {
@@ -1943,7 +1965,7 @@
         if (data.type === "model") {
             log("ms-model已经被废弃，请使用ms-duplex")
         }
-        if (typeof modelBinding[tagName] === "function") {
+        if (typeof modelBinding[tagName] === "function" && vmodels && vmodels.length) {
             var array = parseExpr(data.value, vmodels, data, "setget")
             if (array) {
                 var val = data.value.split("."),
@@ -2247,13 +2269,21 @@
         set: function(index, val) {
             if (index >= 0 && index < this.length) {
                 var valueType = getType(val)
-                if (rchecktype.test(valueType)) {
-                    if (val.$model) {
-                        val = val.$model
+                if (val && val.$model) {
+                    val = val.$model
+                }
+                var target = this[index]
+                if (valueType === "object") {
+                    for (var i in val) {
+                        if (target.hasOwnProperty(i)) {
+                            target[i] = val[i]
+                        }
                     }
-                    updateViewModel(this[index], val, valueType)
-                } else if (this[index] !== val) {
-                    this[index] = val
+                } else if (valueType === "array") {
+                    target.clear().push.apply(target, val)
+                }
+                if (target !== val) {
+                    target = val
                     notifySubscribers(this, "set", index, val)
                 }
             }
@@ -3249,9 +3279,7 @@
                 touchProxy.x1 = firstTouch.pageX
                 touchProxy.y1 = firstTouch.pageY
                 touchProxy.fire = function(name) {
-                    var event = document.createEvent('Event')
-                    event.initEvent(name, true, true)
-                    this.el.dispatchEvent(event)
+                    avalon.fire(this.el, name)
                 }
                 if (delta > 0 && delta <= 250) { //双击
                     touchProxy.isDoubleTap = true
@@ -3265,7 +3293,7 @@
                     return
                 }
                 cancelHold()
-                e.preventDefault()
+                // e.preventDefault()
                 touchProxy.x2 = firstTouch.pageX
                 touchProxy.y2 = firstTouch.pageY
                 deltaX += Math.abs(touchProxy.x1 - touchProxy.x2)
@@ -3295,7 +3323,7 @@
                             } else {
                                 touchTimeout = setTimeout(function() {
                                     touchProxy.fire('singletap')
-                                    touchProxy.fire("click")
+                                    //  touchProxy.fire("click")
                                     touchProxy = {}
                                 }, 250)
                             }

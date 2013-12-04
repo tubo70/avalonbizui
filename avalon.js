@@ -1125,6 +1125,10 @@
             return a
         } else {
             var iterators = a[subscribers]
+
+            if (!iterators.length)
+                return
+
             iterators.forEach(function(fn) {
                 fn.rollback && fn.rollback()
             })
@@ -1597,6 +1601,12 @@
             }
         }
         bindings.sort(function(a, b) {
+            if (a.type === "duplex") {//确保duplex排在ms-value的后面
+                return Infinity
+            }
+            if (b.type == "duplex") {
+                return -Infinity
+            }
             return a.node.name > b.node.name
         })
         if (repeatBinding) {
@@ -2080,12 +2090,15 @@
                         elem.setAttribute(attrName, val)
                     }
                 } else if (method === "include" && val) {
-                    var callback = getBindingCallback(elem.getAttribute("data-include-loaded"), vmodels)
-
+                    var rendered = getBindingCallback(elem.getAttribute("data-include-rendered"), vmodels)
+                    var loaded = getBindingCallback(elem.getAttribute("data-include-loaded"), vmodels)
                     function scanTemplate(text) {
+                        if (loaded) {
+                            text = loaded.apply(elem, [text].concat(vmodels))
+                        }
                         avalon.innerHTML(elem, text)
                         scanNodes(elem, vmodels, data.state)
-                        callback && callback.call(elem)
+                        rendered && rendered.call(elem)
                     }
                     if (data.param === "src") {
                         if (includeContents[val]) {
@@ -2322,9 +2335,10 @@
                     if (method === "hover") { //在移出移入时切换类名
                         var event1 = "mouseenter"
                         var event2 = "mouseleave"
+                        var event3
                     } else { //在聚焦失焦中切换类名
                         elem.tabIndex = elem.tabIndex || -1
-                        event1 = "mousedown", event2 = "mouseup"
+                        event1 = "mousedown", event2 = "mouseup", event3="mouseleave"
                     }
                     $elem.bind(event1, function() {
                         toggle && $elem.addClass(className)
@@ -2332,6 +2346,11 @@
                     $elem.bind(event2, function() {
                         toggle && $elem.removeClass(className)
                     })
+                    if(event3){
+                        $elem.bind(event3, function() {
+                            toggle && $elem.removeClass(className)
+                        })
+                    }
                 }
 
             } else if (method === "class") {
@@ -2367,7 +2386,6 @@
             log("ms-model已经被废弃，请使用ms-duplex")
         }
         delete data.remove
-        console.log(vmodels)
         if (typeof modelBinding[tagName] === "function" && vmodels && vmodels.length) {
             var array = parseExpr(data.value, vmodels, data, "setget")
             if (array) {
@@ -2728,13 +2746,21 @@
         set: function(index, val) {
             if (index >= 0 && index < this.length) {
                 var valueType = getType(val)
-                if (rchecktype.test(valueType)) {
-                    if (val.$model) {
-                        val = val.$model
+                if (val && val.$model) {
+                    val = val.$model
+                }
+                var target = this[index]
+                if (valueType === "object") {
+                    for (var i in val) {
+                        if (target.hasOwnProperty(i)) {
+                            target[i] = val[i]
+                        }
                     }
-                    updateViewModel(this[index], val, valueType)
-                } else if (this[index] !== val) {
-                    this[index] = val
+                } else if (valueType === "array") {
+                    target.clear().push.apply(target, val)
+                }
+                if (target !== val) {
+                    target = val
                     notifySubscribers(this, "set", index, val)
                 }
             }
