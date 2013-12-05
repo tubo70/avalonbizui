@@ -9,7 +9,7 @@ define(['avalon'], function (avalon) {
         plain: false,//True to remove the incised line down the left side of the menu and to not indent general Component items.
         showSeparator: true, //True to show the icon separator.
         isSubMenu: false,
-        zIndex:-1
+        zIndex: -1
     })
     bizui.vmodels['menuitem'] = avalon.mix(true, {}, bizui.baseVModel, {
         $bizuiType: 'menuitem',
@@ -37,17 +37,17 @@ define(['avalon'], function (avalon) {
             child.width = options.width - 6
             child.top = height
             if (child.type == 'separator') {
-                height += 2
-                innerHeight += 2
+                height += 4
+                innerHeight += 4
             }
             else {
                 height += itemHeight + 3
-                innerHeight += itemHeight
+                innerHeight += itemHeight + 3
             }
 
             index++
         }
-
+        height += 5
         if (options.height > height) {
             options.height = height
         }
@@ -60,7 +60,7 @@ define(['avalon'], function (avalon) {
             options.height += options.scrollerHeight
             options.innerHeight = innerHeight
         }
-        if(options.isSubMenu){
+        if (options.isSubMenu) {
             bizui.zIndex += 10
             options.zIndex = bizui.zIndex
         }
@@ -87,15 +87,25 @@ define(['avalon'], function (avalon) {
                 }
                 return false
             }
+            vm.enterSubMenu = function (e) {
+                if (vm.isSubMenu) {
+                        vm.hidden = false
+                }
+            }
+            vm.leaveSubMenu = function (e) {
+                if (vm.isSubMenu) {
+                        vm.hidden = true
+                }
+            }
         })
         var template = '<div class="x-panel-body x-menu-body x-panel-body-default x-panel-body-default x-box-layout-ct"' +
-            ' ms-css-width="width-2" ms-css-height="height-2" style="left: 0px; top: 0px;"' +
+            ' ms-css-width="width" ms-css-height="height" style="left: 0px; top: 0px;"' +
             ' ms-class-0="x-scroller x-panel-body-scroller x-panel-body-default-scroller:hasScroller">' +
             '<div class="x-box-inner x-box-scroller-top">' +
             '<div ms-visible="hasScroller" class="x-box-scroller x-menu-scroll-top" ms-click-0="scrollTop"></div>' +
             '</div>' +
             '<div id="' + options.bizuiId + '-innerCt" class="x-box-inner x-vertical-box-overflow-body" role="presentation"' +
-            ' ms-css-height="height-6-scrollerHeight" ms-css-width="width-6">' +
+            ' ms-css-height="height-8-scrollerHeight" ms-css-width="width-6">' +
             '<div ms-visible="showSeparator" class="x-menu-icon-separator" ms-css-height="innerHeight">&nbsp;</div>' +
             '<div ms-css-width="width-6" style="position: absolute; left: 0px; top: 0px; height: 1px;">' +
             element.innerHTML +
@@ -105,23 +115,31 @@ define(['avalon'], function (avalon) {
             '<div ms-visible="hasScroller" class="x-box-scroller x-menu-scroll-bottom" ms-click="scrollDown"></div>' +
             '</div>' +
             '</div>'
-
+        var shadowTemplate = '<div ms-if="isSubMenu" ms-visible="!hidden" class="x-css-shadow" role="presentation" ms-css-z-index="zIndex" style="right: auto; box-shadow: rgb(136, 136, 136) 0px 0px 6px;" ms-css-left="left" ms-css-top="top+4" ms-css-width="width" ms-css-height="height-4"></div>'
+        var shadowElement = avalon.parseHTML(shadowTemplate)
+        document.body.appendChild(shadowElement)
+        shadowElement = document.body.lastChild
         avalon.nextTick(function () {
             $element.addClass('x-panel x-panel-default x-menu')
             $element.attr('style', 'margin: 0px 0px 10px;')
             $element.attr('ms-css-width', 'width')
             $element.attr('ms-css-height', 'height')
-            $element.attr('ms-css-left','{{isSubMenu?left:\'\'}}')
-            $element.attr('ms-css-top','{{isSubMenu?top:\'\'}}')
-            $element.attr('ms-css-z-index','{{isSubMenu?zIndex:\'\'}}')
+            $element.attr('ms-css-left', '{{isSubMenu?left:\'\'}}')
+            $element.attr('ms-css-top', '{{isSubMenu?top:\'\'}}')
+            $element.attr('ms-css-z-index', '{{isSubMenu?zIndex+1:\'\'}}')
             $element.attr('ms-click-0', 'itemClick')
+            $element.attr('ms-mouseenter', 'enterSubMenu')
+            $element.attr('ms-mouseleave', 'leaveSubMenu')
             $element.attr('ms-visible', '!hidden')
             $element.attr('ms-class-0', 'x-item-disabled x-masked-relative x-masked:disabled')
             $element.attr('ms-class-1', 'x-scroller x-panel-scroller x-panel-default-scroller:hasScroller')
-            $element.attr('ms-class-2','x-layer:isSubMenu')
+            $element.attr('ms-class-2', 'x-layer:isSubMenu')
             element.stopScan = false
             avalon.innerHTML(element, template)
             avalon.scan(element, [vmodel].concat(vmodels))
+            if(shadowElement && options.isSubMenu){
+                avalon.scan(shadowElement,[vmodel].concat(vmodels))
+            }
         })
         return vmodel
     }
@@ -153,16 +171,27 @@ define(['avalon'], function (avalon) {
                 avalon.mix(true, vm['$' + subMenuOptions.bizuiId], subMenuOptions)
 
             }
+            vm.$isInSubMenu = false
             vm.showSubMenu = function (e) {
                 if (vm.hasSubMenu === true) {
                     var subMenuModel = avalon.vmodels[vm.$subMenuId]
-                    if (subMenuModel) {
-                        subMenuModel.left = e.pageX + vm.width - e.offsetX -10
-                        subMenuModel.top = e.pageY  - e.offsetY + 13
-                        subMenuModel.hidden = !subMenuModel.hidden
+                    if (subMenuModel) {// && vm.$isInSubMenu === false) {
+
+                        subMenuModel.left = e.pageX + vm.width - e.offsetX - 15
+                        subMenuModel.top = e.pageY - e.offsetY + 13
+                        subMenuModel.hidden = false
                     }
                 }
-                return false
+                //return false
+            }
+            vm.hideSubMenu = function (e) {
+                if (vm.hasSubMenu === true) {
+                    var subMenuModel = avalon.vmodels[vm.$subMenuId]
+                    if (subMenuModel) {// && vm.$isInSubMenu === false) {
+                        subMenuModel.hidden = true
+                    }
+                }
+                //return false
             }
         })
         var template = '<a class="x-menu-item-link" ms-href="href" ms-attr-target="hrefTarget" hidefocus="true" unselectable="on">' +
@@ -190,8 +219,8 @@ define(['avalon'], function (avalon) {
                 $element.attr('style', 'left: 0px; margin: 0px;')
                 $element.attr('ms-css-width', 'width')
                 $element.attr('ms-css-top', 'top')
-                $element.attr('ms-mouseenter','showSubMenu')
-                $element.attr('ms-mouseleave','showSubMenu')
+                $element.attr('ms-mouseenter', 'showSubMenu')
+                $element.attr('ms-mouseleave', 'hideSubMenu')
                 $element.attr('ms-hover', 'x-menu-item-active:!disabled')
             }
             element.stopScan = false
