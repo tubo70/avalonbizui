@@ -1,6 +1,7 @@
 /**
  * Created by weiwei on 13-12-4.
  */
+//Todo 增加一个菜单容器，保存所有的菜单并监听click事件，只要点击就关闭所有在显示的菜单
 define(['avalon'], function (avalon) {
     bizui.vmodels['menu'] = avalon.mix(true, {}, bizui.containerVModel, {
         $bizuiType: 'menu',
@@ -87,14 +88,9 @@ define(['avalon'], function (avalon) {
                 }
                 return false
             }
-            vm.enterSubMenu = function (e) {
-                if (vm.isSubMenu) {
-                        vm.hidden = false
-                }
-            }
-            vm.leaveSubMenu = function (e) {
-                if (vm.isSubMenu) {
-                        vm.hidden = true
+            vm.enterSubMenu = function () {
+                if (vmodel.isSubMenu) {
+                        vmodel.hidden = false
                 }
             }
         })
@@ -129,7 +125,7 @@ define(['avalon'], function (avalon) {
             $element.attr('ms-css-z-index', '{{isSubMenu?zIndex+1:\'\'}}')
             $element.attr('ms-click-0', 'itemClick')
             $element.attr('ms-mouseenter', 'enterSubMenu')
-            $element.attr('ms-mouseleave', 'leaveSubMenu')
+            //$element.attr('ms-mouseleave', 'leaveSubMenu')
             $element.attr('ms-visible', '!hidden')
             $element.attr('ms-class-0', 'x-item-disabled x-masked-relative x-masked:disabled')
             $element.attr('ms-class-1', 'x-scroller x-panel-scroller x-panel-default-scroller:hasScroller')
@@ -171,27 +167,23 @@ define(['avalon'], function (avalon) {
                 avalon.mix(true, vm['$' + subMenuOptions.bizuiId], subMenuOptions)
 
             }
-            vm.$isInSubMenu = false
             vm.showSubMenu = function (e) {
                 if (vm.hasSubMenu === true) {
                     var subMenuModel = avalon.vmodels[vm.$subMenuId]
-                    if (subMenuModel) {// && vm.$isInSubMenu === false) {
-
+                    if (subMenuModel) {
                         subMenuModel.left = e.pageX + vm.width - e.offsetX - 15
                         subMenuModel.top = e.pageY - e.offsetY + 13
                         subMenuModel.hidden = false
                     }
                 }
-                //return false
             }
             vm.hideSubMenu = function (e) {
                 if (vm.hasSubMenu === true) {
                     var subMenuModel = avalon.vmodels[vm.$subMenuId]
-                    if (subMenuModel) {// && vm.$isInSubMenu === false) {
+                    if (subMenuModel) {
                         subMenuModel.hidden = true
                     }
                 }
-                //return false
             }
         })
         var template = '<a class="x-menu-item-link" ms-href="href" ms-attr-target="hrefTarget" hidefocus="true" unselectable="on">' +
@@ -227,7 +219,6 @@ define(['avalon'], function (avalon) {
             avalon.innerHTML(element, template)
             avalon.scan(element, [vmodel].concat(vmodels))
             if (subMenu) {
-                console.log(subMenu.outerHTML)
                 avalon.scan(subMenu, [vmodel].concat(vmodels))
             }
         })
