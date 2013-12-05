@@ -48,6 +48,7 @@ define(["avalon"], function (avalon) {
             $element.attr('ms-class-1', 'x-btn-default-{{scale}}')
             $element.attr('ms-class-2', '{{icon!=\'\'?\'x-icon-text-\'+iconAlign + \' x-btn-icon-text-\'+iconAlign+\' x-btn-default-\'+scale+\'-icon-text-\'+iconAlign:\'\'}}')
             $element.attr('ms-class-3', 'x-pressed x-btn-pressed x-btn-default-{{scale}}-pressed:toggled')
+            $element.attr('ms-class-4','x-item-disabled x-disabled x-btn-disabled x-btn-default-{{scale}}-disabled:disabled')
             $element.attr('style', 'border-width:1px 1px 1px 1px;')
             $element.attr('ms-hover', 'over x-over x-btn-over x-btn-default-{{scale}}-over')
             $element.attr('ms-active', 'x-pressed x-btn-pressed x-btn-default-{{scale}}-pressed:!enableToggle')

@@ -6,20 +6,20 @@ var bizui = avalon.bizui
 bizui.eastWestRegion = {east: 1, west: 1}
 bizui.southNorthRegion = {south: 1, north: 1}
 /*bizui.dispatchEvent = function (el, event) {
-    if (document.createEventObject) {
-        // IE浏览器支持fireEvent方法
-        var evt = document.createEventObject();
-        return el.fireEvent('on' + event, evt)
-    }
-    else {
-        // 其他标准浏览器使用dispatchEvent方法
-        var evt = document.createEvent('HTMLEvents');
-        // initEvent接受3个参数：
-        // 事件类型，是否冒泡，是否阻止浏览器的默认行为
-        evt.initEvent(event, true, true);
-        return !el.dispatchEvent(evt);
-    }
-}*/
+ if (document.createEventObject) {
+ // IE浏览器支持fireEvent方法
+ var evt = document.createEventObject();
+ return el.fireEvent('on' + event, evt)
+ }
+ else {
+ // 其他标准浏览器使用dispatchEvent方法
+ var evt = document.createEvent('HTMLEvents');
+ // initEvent接受3个参数：
+ // 事件类型，是否冒泡，是否阻止浏览器的默认行为
+ evt.initEvent(event, true, true);
+ return !el.dispatchEvent(evt);
+ }
+ }*/
 bizui.filterData = function (obj, prefix) {
     var result = {}
     for (var i in obj) {
@@ -35,8 +35,8 @@ bizui.idObjGen = function (prefix) {
     var id = prefix + setTimeout('1')
     return {bizuiId: id}
 }
-bizui.getChildren = function (element, vmodelId, vmodels) {
-    var comps = [], children = [], bizuiOptions = {}, el
+bizui.getChildren = function (element, vmodelId, vmodels, childName) {
+    var comps = [], children = [], bizuiOptions = {}, el, deletes = []
 
     for (var i = 0, il = element.childNodes.length; i < il; i++) {
         el = element.childNodes[i]
@@ -45,6 +45,10 @@ bizui.getChildren = function (element, vmodelId, vmodels) {
             var arg = $el.attr('ms-bizui')
             if (arg) {
                 var args = arg.split(',')
+                if (args[0] && childName && args[0] != childName) {
+                    deletes.push(el)
+                    continue
+                }
                 var vmodel = vmodels[0]
                 var bizuiId = args.length >= 2 ? args[1] : '$'
 
@@ -63,6 +67,14 @@ bizui.getChildren = function (element, vmodelId, vmodels) {
                 comps.push(childOptions)
             }
         }
+        else {
+            if (childName) {
+                deletes.push(el)
+            }
+        }
+    }
+    for (var i = 0, il = deletes.length; i < il; i++) {
+        element.removeChild(deletes[i])
     }
     for (var i = 0, il = comps.length; i < il; i++) {
         var comp = comps[i]
@@ -88,6 +100,7 @@ bizui.baseVModel = {
     $containerId: '',
     $callback: avalon.noop,
     hidden: false,
+    disabled: false,
     setLeft: function (left) {
         if (typeof left == 'number') {
             this.left = left
@@ -114,10 +127,10 @@ bizui.baseVModel = {
         }
         return me
     },
-    getContentSize:function(){
+    getContentSize: function () {
         return {
-            width:this.width,
-            height:this.height
+            width: this.width,
+            height: this.height
         }
     },
     left: 0,
@@ -147,12 +160,12 @@ bizui.containerVModel = avalon.mix(true, {}, bizui.baseVModel, {
     },
     setLeft: function (left) {
         if (typeof left == 'number') {
-                this.left = left
+            this.left = left
         }
     },
     setTop: function (top) {
         if (typeof top == 'number') {
-                this.top = top
+            this.top = top
         }
     },
     setSize: function (width, height) {
@@ -162,10 +175,10 @@ bizui.containerVModel = avalon.mix(true, {}, bizui.baseVModel, {
             height = width.height
         }
         if (typeof width == 'number') {
-                me.width = width
+            me.width = width
         }
         if (typeof height == 'number') {
-                me.height = height
+            me.height = height
         }
         for (var i = 0, il = me.$childIds.length; i < il; i++) {
             var child = avalon.vmodels[me.$childIds[i]]
@@ -187,10 +200,10 @@ bizui.vmodels['panel'] = avalon.mix(true, {}, bizui.containerVModel, {
     headerToolAmount: 0,
     collapsible: false,
     collapsed: false,
-    getContentSize:function(){
+    getContentSize: function () {
         return {
-            width:this.width,
-            height:this.height-this.headerHeight
+            width: this.width,
+            height: this.height - this.headerHeight
         }
     },
     content: '<div></div>'

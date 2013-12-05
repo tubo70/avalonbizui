@@ -1,22 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html class="x-border-box x-strict">
 <head>
-    <title></title>
+    <title>Menu</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../resources/css/ext-all-debug.css">
+    <script type="text/javascript" src="../avalon.js"></script>
+    <script type="text/javascript" src="../bizui.js"></script>
+    <script>
+        require("bizui.menu", function () {
+            var model = avalon.define('xxx', function (vm) {
+
+            })
+            avalon.scan()
+        })
+    </script>
 </head>
-<body>
-<div ms-bizui="menu">
-    <div ms-bizui="menuitem" data-menuitem-icon=""></div>
+<body ms-controller="xxx" class="x-body x-webkit x-chrome x-reset">
+<div ms-bizui="menu" data-menu-width="200" data-menu-height="100">
+    <div ms-bizui="menuitem" data-menuitem-text="item 1"></div>
+    <div ms-bizui="menuitem" data-menuitem-type="separator"></div>
+    <div ms-bizui="menuitem" data-menuitem-text="item 3"></div>
     <div ms-bizui="menuitem" data-menuitem-text="sub menu">
-        <div ms-bizui="menu">
+        <div ms-bizui="menu"  data-menu-width="200" data-menu-height="100">
             <div ms-bizui="menuitem" data-menuitem-text="sub menu1"></div>
+            <div ms-bizui="menuitem" data-menuitem-text="sub menu2"></div>
+            <div ms-bizui="menuitem" data-menuitem-type="separator"></div>
+            <div ms-bizui="menuitem" data-menuitem-text="sub menu3"></div>
         </div>
     </div>
-    <div data-icon="" data-text="item 2"></div>
-    <div data-text="submenu">
-        <div ms-bizui="menu">
-            <div data-text="sub menu 1"></div>
-        </div>
-    </div>
+    <div ms-bizui="menuitem" data-menuitem-text="item 4"></div>
+    <div ms-bizui="menuitem" data-menuitem-text="item 5"></div>
 </div>
+
 </body>
 </html>
