@@ -15,7 +15,7 @@ define(['avalon'], function (avalon) {
     bizui.vmodels['menuitem'] = avalon.mix(true, {}, bizui.baseVModel, {
         $bizuiType: 'menuitem',
         $subMenuId: '',
-        type: 'item',
+        type: 'textitem',
         icon: '',
         iconCls: '',
         text: '',
@@ -117,19 +117,18 @@ define(['avalon'], function (avalon) {
         shadowElement = document.body.lastChild
         avalon.nextTick(function () {
             $element.addClass('x-panel x-panel-default x-menu')
-            $element.attr('style', 'margin: 0px 0px 10px;')
-            $element.attr('ms-css-width', 'width')
-            $element.attr('ms-css-height', 'height')
-            $element.attr('ms-css-left', '{{isSubMenu?left:\'\'}}')
-            $element.attr('ms-css-top', '{{isSubMenu?top:\'\'}}')
-            $element.attr('ms-css-z-index', '{{isSubMenu?zIndex+1:\'\'}}')
-            $element.attr('ms-click-0', 'itemClick')
-            $element.attr('ms-mouseenter', 'enterSubMenu')
-            //$element.attr('ms-mouseleave', 'leaveSubMenu')
-            $element.attr('ms-visible', '!hidden')
-            $element.attr('ms-class-0', 'x-item-disabled x-masked-relative x-masked:disabled')
-            $element.attr('ms-class-1', 'x-scroller x-panel-scroller x-panel-default-scroller:hasScroller')
-            $element.attr('ms-class-2', 'x-layer:isSubMenu')
+            .attr('style', 'margin: 0px 0px 10px;')
+            .attr('ms-css-width', 'width')
+            .attr('ms-css-height', 'height')
+            .attr('ms-css-left', '{{isSubMenu?left:\'\'}}')
+            .attr('ms-css-top', '{{isSubMenu?top:\'\'}}')
+            .attr('ms-css-z-index', '{{isSubMenu?zIndex+1:\'\'}}')
+            .attr('ms-click-0', 'itemClick')
+            .attr('ms-mouseenter', 'enterSubMenu')
+            .attr('ms-visible', '!hidden')
+            .attr('ms-class-0', 'x-item-disabled x-masked-relative x-masked:disabled')
+            .attr('ms-class-1', 'x-scroller x-panel-scroller x-panel-default-scroller:hasScroller')
+            .attr('ms-class-2', 'x-layer:isSubMenu')
             element.stopScan = false
             avalon.innerHTML(element, template)
             avalon.scan(element, [vmodel].concat(vmodels))
@@ -202,18 +201,18 @@ define(['avalon'], function (avalon) {
         avalon.nextTick(function () {
             if (options.type == 'separator') {
                 $element.addClass('x-component x-box-item x-component-default x-menu-item-separator x-menu-item x-menu-item-plain')
-                $element.attr('style', 'left: 0px; margin: 0px;')
-                $element.attr('ms-css-width', 'width')
-                $element.attr('ms-css-top', 'top')
+                .attr('style', 'left: 0px; margin: 0px;')
+                .attr('ms-css-width', 'width')
+                .attr('ms-css-top', 'top')
             }
             else {
                 $element.addClass('x-component x-box-item x-component-default x-menu-item')
-                $element.attr('style', 'left: 0px; margin: 0px;')
-                $element.attr('ms-css-width', 'width')
-                $element.attr('ms-css-top', 'top')
-                $element.attr('ms-mouseenter', 'showSubMenu')
-                $element.attr('ms-mouseleave', 'hideSubMenu')
-                $element.attr('ms-hover', 'x-menu-item-active:!disabled')
+                .attr('style', 'left: 0px; margin: 0px;')
+                .attr('ms-css-width', 'width')
+                .attr('ms-css-top', 'top')
+                .attr('ms-mouseenter', 'showSubMenu')
+                .attr('ms-mouseleave', 'hideSubMenu')
+                .attr('ms-hover', 'x-menu-item-active:!disabled')
             }
             element.stopScan = false
             avalon.innerHTML(element, template)

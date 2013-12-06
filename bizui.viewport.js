@@ -32,6 +32,10 @@ define(["avalon", "avalon.draggable"], function (avalon) {
         var vmodel = avalon.define(data.viewportId, function (vm) {
             vm.$skipArray = ['left', 'top', 'width', 'height']
             avalon.mix(vm, options)
+            for (var opts in comps.bizuiOptions) {
+                vm[opts] = {}
+                avalon.mix(true, vm[opts], comps.bizuiOptions[opts])
+            }
             avalon.mix(true, vm.$regionOrders, regionOrders)
             vm.$regions = [].concat(comps.children)
             vm.resizeRegion = function (region, widthChanged, heightChanged) {
@@ -151,10 +155,6 @@ define(["avalon", "avalon.draggable"], function (avalon) {
                         me.setSize()
                     }
                 }
-            }
-
-            for (var opts in comps.bizuiOptions) {
-                avalon.mix(true, vm[opts],comps.bizuiOptions[opts])
             }
             vm.onCollapseClick = function (e) {
                 var region = collapseRegionMaps[this.$vmodel.type]

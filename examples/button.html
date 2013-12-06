@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="x-border-box x-strict x-viewport">
+<html class=" x-strict">
 <head>
     <title>Button</title>
     <meta charset="UTF-8">
@@ -9,17 +9,16 @@
     <script>
         require("bizui.button", function () {
             var model = avalon.define('xxx', function (vm) {
+                vm.click=function(){
+                    alert('hi')
+                }
 
             })
-            model.click=function(){
-                alert('hi')
-            }
-            model.$model.click=model.click
             avalon.scan()
         })
     </script>
 </head>
-<body ms-controller="xxx">
+<body class="  x-body x-ie x-ie7p x-ie8p x-ie9p x-ie9 x-nlg x-reset" ms-controller="xxx">
 Size:<br/>
 <div ms-bizui="button" data-button-text="Small and try to click me" data-button-handler="click"></div>
 <div ms-bizui="button" data-button-text="Medium" data-button-scale="medium"></div>
@@ -39,7 +38,7 @@ disabled<br/>
 <div ms-bizui="button" data-button-text="Disabled" data-button-disabled="true"></div>
 <br/>
 menu<br/>
-<div ms-bizui="button" data-button-text="Menu button" data-button-scale="large">
+<div ms-bizui="button" data-button-text="Menu button" data-button-scale="small">
     <div ms-bizui="menu" data-menu-width="130" data-menu-height="100">
         <div ms-bizui="menuitem" data-menuitem-text="item 1"></div>
         <div ms-bizui="menuitem" data-menuitem-type="separator"></div>
@@ -60,5 +59,48 @@ menu<br/>
         <div ms-bizui="menuitem" data-menuitem-text="item 3"></div>
     </div>
 </div>
+<div ms-bizui="button" data-button-text="Menu button" data-button-scale="medium">
+    <div ms-bizui="menu" data-menu-width="130" data-menu-height="100">
+        <div ms-bizui="menuitem" data-menuitem-text="item 1"></div>
+        <div ms-bizui="menuitem" data-menuitem-type="separator"></div>
+        <div ms-bizui="menuitem" data-menuitem-text="item 2"></div>
+    </div>
+</div>
+<div ms-bizui="button" data-button-text="Menu button" data-button-scale="medium" data-button-arrow-align="bottom">
+    <div ms-bizui="menu" data-menu-width="130" data-menu-height="100">
+        <div ms-bizui="menuitem" data-menuitem-text="item 1"></div>
+        <div ms-bizui="menuitem" data-menuitem-type="separator"></div>
+        <div ms-bizui="menuitem" data-menuitem-text="item 2">
+            <div ms-bizui="menu" data-menu-width="130" data-menu-height="100">
+                <div ms-bizui="menuitem" data-menuitem-text="item 1"></div>
+                <div ms-bizui="menuitem" data-menuitem-type="separator"></div>
+                <div ms-bizui="menuitem" data-menuitem-text="item 2"></div>
+            </div>
+        </div>
+        <div ms-bizui="menuitem" data-menuitem-text="item 3"></div>
+    </div>
+</div>
+<div ms-bizui="button" data-button-text="Menu button" data-button-scale="large">
+    <div ms-bizui="menu" data-menu-width="130" data-menu-height="100">
+        <div ms-bizui="menuitem" data-menuitem-text="item 1"></div>
+        <div ms-bizui="menuitem" data-menuitem-type="separator"></div>
+        <div ms-bizui="menuitem" data-menuitem-text="item 2"></div>
+    </div>
+</div>
+<div ms-bizui="button" data-button-text="Menu button" data-button-scale="large" data-button-arrow-align="bottom">
+    <div ms-bizui="menu" data-menu-width="130" data-menu-height="100">
+        <div ms-bizui="menuitem" data-menuitem-text="item 1"></div>
+        <div ms-bizui="menuitem" data-menuitem-type="separator"></div>
+        <div ms-bizui="menuitem" data-menuitem-text="item 2">
+            <div ms-bizui="menu" data-menu-width="130" data-menu-height="100">
+                <div ms-bizui="menuitem" data-menuitem-text="item 1"></div>
+                <div ms-bizui="menuitem" data-menuitem-type="separator"></div>
+                <div ms-bizui="menuitem" data-menuitem-text="item 2"></div>
+            </div>
+        </div>
+        <div ms-bizui="menuitem" data-menuitem-text="item 3"></div>
+    </div>
+</div>
+
 </body>
 </html>

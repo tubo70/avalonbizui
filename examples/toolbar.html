@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html class="x-border-box x-strict x-viewport">
+<head>
+    <title>Toolbar</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../resources/css/ext-all-debug.css">
+    <script type="text/javascript" src="../avalon.js"></script>
+    <script type="text/javascript" src="../bizui.js"></script>
+    <script>
+        require('bizui.button,bizui.toolbar', function () {
+            var model = avalon.define('xxx', function (vm) {
+
+            })
+            model.click=function(){
+                alert('hi')
+            }
+            model.$model.click=model.click
+            avalon.scan()
+        })
+    </script>
+</head>
+<body ms-controller="xxx">
+<div ms-bizui="toolbar" data-toolbar-width="500">
+    <div ms-bizui="button" data-button-text="Button"></div>
+</div>
+</body>
+</html>

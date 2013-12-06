@@ -19,7 +19,7 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'avalon.draggable'], function (ava
         resizingWidth: 0,
         resizingHeight: 0,
         dragging: false,
-        autoScroll:false,//内容区自动滚动条
+        autoScroll: false,//内容区自动滚动条
         zIndex: 19000
 
     })
@@ -169,20 +169,20 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'avalon.draggable'], function (ava
         resizeElement = document.body.lastChild
         avalon.nextTick(function () {
             $element.addClass('x-window x-layer x-window-default')
+                .attr('ms-class', 'x-closable x-window-closable x-window-default-closable:closable')
+                .attr('ms-css-width', '{{width<=0?\'\':width}}')
+                .attr('ms-css-height', '{{height<=0?\'\':height}}')
+                .attr('ms-css-left', 'left')
+                .attr('ms-css-top', 'top')
+                .attr('ms-css-z-index', 'zIndex+1')
+                .attr('ms-hover', 'x-resizable-over')
+                .attr('ms-visible', '!hidden')
+                .attr('ms-draggable', data.windowId)
+                .attr('data-drag-ghosting', 'true')
+                .attr('data-drag-handle', 'moveDragHandle')
+                .attr('data-drag-drag', 'moveDrag')
+                .attr('data-drag-stop', 'moveDragStop')
             avalon.innerHTML(element, windowTemplate)
-            $element.attr('ms-class', 'x-closable x-window-closable x-window-default-closable:closable')
-            $element.attr('ms-css-width', '{{width<=0?\'\':width}}')
-            $element.attr('ms-css-height', '{{height<=0?\'\':height}}')
-            $element.attr('ms-css-left', 'left')
-            $element.attr('ms-css-top', 'top')
-            $element.attr('ms-css-z-index', 'zIndex+1')
-            $element.attr('ms-hover', 'x-resizable-over')
-            $element.attr('ms-visible', '!hidden')
-            $element.attr('ms-draggable', data.windowId)
-            $element.attr('data-drag-ghosting', 'true')
-            $element.attr('data-drag-handle', 'moveDragHandle')
-            $element.attr('data-drag-drag', 'moveDrag')
-            $element.attr('data-drag-stop', 'moveDragStop')
             parentNode.removeChild(element)
             document.body.appendChild(element)
             element.stopScan = false

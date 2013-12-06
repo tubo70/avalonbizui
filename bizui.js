@@ -35,7 +35,7 @@ bizui.idObjGen = function (prefix) {
     var id = prefix + setTimeout('1')
     return {bizuiId: id}
 }
-bizui.getChildren = function (element, vmodelId, vmodels, childName) {
+bizui.getChildren = function (element, vmodelId, vmodels, childName, onlyBizui) {
     var comps = [], children = [], bizuiOptions = {}, el, deletes = []
 
     for (var i = 0, il = element.childNodes.length; i < il; i++) {
@@ -68,7 +68,7 @@ bizui.getChildren = function (element, vmodelId, vmodels, childName) {
             }
         }
         else {
-            if (childName) {
+            if (childName || onlyBizui === true) {
                 deletes.push(el)
             }
         }
@@ -101,6 +101,12 @@ bizui.baseVModel = {
     $callback: avalon.noop,
     hidden: false,
     disabled: false,
+    left: 0,
+    top: 0,
+    width: 0,
+    height: 0,
+    tooltip: '',
+    ui: '',
     setLeft: function (left) {
         if (typeof left == 'number') {
             this.left = left
@@ -133,11 +139,6 @@ bizui.baseVModel = {
             height: this.height
         }
     },
-    left: 0,
-    top: 0,
-    width: 0,
-    height: 0,
-    tooltip: '',
     getSize: function () {
         var me = this
         return {width: me.width,
@@ -252,8 +253,8 @@ avalon.bindingHandlers['bizui'] = function (data, vmodels) {
         element.stopScan = false
         var newModel = constructor(element, data, vmodels)
         //newModel = constructor(element, data, vmodels)
-        if (vmodel && vmodel.$callback) {
-            vmodel.$callback(newModel)
+        if (vmodel && vmodel.$callback && newModel) {
+            vmodel.$callback.apply(vmodel,[newModel])
         }
         ret = 1
     } //如果碰到此组件还没有加载的情况，将停止扫描它的内部

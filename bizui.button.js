@@ -3,10 +3,12 @@
  */
 define(['avalon', 'bizui.menu'], function (avalon) {
     bizui.vmodels['button'] = avalon.mix(true, {}, bizui.baseVModel, {
+        $bizuiType:'button',
         scale: 'small',
         text: '',
         icon: '',
-        height: 16,
+        height: 22,
+        buttonHeight: 16,
         iconAlign: 'left',
         enableToggle: false,
         toggled: false,
@@ -16,11 +18,12 @@ define(['avalon', 'bizui.menu'], function (avalon) {
     avalon.bizui['button'] = function (element, data, vmodels) {
         var options = avalon.mix(true, {}, bizui.vmodels['button'], data.buttonOptions)
         var $element = avalon(element), menu, menuOptions
+        element.stopScan = true
         var comps = bizui.getChildren(element, data.buttonId, vmodels, 'menu')
         options.hasMenu = false
         if (comps.children.length > 0) {
             options.hasMenu = true
-            options.enableToggle=true
+            options.enableToggle = true
             menu = element.firstChild
             menuOptions = comps.bizuiOptions['$' + comps.children[0].$bizuiId]
             menuOptions.$containerId = options.bizuiId
@@ -33,13 +36,20 @@ define(['avalon', 'bizui.menu'], function (avalon) {
             }
         }
         if (options.scale == 'medium') {
-            options.height = 24
+            options.buttonHeight = 24
         }
         if (options.scale == 'large') {
-            options.height = 36
+            options.buttonHeight = 36
         }
         if (options.icon != '' && (options.iconAlign == 'top' || options.iconAlign == 'bottom')) {
-            options.height += options.height
+            options.buttonHeight += 18
+        }
+        options.height = options.buttonHeight + 8
+        if (options.ui) {
+            options.ui = 'x-btn-default-' + options.ui
+        }
+        else        {
+            options.ui='x-btn-default'
         }
         var vmodel = avalon.define(data.buttonId, function (vm) {
             avalon.mix(vm, options)
@@ -53,15 +63,15 @@ define(['avalon', 'bizui.menu'], function (avalon) {
                 avalon.mix(true, vm['$' + menuOptions.bizuiId], menuOptions)
 
             }
-            vm.showMenu=function(e){
-                if(vmodel.hasMenu){
+            vm.showMenu = function (e) {
+                if (vmodel.hasMenu) {
                     var menuModel = avalon.vmodels[vmodel.$menuId]
-                    if(menuModel){
+                    if (menuModel) {
                         menuModel.left = e.pageX - e.offsetX
-                        menuModel.top = e.pageY+vmodel.height- e.offsetY + 2
-                        menuModel.hidden=!menuModel.hidden
-                        menuModel.$watch('hidden',function(newValue){
-                            if(newValue === true){
+                        menuModel.top = e.pageY + vmodel.height - e.offsetY - {small: 3, medium: 4, large: 6}[vmodel.scale]
+                        menuModel.hidden = !menuModel.hidden
+                        menuModel.$watch('hidden', function (newValue) {
+                            if (newValue === true) {
                                 vmodel.toggled = false
                             }
                         })
@@ -74,7 +84,7 @@ define(['avalon', 'bizui.menu'], function (avalon) {
         if (typeof vmodel.handler != 'function') {
             handler = vmodel.handler
         }
-        var template = '<em ms-class="x-btn-arrow x-btn-arrow-{{arrowAlign}}:hasMenu"><button type="button" ms-click="' + handler + '" class="x-btn-center" hidefocus="true" role="button" autocomplete="off" ms-css-height="height">' +
+        var template = '<em ms-class="x-btn-arrow x-btn-arrow-{{arrowAlign}}:hasMenu"><button type="button" ms-click="' + handler + '" class="x-btn-center" hidefocus="true" role="button" autocomplete="off" ms-css-height="buttonHeight">' +
             '<span class="x-btn-inner">{{text}}</span>' +
             '<span class="x-btn-icon " ms-css-background-image="{{icon!=\'\'?\'url(\'+icon+\')\':\'\'}}"></span>' +
             '</button></em>'
@@ -90,19 +100,24 @@ define(['avalon', 'bizui.menu'], function (avalon) {
             if (options.hasMenu) {
                 $element.attr('ms-click-1', 'showMenu')
             }
-            $element.attr('ms-class-0', '{{icon==\'\'?\'x-noicon x-btn-noicon x-btn-default-\'+ scale + \'-noicon\':\'\'}}')
-            $element.attr('ms-class-1', 'x-btn-default-{{scale}}')
-            $element.attr('ms-class-2', '{{icon!=\'\'?\'x-icon-text-\'+iconAlign + \' x-btn-icon-text-\'+iconAlign+\' x-btn-default-\'+scale+\'-icon-text-\'+iconAlign:\'\'}}')
-            $element.attr('ms-class-3', 'x-pressed x-btn-pressed x-btn-default-{{scale}}-pressed:toggled')
-            $element.attr('ms-class-4', 'x-item-disabled x-disabled x-btn-disabled x-btn-default-{{scale}}-disabled:disabled')
-            $element.attr('style', 'border-width:1px 1px 1px 1px;')
-            $element.attr('ms-hover', 'over x-over x-btn-over x-btn-default-{{scale}}-over')
-            $element.attr('ms-active', 'x-pressed x-btn-pressed x-btn-default-{{scale}}-pressed:!enableToggle')
+            $element.attr('ms-class-0', 'x-noicon x-btn-noicon {{ui}}-{{scale}}-noicon:!icon')
+                .attr('ms-class-1', '{{ui}}-{{scale}}')
+                .attr('ms-class-2', 'x-icon-text-{{iconAlign}} x-btn-icon-text-{{iconAlign}} {{ui}}-{{scale}}-icon-text-{{iconAlign}}:icon')
+                .attr('ms-class-3', 'x-pressed x-btn-pressed {{ui}}-{{scale}}-pressed:toggled')
+                .attr('ms-class-4', 'x-item-disabled x-disabled x-btn-disabled {{ui}}-{{scale}}-disabled:disabled')
+                .attr('style', 'border-width:1px 1px 1px 1px;')
+                .attr('ms-hover', 'over x-over x-btn-over {{ui}}-{{scale}}-over')
+                .attr('ms-active', 'x-pressed x-btn-pressed {{ui}}-{{scale}}-pressed:!enableToggle')
             avalon.innerHTML(element, template)
+            element.stopScan = false
             avalon.scan(element, [vmodel].concat(vmodels))
             if (menu) {
                 avalon.scan(menu, [vmodel].concat(vmodels))
             }
+            avalon.nextTick(function () {
+                vmodel.height = $element.height()
+                vmodel.width = $element.width()
+            })
         })
         return vmodel
     }
