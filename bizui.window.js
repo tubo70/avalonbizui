@@ -3,13 +3,14 @@
  */
 //TODO 增加自动居中
 //Todo 增加buttons配置，这个需要button完成之后
-define(['avalon', 'bizui.mask', 'bizui.tool', 'avalon.draggable'], function (avalon) {
+define(['avalon', 'bizui.mask', 'bizui.tool', 'bizui.button', 'bizui.toolbar', 'avalon.draggable'], function (avalon) {
     bizui.vmodels['window'] = avalon.mix(true, {}, bizui.vmodels['panel'], {
         $bizuiType: 'window',
         closable: true,//可关闭的
         //closeAction:'hidden',//'destory'
         draggable: true,//是否可拖动
         headerHeight: 21,
+        footerHeight:0,
         ghost: false,//拖动的时候启用影子
         modal: true,
         resizable: true,//是否可改变大小
@@ -30,12 +31,28 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'avalon.draggable'], function (ava
     resizeMaps['east'] = {size: 'width', ratio: 1, calcChange: 'left'}
 
     avalon.bizui['window'] = function (element, data, vmodels) {
-        var options = avalon.mix(true, {}, bizui.vmodels['window'], data.windowOptions)
+        var options = avalon.mix(true, {}, bizui.vmodels['window'], data.windowOptions),
+            $element = avalon(element),
+            parentNode = element.parentNode,
+            fbar
         element.stopScan = true
         bizui.zIndex += 10
         options.zIndex = bizui.zIndex
-        var $element = avalon(element)
-        var parentNode = element.parentNode
+        var comps = bizui.getChildren(element, data.windowId, vmodels,null,null,true)
+        for (var i = 0, il = comps.children.length; i < il; i++) {
+            var child = comps.children[i]
+            if (child.$bizuiId) {
+                var $bizuiId = '$' + child.$bizuiId,
+                    childOptions = comps.bizuiOptions[$bizuiId]
+                if(child.$bizuiType ==='toolbar' && childOptions.ui === 'footer'){
+                    fbar = childOptions.$element
+                    element.removeChild(fbar)
+                    options.footerHeight = 26
+                    options.$fbarId = child.$bizuiId
+                }
+                delete childOptions.$element
+            }
+        }
         var vmodel = avalon.define(data.windowId, function (vm) {
             avalon.mix(vm, options)
             vm.close = function () {
@@ -46,6 +63,20 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'avalon.draggable'], function (ava
                     if (bizui.currentMask) {
                         bizui.currentMask.removeMask()
                     }
+                }
+            })
+            vm.$watch('height',function(newValue, oldValue){
+                var fbarModel = avalon.vmodels[vmodel.$fbarId]
+                if(fbarModel){
+                    fbarModel.top = newValue - vmodel.footerHeight - 8
+
+                }
+            })
+            vm.$watch('width',function(newValue, oldValue){
+                var fbarModel = avalon.vmodels[vmodel.$fbarId]
+                if(fbarModel){
+                    fbarModel.width = newValue-16
+
                 }
             })
             vm.moveDragHandle = function (e) {
@@ -150,7 +181,8 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'avalon.draggable'], function (ava
             ' style="text-align: left; left: 0px; top: 0px; margin: 0px;" ms-css-width="width-29">' +
             '<span class="x-window-header-text x-window-header-text-default">{{title}}</span></div>' +
             '<div   style="position:absolute !important;" ms-css-left="width-12-16"><div ms-bizui="tool" data-tool-handler="close" data-tool-type="close"></div></div></div></div></div></div>' +
-            '<div class="x-window-body x-window-body-default x-closable x-window-body-closable x-window-body-default-closable x-layout-fit" ms-css-width="width-10" ms-css-height="{{height<=(headerHeight+9)?\'\':height-(headerHeight+9)}}" ms-css-overflow="{{autoScroll?\'auto\':\'\'}}" style="left: 0px; top: 20px;">' + element.innerHTML + '</div>' +
+            '<div class="x-window-body x-window-body-default x-closable x-window-body-closable x-window-body-default-closable x-layout-fit" ms-css-width="width-10" ms-css-height="{{height<=(headerHeight+footerHeight+9)?\'\':height-(headerHeight+footerHeight+9)}}" ms-css-overflow="{{autoScroll?\'auto\':\'\'}}" style="left: 0px; top: 20px;">' + element.innerHTML + '</div>' +
+            fbar.outerHTML +
             '<div ms-if="resizable" data-position="north" ms-draggable="' + data.windowId + '" data-drag-drag="resizeDrag" data-drag-stop="resizeDragStop" data-drag-axis="y" class="x-resizable-handle x-window-handle x-resizable-handle-north x-unselectable"></div>' +
             '<div ms-if="resizable" data-position="south" ms-draggable="' + data.windowId + '" data-drag-drag="resizeDrag" data-drag-stop="resizeDragStop" data-drag-axis="y"  class="x-resizable-handle x-window-handle x-resizable-handle-south x-unselectable"></div>' +
             '<div ms-if="resizable" data-position="east" ms-draggable="' + data.windowId + '" data-drag-drag="resizeDrag" data-drag-stop="resizeDragStop" data-drag-axis="x" class="x-resizable-handle x-window-handle x-resizable-handle-east x-unselectable"></div>' +
@@ -196,12 +228,15 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'avalon.draggable'], function (ava
             if (resizeElement) {
                 avalon.scan(resizeElement, [vmodel].concat(vmodels))
             }
+            //if(fbar){
+            //    avalon.scan(fbar,[vmodel].concat(vmodels))
+           // }
             avalon.nextTick(function () {
                 if (vmodel.width <= 0) {
                     vmodel.width = $element.width()
                 }
                 if (vmodel.height <= 0) {
-                    vmodel.height = $element.height() + vmodel.headerHeight
+                    vmodel.height = $element.height() + vmodel.headerHeight + vmodel.footerHeight
                 }
             })
         })

@@ -28,15 +28,23 @@
 <body ms-controller="window1">
 
 <div ms-bizui="window"
-      data-window-title="Test" data-window-left="100" data-window-top="100" data-window-auto-scroll="true"
-      data-window-modal="true" data-window-resizable="true">
+     data-window-title="Test" data-window-left="100" data-window-top="100" data-window-auto-scroll="true"
+     data-window-modal="true" data-window-resizable="true">
     <div style="width:300px;background-color: red">abc<br/>初始自适应宽度<br/><br/><br/><br/><br/><br/>123</div>
-    <!--<div ms-bizui="window"
-         data-window-height="300" data-window-title="Test"
-         data-window-width="300" data-window-modal="true">
-
-        <div>cde</div>
-    </div>-->
+    <div ms-bizui="toolbar" data-toolbar-width="500" data-toolbar-ui="footer">
+        <div ms-bizui="button" data-button-text="Button"></div>
+        <div ms-bizui="button" data-button-text="Menu button">
+            <div ms-bizui="menu" data-menu-width="130" data-menu-height="100">
+                <div ms-bizui="menuitem" data-menuitem-text="item 1"></div>
+                <div ms-bizui="menuitem" data-menuitem-type="separator"></div>
+                <div ms-bizui="menuitem" data-menuitem-text="item 2"></div>
+            </div>
+        </div>
+        <div ms-bizui="toolbaritem" data-toolbaritem-type="separator"></div>
+        <div ms-bizui="toolbaritem" data-toolbaritem-text="text1"></div>
+        <div ms-bizui="toolbaritem" data-toolbaritem-type="spacer"></div>
+        <div ms-bizui="toolbaritem" data-toolbaritem-text="text2"></div>
+    </div>
 </div>
 </body>
 </html>
