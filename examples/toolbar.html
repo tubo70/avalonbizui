@@ -22,6 +22,17 @@
 <body ms-controller="xxx">
 <div ms-bizui="toolbar" data-toolbar-width="500">
     <div ms-bizui="button" data-button-text="Button"></div>
+    <div ms-bizui="button" data-button-text="Menu button">
+        <div ms-bizui="menu" data-menu-width="130" data-menu-height="100">
+            <div ms-bizui="menuitem" data-menuitem-text="item 1"></div>
+            <div ms-bizui="menuitem" data-menuitem-type="separator"></div>
+            <div ms-bizui="menuitem" data-menuitem-text="item 2"></div>
+        </div>
+    </div>
+    <div ms-bizui="toolbaritem" data-toolbaritem-type="separator"></div>
+    <div ms-bizui="toolbaritem" data-toolbaritem-text="text1"></div>
+    <div ms-bizui="toolbaritem" data-toolbaritem-type="spacer" data-toolbaritem-width="50"></div>
+    <div ms-bizui="toolbaritem" data-toolbaritem-text="text2"></div>
 </div>
 </body>
 </html>
