@@ -35,7 +35,7 @@ bizui.idObjGen = function (prefix) {
     var id = prefix + setTimeout('1')
     return {bizuiId: id}
 }
-bizui.getChildren = function (element, vmodelId, vmodels, childName, onlyBizui) {
+bizui.getChildren = function (element, vmodelId, vmodels, childName, onlyBizui, attachChild) {
     var comps = [], children = [], bizuiOptions = {}, el, deletes = []
 
     for (var i = 0, il = element.childNodes.length; i < il; i++) {
@@ -64,6 +64,9 @@ bizui.getChildren = function (element, vmodelId, vmodels, childName, onlyBizui) 
                 }
                 childOptions.bizuiId = bizuiId
                 $el.attr('ms-bizui', childOptions.$bizuiType + ',' + bizuiId + ',$' + bizuiId)
+                if (attachChild === true) {
+                    childOptions.$element = el
+                }
                 comps.push(childOptions)
             }
         }
@@ -254,7 +257,7 @@ avalon.bindingHandlers['bizui'] = function (data, vmodels) {
         var newModel = constructor(element, data, vmodels)
         //newModel = constructor(element, data, vmodels)
         if (vmodel && vmodel.$callback && newModel) {
-            vmodel.$callback.apply(vmodel,[newModel])
+            vmodel.$callback.apply(vmodel, [newModel])
         }
         ret = 1
     } //如果碰到此组件还没有加载的情况，将停止扫描它的内部

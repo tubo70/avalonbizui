@@ -5,6 +5,7 @@ define(['avalon', 'bizui.menu'], function (avalon) {
     bizui.vmodels['button'] = avalon.mix(true, {}, bizui.baseVModel, {
         $bizuiType:'button',
         scale: 'small',
+        box:false,
         text: '',
         icon: '',
         height: 22,
@@ -105,9 +106,12 @@ define(['avalon', 'bizui.menu'], function (avalon) {
                 .attr('ms-class-2', 'x-icon-text-{{iconAlign}} x-btn-icon-text-{{iconAlign}} {{ui}}-{{scale}}-icon-text-{{iconAlign}}:icon')
                 .attr('ms-class-3', 'x-pressed x-btn-pressed {{ui}}-{{scale}}-pressed:toggled')
                 .attr('ms-class-4', 'x-item-disabled x-disabled x-btn-disabled {{ui}}-{{scale}}-disabled:disabled')
+                .attr('ms-class-5','x-box-item:box')
                 .attr('style', 'border-width:1px 1px 1px 1px;')
                 .attr('ms-hover', 'over x-over x-btn-over {{ui}}-{{scale}}-over')
                 .attr('ms-active', 'x-pressed x-btn-pressed {{ui}}-{{scale}}-pressed:!enableToggle')
+                .attr('ms-css-left','left')//'{{left>0?left:\'\'}}')
+                .attr('ms-css-top','{{top>0?top:\'\'}}')
             avalon.innerHTML(element, template)
             element.stopScan = false
             avalon.scan(element, [vmodel].concat(vmodels))
