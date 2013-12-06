@@ -2,7 +2,6 @@
  * Created by quan on 13-12-1.
  */
 //TODO 增加自动居中
-//Todo 增加buttons配置，这个需要button完成之后
 define(['avalon', 'bizui.mask', 'bizui.tool', 'bizui.button', 'bizui.toolbar', 'avalon.draggable'], function (avalon) {
     bizui.vmodels['window'] = avalon.mix(true, {}, bizui.vmodels['panel'], {
         $bizuiType: 'window',
