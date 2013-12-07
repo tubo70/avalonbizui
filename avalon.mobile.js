@@ -2105,12 +2105,19 @@
             break;
         }
     }
+    // 用于替换 click 的 touch 事件
+    var click2Touch = "ontouchstart" in window ? {
+        "click": "tap",
+        "dblclick": "doubletap"
+    } : {}
     "dblclick,mouseout,click,mouseover,mouseenter,mouseleave,mousemove,mousedown,mouseup,keypress,keydown,keyup,blur,focus,change,animationend".
         replace(rword, function(name) {
-            bindingHandlers[name] = function(data) {
-                data.param = name
-                bindingHandlers.on.apply(0, arguments)
-            }
+            bindingHandlers[name] = (function (dataParam) {
+                return function(data) {
+                    data.param = dataParam;
+                    bindingHandlers.on.apply(0, arguments)
+                }
+            })(click2Touch[name] || name)
         })
     if (!("onmouseenter" in root)) { //chrome 30  终于支持mouseenter
         var oldBind = avalon.bind
@@ -2366,6 +2373,7 @@
             data.parent.replaceChild(endRepeat, elem)
             data.parent.insertBefore(startRepeat, endRepeat)
             view.appendChild(elem.cloneNode(true))
+            elem.innerHTML = ""
         } else {
             while (elem.firstChild) {
                 view.appendChild(elem.firstChild)
@@ -2527,6 +2535,8 @@
     function gatherRemovedNodes(array, node, length) {
         for (var i = 1; i < length; i++) {
             node = node.nextSibling
+            if(!node)
+                break
             array.push(node)
         }
         return array

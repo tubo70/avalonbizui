@@ -1,15 +1,15 @@
 define(["avalon"], function(avalon) {
     var cachedScrollbarWidth,
-            abs = Math.abs,
-            round = Math.round,
-            rhorizontal = /left|center|right/,
-            rvertical = /top|center|bottom/,
-            roffset = /[\+\-]\d+(\.[\d]+)?%?/,
-            rposition = /^\w+/,
-            rpercent = /%$/,
-            cachedScrollbarWidth,
-            oldPosition = avalon.fn.position,
-            oldOffset = avalon.fn.offset;
+        abs = Math.abs,
+        round = Math.round,
+        rhorizontal = /left|center|right/,
+        rvertical = /top|center|bottom/,
+        roffset = /[\+\-]\d+(\.[\d]+)?%?/,
+        rposition = /^\w+/,
+        rpercent = /%$/,
+        cachedScrollbarWidth,
+        oldPosition = avalon.fn.position,
+        oldOffset = avalon.fn.offset;
 
     avalon.fn.offset = function(options) {
         if (avalon.type(options) === "object") {
@@ -24,11 +24,11 @@ define(["avalon"], function(avalon) {
         options = avalon.mix({}, options);
 
         var atOffset, targetWidth, targetHeight, targetOffset, basePosition, dimensions,
-                target = avalon(options.of), //这是作为基准的对象
-                within = getWithinInfo(options.within), //如果没有指定，默认为window
-                scrollInfo = getScrollInfo(within),
-                collision = (options.collision || "flip").split(" "),
-                offsets = {};
+            target = avalon(options.of), //这是作为基准的对象
+            within = getWithinInfo(options.within), //如果没有指定，默认为window
+            scrollInfo = getScrollInfo(within),
+            collision = (options.collision || "flip").split(" "),
+            offsets = {};
 //at 是将元素放置容器的九个点（四个角+每条边的中心+矩形中心）
 //my 基于上面九个点再定位
         dimensions = getDimensions(target);
@@ -46,13 +46,13 @@ define(["avalon"], function(avalon) {
         // if a value is missing or invalid, it will be converted to center
         myAt.forEach(function(el) {
             var pos = (options[ el ] || "").split(" "),
-                    horizontalOffset,
-                    verticalOffset;
+                horizontalOffset,
+                verticalOffset;
 
             if (pos.length === 1) {
                 pos = rhorizontal.test(pos[ 0 ]) ?
-                        pos.concat(["center"]) :
-                        rvertical.test(pos[ 0 ]) ?
+                    pos.concat(["center"]) :
+                    rvertical.test(pos[ 0 ]) ?
                         ["center"].concat(pos) :
                         ["center", "center"];
             }
@@ -96,15 +96,15 @@ define(["avalon"], function(avalon) {
 
         // return this.each(function() {
         var collisionPosition,
-                elem = this[0],
-                elemWidth = elem.offsetWidth,
-                elemHeight = elem.offsetHeight,
-                marginLeft = parseCss(this, "marginLeft"),
-                marginTop = parseCss(this, "marginTop"),
-                collisionWidth = elemWidth + marginLeft + parseCss(this, "marginRight") + scrollInfo.width,
-                collisionHeight = elemHeight + marginTop + parseCss(this, "marginBottom") + scrollInfo.height,
-                position = avalon.mix({}, basePosition),
-                myOffset = getOffsets(offsets.my, elemWidth, elemHeight);
+            elem = this[0],
+            elemWidth = elem.offsetWidth,
+            elemHeight = elem.offsetHeight,
+            marginLeft = parseCss(this, "marginLeft"),
+            marginTop = parseCss(this, "marginTop"),
+            collisionWidth = elemWidth + marginLeft + parseCss(this, "marginRight") + scrollInfo.width,
+            collisionHeight = elemHeight + marginTop + parseCss(this, "marginBottom") + scrollInfo.height,
+            position = avalon.mix({}, basePosition),
+            myOffset = getOffsets(offsets.my, elemWidth, elemHeight);
 
         if (options.my[ 0 ] === "right") {
             position.left -= elemWidth;
@@ -152,25 +152,25 @@ define(["avalon"], function(avalon) {
     var flip = {
         left: function(position, data) {
             var within = data.within,
-                    withinOffset = within.offset.left + within.scrollLeft,
-                    outerWidth = within.width,
-                    offsetLeft = within.isWindow ? within.scrollLeft : within.offset.left,
-                    collisionPosLeft = position.left - data.collisionPosition.marginLeft,
-                    overLeft = collisionPosLeft - offsetLeft,
-                    overRight = collisionPosLeft + data.collisionWidth - outerWidth - offsetLeft,
-                    myOffset = data.my[ 0 ] === "left" ?
+                withinOffset = within.offset.left + within.scrollLeft,
+                outerWidth = within.width,
+                offsetLeft = within.isWindow ? within.scrollLeft : within.offset.left,
+                collisionPosLeft = position.left - data.collisionPosition.marginLeft,
+                overLeft = collisionPosLeft - offsetLeft,
+                overRight = collisionPosLeft + data.collisionWidth - outerWidth - offsetLeft,
+                myOffset = data.my[ 0 ] === "left" ?
                     -data.elemWidth :
                     data.my[ 0 ] === "right" ?
-                    data.elemWidth :
-                    0,
-                    atOffset = data.at[ 0 ] === "left" ?
+                        data.elemWidth :
+                        0,
+                atOffset = data.at[ 0 ] === "left" ?
                     data.targetWidth :
                     data.at[ 0 ] === "right" ?
-                    -data.targetWidth :
-                    0,
-                    offset = -2 * data.offset[ 0 ],
-                    newOverRight,
-                    newOverLeft;
+                        -data.targetWidth :
+                        0,
+                offset = -2 * data.offset[ 0 ],
+                newOverRight,
+                newOverLeft;
 
             if (overLeft < 0) {
                 newOverRight = position.left + myOffset + atOffset + offset + data.collisionWidth - outerWidth - withinOffset;
@@ -187,26 +187,26 @@ define(["avalon"], function(avalon) {
         },
         top: function(position, data) {
             var within = data.within,
-                    withinOffset = within.offset.top + within.scrollTop,
-                    outerHeight = within.height,
-                    offsetTop = within.isWindow ? within.scrollTop : within.offset.top,
-                    collisionPosTop = position.top - data.collisionPosition.marginTop,
-                    overTop = collisionPosTop - offsetTop,
-                    overBottom = collisionPosTop + data.collisionHeight - outerHeight - offsetTop,
-                    top = data.my[ 1 ] === "top",
-                    myOffset = top ?
+                withinOffset = within.offset.top + within.scrollTop,
+                outerHeight = within.height,
+                offsetTop = within.isWindow ? within.scrollTop : within.offset.top,
+                collisionPosTop = position.top - data.collisionPosition.marginTop,
+                overTop = collisionPosTop - offsetTop,
+                overBottom = collisionPosTop + data.collisionHeight - outerHeight - offsetTop,
+                top = data.my[ 1 ] === "top",
+                myOffset = top ?
                     -data.elemHeight :
                     data.my[ 1 ] === "bottom" ?
-                    data.elemHeight :
-                    0,
-                    atOffset = data.at[ 1 ] === "top" ?
+                        data.elemHeight :
+                        0,
+                atOffset = data.at[ 1 ] === "top" ?
                     data.targetHeight :
                     data.at[ 1 ] === "bottom" ?
-                    -data.targetHeight :
-                    0,
-                    offset = -2 * data.offset[ 1 ],
-                    newOverTop,
-                    newOverBottom;
+                        -data.targetHeight :
+                        0,
+                offset = -2 * data.offset[ 1 ],
+                newOverTop,
+                newOverBottom;
             if (overTop < 0) {
                 newOverBottom = position.top + myOffset + atOffset + offset + data.collisionHeight - outerHeight - withinOffset;
                 if ((position.top + myOffset + atOffset + offset) > overTop && (newOverBottom < 0 || newOverBottom < abs(overTop))) {
@@ -271,7 +271,7 @@ define(["avalon"], function(avalon) {
     function setOffset(options) {
         var elem = this[0]
         var curPosition, curLeft, curCSSTop, curTop, curOffset, curCSSLeft, calculatePosition,
-                position = this.css("position")
+            position = this.css("position")
 
         // Set position first, in-case top/left are set even on static elem
         if (position === "static") {
@@ -282,7 +282,7 @@ define(["avalon"], function(avalon) {
         curCSSTop = this.css("top");
         curCSSLeft = this.css("left");
         calculatePosition = (position === "absolute" || position === "fixed") &&
-                (curCSSTop + curCSSLeft).indexOf("auto") > -1;
+            (curCSSTop + curCSSLeft).indexOf("auto") > -1;
         // Need to be able to calculate position if either top or left is auto and position is either absolute or fixed
         if (calculatePosition) {
             curPosition = this.position();
@@ -309,8 +309,8 @@ define(["avalon"], function(avalon) {
             return cachedScrollbarWidth;
         }
         var w1, w2,
-                div = avalon.parseHTML("<div style='display:block;position:absolute;width:50px;height:50px;overflow:hidden;'><div style='height:100px;width:auto;'></div></div>").firstChild,
-                innerDiv = div.children[0]
+            div = avalon.parseHTML("<div style='display:block;position:absolute;width:50px;height:50px;overflow:hidden;'><div style='height:100px;width:auto;'></div></div>").firstChild,
+            innerDiv = div.children[0]
         document.body.appendChild(div)
         w1 = innerDiv.offsetWidth
         div.style.overflow = "scroll"
@@ -323,10 +323,10 @@ define(["avalon"], function(avalon) {
     }
     function getScrollInfo(within) {//within为getWithinInfo返回的对象
         var overflowX = within.isWindow ? "" : within.element.css("overflow-x"),
-                overflowY = within.isWindow ? "" : within.element.css("overflow-y"),
-                hasOverflowX = overflowX === "scroll" ||
+            overflowY = within.isWindow ? "" : within.element.css("overflow-y"),
+            hasOverflowX = overflowX === "scroll" ||
                 (overflowX === "auto" && within.width < within.element[0].scrollWidth),
-                hasOverflowY = overflowY === "scroll" ||
+            hasOverflowY = overflowY === "scroll" ||
                 (overflowY === "auto" && within.height < within.element[0].scrollHeight);
         return {
             width: hasOverflowY ? scrollbarWidth() : 0,
@@ -335,7 +335,7 @@ define(["avalon"], function(avalon) {
     }
     function getWithinInfo(element) {//求得当前对象一切涉及尺寸的数值
         var withinElement = avalon(element || window),
-                isWindow = avalon.isWindow(withinElement[0]);
+            isWindow = avalon.isWindow(withinElement[0]);
 
         return {
             element: withinElement,

@@ -41,8 +41,8 @@ define(["avalon"], function(avalon) {
         return result
     }
     var draggable = avalon.bindingHandlers.draggable = function(data, vmodels) {
-        var args = data.value.match(avalon.rword)
-        var ID = args ? args[0].trim() : null, model
+        var args = data.value.match(avalon.rword) || [""]
+        var ID = args[0].trim(), opts = args[1], model, vmOptions
         if (ID && ID != "$") {
             model = avalon.vmodels[ID]//如果指定了此VM的ID
             if (!model) {
@@ -50,32 +50,31 @@ define(["avalon"], function(avalon) {
                 return
             }
         }
-        if (!model) {
-            model = vmodels.length ? vmodels[0].$model : {}
+        if (!model) {//如果使用$或绑定值为空，那么就默认取最近一个VM，没有拉倒
+            model = vmodels.length ? vmodels[0] : null
         }
-        var opts = args && args.length == 2 ? args[1] : null //options在model中的名字
-        var vmOptions = {}
-        if (model && opts && typeof model[opts] === "object") {
+        var fnObj = model || {}
+        if (opts && model && typeof model[opts] === "object") {//如果指定了配置对象，并且有VM
             vmOptions = model[opts]
             if (vmOptions.$model) {
                 vmOptions = vmOptions.$model
             }
+            fnObj = vmOptions
         }
         var element = data.element
         var $element = avalon(element)
-        var options = avalon.mix({}, defaults, model, vmOptions, filterData($element.data(),"drag"));
+        var options = avalon.mix({}, defaults, vmOptions || {}, filterData($element.data(), "drag"));
         //修正drag,stop为函数
         "drag,stop,start,beforeStart,beforeStop".replace(avalon.rword, function(name) {
             var method = options[name]
             if (typeof method === "string") {
-                if (typeof model[method] === "function") {
-                    options[name] = model[method]
+                if (typeof fnObj[method] === "function") {
+                    options[name] = fnObj[method]
                 } else {
                     options[name] = avalon.noop
                 }
             }
         })
-
         if (options.axis !== "" && !/^(x|y|xy)$/.test(options.axis)) {
             options.axis = "xy"
         }
@@ -104,8 +103,8 @@ define(["avalon"], function(avalon) {
                 options.beforeStart.call(data.element, e, data)
             }
 
-            if (data.handle && model) {// 实现手柄拖动
-                var handle = model[data.handle]
+            if (data.handle && fnObj) {// 实现手柄拖动
+                var handle = fnObj[data.handle]
                 if (typeof handle === "function") {
                     var checked = handle.call(element, e, data)//要求返回一节点
                     if (checked && checked.nodeType === 1) {
@@ -274,20 +273,24 @@ define(["avalon"], function(avalon) {
         }
     }
     //统一处理拖动的事件
+    var lockTime = new Date - 0, minTime = document.querySelector ? 12 : 30
     avalon(document).bind(drag, function(e) {
-        var data = draggable.dragData
-        if (data.started === true) {
-            //fix touchmove bug;  
-            //IE 在 img 上拖动时默认不能拖动（不触发 mousemove，mouseup 事件，mouseup 后接着触发 mousemove ...）
-            //防止 html5 draggable 元素的拖放默认行为 (选中文字拖放)
-            e.preventDefault();
-            //使用document.selection.empty()来清除选择，会导致捕获失败 
-            var element = data.clone || data.element
-            setPosition(e, element, data, "X")
-            setPosition(e, element, data, "Y")
-            draggable.plugin.call("drag", e, data)
+        var time = new Date - lockTime
+        if (time > minTime) {//减少调用次数，防止卡死IE6-8
+            lockTime = time
+            var data = draggable.dragData
+            if (data.started === true) {
+                //fix touchmove bug;  
+                //IE 在 img 上拖动时默认不能拖动（不触发 mousemove，mouseup 事件，mouseup 后接着触发 mousemove ...）
+                //防止 html5 draggable 元素的拖放默认行为 (选中文字拖放)
+                e.preventDefault();
+                //使用document.selection.empty()来清除选择，会导致捕获失败 
+                var element = data.clone || data.element
+                setPosition(e, element, data, "X")
+                setPosition(e, element, data, "Y")
+                draggable.plugin.call("drag", e, data)
+            }
         }
-
     })
 
     //统一处理拖动结束的事件

@@ -2338,7 +2338,7 @@
                         var event3
                     } else { //在聚焦失焦中切换类名
                         elem.tabIndex = elem.tabIndex || -1
-                        event1 = "mousedown", event2 = "mouseup", event3="mouseleave"
+                        event1 = "mousedown", event2 = "mouseup", event3 = "mouseleave"
                     }
                     $elem.bind(event1, function() {
                         toggle && $elem.addClass(className)
@@ -2346,7 +2346,7 @@
                     $elem.bind(event2, function() {
                         toggle && $elem.removeClass(className)
                     })
-                    if(event3){
+                    if (event3) {
                         $elem.bind(event3, function() {
                             toggle && $elem.removeClass(className)
                         })
@@ -2848,6 +2848,7 @@
             data.parent.replaceChild(endRepeat, elem)
             data.parent.insertBefore(startRepeat, endRepeat)
             view.appendChild(elem.cloneNode(true))
+            avalon.clearChild(elem)
         } else {
             while (elem.firstChild) {
                 view.appendChild(elem.firstChild)
@@ -2947,7 +2948,14 @@
                         deleteRange.setEndBefore(data.endRepeat)
                         deleteRange.deleteContents()
                     } else {
-                        removeView(locatedNode, group, Infinity)
+                        while (true) {
+                            var node = data.startRepeat.nextSibling
+                            if (node && node !== data.endRepeat) {
+                                node.parentNode.removeChild(node)
+                            } else {
+                                break
+                            }
+                        }
                     }
                 } else {
                     avalon.clearChild(parent)
