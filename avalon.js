@@ -2135,7 +2135,7 @@
                                     var tag = noscripts[i]
                                     if (tag) { //IE6-8中noscript标签的innerHTML,innerText是只读的
                                         tag.style.display = "none" //http://haslayout.net/css/noscript-Ghost-Bug
-                                        tag.fixIE78 = (array[i].match(rnoscriptText) || ["", ""])[1]
+                                        tag.fixIE78 = (array[i].match(rnoscriptText) || ["", "&nbsp;"])[1]
                                     }
                                 }
                             }
@@ -2546,10 +2546,17 @@
             }
         }
         $elem.bind("change", updateModel)
-        setTimeout(function() {
-            //先等到select里的option元素被扫描后，才根据model设置selected属性
-            registerSubscriber(updateView, data)
-        })
+        var innerHTML = NaN, elem = $elem[0]
+        var id = setInterval(function() {
+            var currHTML = elem.innerHTML
+            if (currHTML === innerHTML) {
+                clearInterval(id)
+                //先等到select里的option元素被扫描后，才根据model设置selected属性  
+                registerSubscriber(updateView, data)
+            } else {
+                innerHTML = currHTML
+            }
+        }, 20);
     }
     modelBinding.TEXTAREA = modelBinding.INPUT
     //============================= event binding =======================
@@ -2758,9 +2765,8 @@
                     }
                 } else if (valueType === "array") {
                     target.clear().push.apply(target, val)
-                }
-                if (target !== val) {
-                    target = val
+                } else if (target !== val) {
+                    this[index] = val
                     notifySubscribers(this, "set", index, val)
                 }
             }
@@ -2981,7 +2987,9 @@
         }
         var callback = getBindingCallback(data.callbackName, data.vmodels)
         if (callback) {
-            callback.call(data.parent, method)
+            avalon.nextTick(function() {
+                callback.call(data.parent, method)
+            })
         }
     }
 
