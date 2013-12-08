@@ -2,6 +2,13 @@
  * Created by quan on 13-11-26.
  */
 define(["avalon"], function (avalon) {
+    bizui.vmodels['tool'] = avalon.mix(true, {}, bizui.baseVModel, {
+        $bizuiType: 'tool',
+        type: 'close',
+        box: true,
+        disabled: false,
+        handler: avalon.noop
+    })
     avalon.bizui['tool'] = function (element, data, vmodels) {
         var options = avalon.mix(true, {}, bizui.vmodels['tool'], data.toolOptions)
         var $element = avalon(element)

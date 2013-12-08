@@ -90,7 +90,7 @@ define(['avalon'], function (avalon) {
             }
             vm.enterSubMenu = function () {
                 if (vmodel.isSubMenu) {
-                        vmodel.hidden = false
+                    vmodel.hidden = false
                 }
             }
         })
@@ -113,27 +113,31 @@ define(['avalon'], function (avalon) {
             '</div>'
         var shadowTemplate = '<div ms-if="isSubMenu" ms-visible="!hidden" class="x-css-shadow" role="presentation" ms-css-z-index="zIndex" style="right: auto; box-shadow: rgb(136, 136, 136) 0px 0px 6px;" ms-css-left="left" ms-css-top="top+4" ms-css-width="width" ms-css-height="height-4"></div>'
         var shadowElement = avalon.parseHTML(shadowTemplate)
+        shadowElement.stopScan = true
         document.body.appendChild(shadowElement)
         shadowElement = document.body.lastChild
-        avalon.nextTick(function () {
-            $element.addClass('x-panel x-panel-default x-menu')
+        $element.addClass('x-panel x-panel-default x-menu')
             .attr('style', 'margin: 0px 0px 10px;')
             .attr('ms-css-width', 'width')
             .attr('ms-css-height', 'height')
             .attr('ms-css-left', '{{isSubMenu?left:\'\'}}')
             .attr('ms-css-top', '{{isSubMenu?top:\'\'}}')
             .attr('ms-css-z-index', '{{isSubMenu?zIndex+1:\'\'}}')
-            .attr('ms-click-0', 'itemClick')
+            //.attr('ms-click-0', 'itemClick')
             .attr('ms-mouseenter', 'enterSubMenu')
             .attr('ms-visible', '!hidden')
             .attr('ms-class-0', 'x-item-disabled x-masked-relative x-masked:disabled')
             .attr('ms-class-1', 'x-scroller x-panel-scroller x-panel-default-scroller:hasScroller')
             .attr('ms-class-2', 'x-layer:isSubMenu')
+        avalon.nextTick(function () {
             element.stopScan = false
             avalon.innerHTML(element, template)
             avalon.scan(element, [vmodel].concat(vmodels))
-            if(shadowElement && options.isSubMenu){
-                avalon.scan(shadowElement,[vmodel].concat(vmodels))
+            if (shadowElement && options.isSubMenu) {
+                avalon.nextTick(function () {
+                    shadowElement.stopScan = false
+                    avalon.scan(shadowElement, [vmodel].concat(vmodels))
+                })
             }
         })
         return vmodel
@@ -156,6 +160,7 @@ define(['avalon'], function (avalon) {
             options.$subMenuId = subMenuOptions.bizuiId
             while (element.firstChild) {
                 var el = element.firstChild
+
                 element.removeChild(el)
             }
         }
@@ -198,27 +203,30 @@ define(['avalon'], function (avalon) {
             document.body.appendChild(subMenu)
             subMenu = document.body.lastChild
         }
-        avalon.nextTick(function () {
-            if (options.type == 'separator') {
-                $element.addClass('x-component x-box-item x-component-default x-menu-item-separator x-menu-item x-menu-item-plain')
+        if (options.type == 'separator') {
+            $element.addClass('x-component x-box-item x-component-default x-menu-item-separator x-menu-item x-menu-item-plain')
                 .attr('style', 'left: 0px; margin: 0px;')
                 .attr('ms-css-width', 'width')
                 .attr('ms-css-top', 'top')
-            }
-            else {
-                $element.addClass('x-component x-box-item x-component-default x-menu-item')
+        }
+        else {
+            $element.addClass('x-component x-box-item x-component-default x-menu-item')
                 .attr('style', 'left: 0px; margin: 0px;')
                 .attr('ms-css-width', 'width')
                 .attr('ms-css-top', 'top')
                 .attr('ms-mouseenter', 'showSubMenu')
                 .attr('ms-mouseleave', 'hideSubMenu')
                 .attr('ms-hover', 'x-menu-item-active:!disabled')
-            }
-            element.stopScan = false
+        }
+        avalon.nextTick(function () {
             avalon.innerHTML(element, template)
+            element.stopScan = false
             avalon.scan(element, [vmodel].concat(vmodels))
             if (subMenu) {
-                avalon.scan(subMenu, [vmodel].concat(vmodels))
+                avalon.nextTick(function () {
+                    subMenu.stopScan = false
+                    avalon.scan(subMenu, [vmodel].concat(vmodels))
+                })
             }
         })
         return vmodel

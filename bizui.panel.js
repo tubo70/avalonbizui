@@ -2,6 +2,23 @@
  * Created by quan on 13-11-21.
  */
 define(["avalon", "bizui.tool"], function (avalon) {
+    bizui.vmodels['panel'] = avalon.mix(true, {}, bizui.containerVModel, {
+        $bizuiType: 'panel',
+        region: 'none',
+        border: true,
+        split: false,
+        title: '',
+        headerHeight: 25,
+        headerToolAmount: 0,
+        collapsible: false,
+        collapsed: false,
+        getContentSize: function () {
+            return {
+                width: this.width,
+                height: this.height - this.headerHeight
+            }
+        }
+    })
     var toolTypeMaps = {}
     toolTypeMaps['north'] = 'collapse-top'
     toolTypeMaps['south'] = 'collapse-bottom'
@@ -94,7 +111,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
             vm.collapse = function (flag) {
                 var me = this
                 if (me.collapsible) {
-                    if(me.collapsed === false){
+                    if (me.collapsed === false) {
                         me.$collapseWidth = me.width
                         me.$collapseHeight = me.height
                     }
@@ -109,7 +126,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
                 if (vm.$containerId) {
                     var container = avalon.vmodels[vm.$containerId]
                     if (container && container.collapse) {
-                        container.collapse(vm.region)
+                        container.collapse.apply(container, [vm.region])
                     }
                 }
             }
@@ -133,7 +150,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
                 var region = datas.region
                 var viewport = avalon.vmodels[vm.$containerId]
                 if (region && viewport) {
-                    viewport.resizeRegion(region, widthChanged, heightChanged)
+                    viewport.resizeRegion.apply(viewport, [region, widthChanged, heightChanged])
                 }
             }
             vm.getSplitterWidth = function () {
@@ -157,7 +174,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
                 }
                 return vm.top + vm.height
             }
-            vm.getSplitterLeft = function(){
+            vm.getSplitterLeft = function () {
                 if (vm.region in bizui.southNorthRegion) {
                     return 0
                 }
@@ -169,10 +186,10 @@ define(["avalon", "bizui.tool"], function (avalon) {
             }
         })
 
-        if (parentNode.tagName == 'BODY') {
-            vmodel.setSize(avalon(window).width(), avalon(window).height())
+        if (options.layout === 'fit' && parentNode.tagName === 'BODY') {
+            vmodel.setSize.apply(vmodel, [avalon(window).width(), avalon(window).height()])
             avalon.bind(window, 'resize', function () {
-                vmodel.setSize(avalon(window).width(), avalon(window).height())
+                vmodel.setSize.apply(vmodel, [avalon(window).width(), avalon(window).height()])
             })
         }
 
@@ -200,8 +217,8 @@ define(["avalon", "bizui.tool"], function (avalon) {
                     '<span class="x-panel-header-text x-panel-header-text-default" ms-attr-style="text-align:{{region==\'west\'?\'right\':\'left\'}};height:16px;width:{{height-31}}px;display:block;transform:rotate({{region==\'west\'?\'-90\':\'90\'}}deg);transform-origin: {{(height-31)/2}}px {{(height-31)/2 + \'px\'}}; -webkit-transform: rotate({{region==\'west\'?\'-90\':\'90\'}}deg); -moz-transform: rotate(90deg); -webkit-transform-origin: {{region==\'west\' ? (height-31)/2:8}}px {{region==\'west\' ? (height-31)/2 + \'px\':\'\'}}; -moz-transform-origin: 0% 0%; filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1);">{{title}}</span>' +
                     '</div></div></div></div></div>'
             }
-            if(options.region in bizui.southNorthRegion){
-                collapseTemplate ='<div ms-if="collapsible" ms-visible="collapsed" class="x-panel-header x-region-collapsed-placeholder x-region-collapsed-{{region==\'north\'?\'top\':\'bottom\'}}-placeholder collapsed x-border-item x-box-item x-panel-header-default x-horizontal x-panel-header-horizontal x-panel-header-default-horizontal x-top x-panel-header-top x-panel-header-default-top x-collapsed x-panel-header-collapsed x-panel-header-default-collapsed x-collapsed-top x-panel-header-collapsed-top x-panel-header-default-collapsed-top x-collapsed-border-top x-panel-header-collapsed-border-top x-panel-header-default-collapsed-border-top x-unselectable" tabindex="-1"' +
+            if (options.region in bizui.southNorthRegion) {
+                collapseTemplate = '<div ms-if="collapsible" ms-visible="collapsed" class="x-panel-header x-region-collapsed-placeholder x-region-collapsed-{{region==\'north\'?\'top\':\'bottom\'}}-placeholder collapsed x-border-item x-box-item x-panel-header-default x-horizontal x-panel-header-horizontal x-panel-header-default-horizontal x-top x-panel-header-top x-panel-header-default-top x-collapsed x-panel-header-collapsed x-panel-header-default-collapsed x-collapsed-top x-panel-header-collapsed-top x-panel-header-default-collapsed-top x-collapsed-border-top x-panel-header-collapsed-border-top x-panel-header-default-collapsed-border-top x-unselectable" tabindex="-1"' +
                     ' style="left: 0px; margin: 0px;" ms-css-top="top" ms-css-width="width">' +
                     '<div class="x-panel-header-body x-panel-header-body-default x-panel-header-body-horizontal x-panel-header-body-default-horizontal x-panel-header-body-top x-panel-header-body-default-top x-panel-header-body-collapsed x-panel-header-body-default-collapsed x-panel-header-body-collapsed-top x-panel-header-body-default-collapsed-top x-panel-header-body-collapsed-border-top x-panel-header-body-default-collapsed-border-top x-panel-header-body-default-horizontal x-panel-header-body-default-top x-panel-header-body-default-collapsed x-panel-header-body-default-collapsed-top x-panel-header-body-default-collapsed-border-top x-box-layout-ct"' +
                     ' ms-css-width="width-12">' +

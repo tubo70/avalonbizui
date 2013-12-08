@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="x-border-box x-strict x-viewport">
 <head>
-    <title>Layout</title>
+    <title>Viewport</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="../resources/css/ext-all-debug.css">
     <script type="text/javascript" src="../avalon.js"></script>
@@ -15,31 +15,42 @@
         })
     </script>
 </head>
-<body class="x-body x-gecko x-nlg x-reset x-border-layout-ct x-container">
-<div ms-bizui="panel" ms-controller="xxx" data-panel-border="false">
-    <div ms-bizui="viewport">
-        <div ms-bizui="panel" data-panel-region="north" data-panel-height="100" data-panel-border="true"
-             data-panel-split="true">north
-        </div>
-        <div ms-bizui="panel" data-panel-region="west" data-panel-collapsible="true" data-panel-title="This is a title" data-panel-width="150" data-panel-split="false">west</div>
-        <div ms-bizui="panel" data-panel-region="south" data-panel-collapsible="true" data-panel-title="这是标题"  data-panel-height="100" data-panel-split="true">south</div>
-        <div ms-bizui="panel" data-panel-region="center" data-panel-title="这是标题c"  data-panel-border="false">
-           <div ms-bizui="viewport">
-                <div ms-bizui="panel" data-panel-region="north" data-panel-collapsible="true" data-panel-title="又一个标题" data-panel-height="100" data-panel-border="false"
-                     data-panel-split="true">north
-                </div>
-                <div ms-bizui="panel" data-panel-region="west" data-panel-collapsible="true" data-panel-title="又一个标题" data-panel-width="150" data-panel-split="false">west
-                </div>
-                <div ms-bizui="panel" data-panel-region="south" data-panel-collapsible="true" data-panel-title="测试标题" data-panel-height="100" data-panel-split="true">south
-                </div>
-                <div ms-bizui="panel" data-panel-region="center" data-panel-title="测试标题c" data-panel-border="true">
-                    center
-                </div>
-                <div ms-bizui="panel" data-panel-region="east" data-panel-collapsible="true" data-panel-title="又一个标题" data-panel-width="150" data-panel-split="true">east</div>
+<body>
+<div ms-bizui="viewport" ms-controller="xxx">
+
+    <div ms-bizui="panel" data-panel-region="north" data-panel-height="100" data-panel-border="true"
+         data-panel-split="true">north
+    </div>
+    <div ms-bizui="panel" data-panel-region="west" data-panel-collapsible="true" data-panel-title="This is a title"
+         data-panel-width="150" data-panel-split="false">west
+    </div>
+    <div ms-bizui="panel" data-panel-region="south" data-panel-collapsible="true" data-panel-title="这是标题"
+         data-panel-height="100" data-panel-split="true">south
+    </div>
+    <div ms-bizui="panel" data-panel-region="center" data-panel-title="这是标题c" data-panel-border="false">
+        <div ms-bizui="viewport">
+            <div ms-bizui="panel" data-panel-region="north" data-panel-collapsible="true" data-panel-title="又一个标题"
+                 data-panel-height="100" data-panel-border="false"
+                 data-panel-split="true">north
+            </div>
+            <div ms-bizui="panel" data-panel-region="west" data-panel-collapsible="true" data-panel-title="又一个标题"
+                 data-panel-width="150" data-panel-split="false">west
+            </div>
+            <div ms-bizui="panel" data-panel-region="south" data-panel-collapsible="true" data-panel-title="测试标题"
+                 data-panel-height="100" data-panel-split="true">south
+            </div>
+            <div ms-bizui="panel" data-panel-region="center" data-panel-title="测试标题c" data-panel-border="true">
+                center
+            </div>
+            <div ms-bizui="panel" data-panel-region="east" data-panel-collapsible="true" data-panel-title="又一个标题"
+                 data-panel-width="150" data-panel-split="true">east
             </div>
         </div>
-        <div ms-bizui="panel" data-panel-region="east" data-panel-title="East title" data-panel-width="150" data-panel-collapsible="true" data-panel-split="true">east</div>
+    </div>
+    <div ms-bizui="panel" data-panel-region="east" data-panel-title="East title" data-panel-width="150"
+         data-panel-collapsible="true" data-panel-split="true">east
     </div>
 </div>
+
 </body>
 </html>

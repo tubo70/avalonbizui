@@ -4,6 +4,15 @@
 
 
 define(["avalon", "avalon.draggable"], function (avalon) {
+
+    bizui.vmodels['viewport'] = avalon.mix(true, {}, bizui.containerVModel, {
+        $bizuiType: 'viewport',
+        $regions: [],
+        $regionOrders: {},
+        $addedRegionAmount: 0
+
+    })
+
     var collapseRegionMaps = {}
     collapseRegionMaps['expand-left'] = 'east'
     collapseRegionMaps['expand-right'] = 'west'
@@ -119,7 +128,7 @@ define(["avalon", "avalon.draggable"], function (avalon) {
                 }
             }
             vm.setSize = function (width, height) {
-                var me = this
+                var me = vmodel
                 if (width && typeof width == 'object') {
                     height = width.height
                     width = width.width
@@ -130,19 +139,19 @@ define(["avalon", "avalon.draggable"], function (avalon) {
                 if (typeof height == 'number') {
                     me.height = height
                 }
-                me.resizeRegions()
+                me.resizeRegions.apply(vmodel)
                 for (var i = 0, il = me.$regions.length; i < il; i++) {
                     var region = me.$regions[i]
                     var child = avalon.vmodels[region.$bizuiId]
                     if (child) {
-                        child.setLeft(region.$left)
-                        child.setTop(region.$top)
-                        child.setSize(region.$width, region.$height)
+                        child.setLeft.apply(child,[region.$left])
+                        child.setTop.apply(child, [region.$top])
+                        child.setSize.apply(child,[region.$width, region.$height])
                     }
                 }
             }
             vm.onContainerSizeChanged = function (size) {
-                this.setSize(size)
+                vm.setSize(size)
             }
 
             vm.$callback = function (child) {
@@ -152,7 +161,7 @@ define(["avalon", "avalon.draggable"], function (avalon) {
                 if (child.region) {
                     me.$addedRegionAmount++
                     if (me.$addedRegionAmount == me.$regions.length) {
-                        me.setSize()
+                        me.setSize.apply(me)
                     }
                 }
             }
@@ -188,9 +197,9 @@ define(["avalon", "avalon.draggable"], function (avalon) {
         })
 
         if (parentNode.tagName == 'BODY') {
-            vmodel.setSize(avalon(window).width(), avalon(window).height())
+            vmodel.setSize.apply(vmodel, [avalon(window).width(), avalon(window).height()])
             avalon.bind(window, 'resize', function () {
-                vmodel.setSize(avalon(window).width(), avalon(window).height())
+                vmodel.setSize.apply(vmodel, [avalon(window).width(), avalon(window).height()])
             })
         }
         var $parentNode = avalon(parentNode)
