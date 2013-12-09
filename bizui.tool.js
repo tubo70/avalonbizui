@@ -23,7 +23,7 @@ define(["avalon"], function (avalon) {
         if (typeof vmodel.handler != 'function') {
             handler = vmodel.handler
         }
-        var template = '<img ms-click="' + handler + '" src="data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" ms-class-0="x-tool-{{type}}" role="presentation">' +
+        var template = '<img ms-click="' + handler + '" src="data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" ms-class-0="x-tool-img x-tool-{{type}}" role="presentation">' +
             '<div ms-if="disabled" class="x-mask" ></div>'
         $element.addClass('x-tool x-tool-default')
         $element.attr('ms-visible', '!hidden')

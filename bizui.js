@@ -378,6 +378,7 @@
             }
             if (bizui.isIE9m) {
                 add('ie9m');
+                add('nlg');
             }
             if (bizui.isIE7 || bizui.isIE8) {
                 add('ie78');
@@ -386,6 +387,7 @@
 
         if (bizui.isIE10) {
             add('ie10');
+            add('nlg');
         }
 
         if (bizui.isGecko) {

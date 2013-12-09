@@ -38,6 +38,8 @@ define(["avalon", "bizui.tool"], function (avalon) {
     splitterStyleMaps['west'] = 'width: 5px; height: {{height}}px; left: {{left + width}}px; top: {{top}}px;'
     avalon.bizui['panel'] = function (element, data, vmodels) {
         var options = avalon.mix(true, {}, bizui.vmodels['panel'], data.panelOptions)
+        var $element = avalon(element)
+        element.stopScan = true
         options.$titleHeight = options.headerHeight
         if (!options.title) {
             options.headerHeight = 0
@@ -108,6 +110,8 @@ define(["avalon", "bizui.tool"], function (avalon) {
             vm.rendered = function () {
 
             }
+            vm.$collapseWidth = vm.width
+            vm.$collapseHeight = vm.height
             vm.collapse = function (flag) {
                 var me = this
                 if (me.collapsible) {
@@ -267,11 +271,18 @@ define(["avalon", "bizui.tool"], function (avalon) {
 
 
         //console.log(el.outerHTML)
+        $element.addClass('x-panel x-border-item x-box-item x-panel-default')
+            .attr('ms-visible', '!collapsed')
+            .attr('style', 'margin: 0px;')
+            .attr('ms-css-left', 'left')
+            .attr('ms-css-top', 'top')
+            .attr('ms-css-width', 'width')
+            .attr('ms-css-height', 'height')
+        if (bizui.isie8m) {
+            avalon.css($element, 'position', 'absolute')
+        }
         avalon.nextTick(function () {
             //avalon(element).attr('ms-visible', '!collapsed')
-            avalon(element).addClass('x-panel x-border-item x-box-item x-panel-default')
-            avalon(element).attr('style', 'margin: 0px;')
-            avalon(element).attr('ms-attr-style', 'left: {{left}}px; top: {{top}}px; width: {{width}}px; height: {{height}}px;display:{{collapsed===false?\'block\':\'none\';}}')
             avalon.innerHTML(element, headerTemplate + template)
             element.stopScan = false
             avalon.scan(element, [vmodel].concat(vmodels))

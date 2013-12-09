@@ -1,8 +1,19 @@
 /**
  * Created by weiwei on 13-12-4.
  */
-//Todo 增加一个菜单容器，保存所有的菜单并监听click事件，只要点击就关闭所有在显示的菜单
 define(['avalon'], function (avalon) {
+    bizui.subMenuIds = []
+    avalon(window).bind('click', function () {
+        if (bizui.subMenuIds.length != 0) {
+            var menuId
+            while (menuId = bizui.subMenuIds.pop()) {
+                var menuModel = avalon.vmodels[menuId]
+                if (menuModel) {
+                    menuModel.hidden = true
+                }
+            }
+        }
+    })
     bizui.vmodels['menu'] = avalon.mix(true, {}, bizui.containerVModel, {
         $bizuiType: 'menu',
         hidden: false,
@@ -16,21 +27,24 @@ define(['avalon'], function (avalon) {
         $bizuiType: 'menuitem',
         $subMenuId: '',
         type: 'textitem',
-        icon: '',
-        iconCls: '',
         text: '',
         plain: false,
         handler: avalon.noop,
         href: '#',
         hrefTarget: '',
-        menuAlign: 'tl-tr?'
+        menuAlign: 'tl-tr?',
+        baseCls: 'x',
+        ui: '',
+        uiCls: '',
+        icon: '',
+        iconCls: ''
     })
     avalon.bizui['menu'] = function (element, data, vmodels) {
         var options = avalon.mix(true, {}, bizui.vmodels['menu'], data.menuOptions)
         var $element = avalon(element)
         element.stopScan = true
         var comps = bizui.getChildren(element, data.menuId, vmodels, 'menuitem')
-        var childOptions = comps.bizuiOptions, index = 0, itemHeight = 27
+        var childOptions = comps.bizuiOptions, index = 0, itemHeight = 24
         var height = 0
         var innerHeight = 0
         for (var id in childOptions) {
@@ -64,6 +78,7 @@ define(['avalon'], function (avalon) {
         if (options.isSubMenu) {
             bizui.zIndex += 10
             options.zIndex = bizui.zIndex
+            options.hidden = true
         }
         var vmodel = avalon.define(data.menuId, function (vm) {
             avalon.mix(vm, options)
@@ -74,26 +89,32 @@ define(['avalon'], function (avalon) {
             vm.scrollTop = function () {
                 var innerCt = document.getElementById(vm.bizuiId + '-innerCt')
                 if (innerCt) {
-                    innerCt.scrollTop += 27
+                    innerCt.scrollTop += itemHeight
                 }
                 return false
             }
             vm.scrollDown = function () {
                 var innerCt = document.getElementById(vm.bizuiId + '-innerCt')
                 if (innerCt) {
-                    innerCt.scrollTop -= 27
+                    innerCt.scrollTop -= itemHeight
                     if (innerCt.scrollTop < 0) {
                         innerCt.scrollTop = 0
                     }
                 }
                 return false
             }
+            vm.$watch('hidden', function (newValue) {
+                if (newValue === false) {
+                    bizui.subMenuIds.push(vmodel.bizuiId)
+                }
+            })
             vm.enterSubMenu = function () {
                 if (vmodel.isSubMenu) {
                     vmodel.hidden = false
                 }
             }
         })
+
         var template = '<div class="x-panel-body x-menu-body x-panel-body-default x-panel-body-default x-box-layout-ct"' +
             ' ms-css-width="width" ms-css-height="height" style="left: 0px; top: 0px;"' +
             ' ms-class-0="x-scroller x-panel-body-scroller x-panel-body-default-scroller:hasScroller">' +
@@ -111,11 +132,25 @@ define(['avalon'], function (avalon) {
             '<div ms-visible="hasScroller" class="x-box-scroller x-menu-scroll-bottom" ms-click="scrollDown"></div>' +
             '</div>' +
             '</div>'
-        var shadowTemplate = '<div ms-if="isSubMenu" ms-visible="!hidden" class="x-css-shadow" role="presentation" ms-css-z-index="zIndex" style="right: auto; box-shadow: rgb(136, 136, 136) 0px 0px 6px;" ms-css-left="left" ms-css-top="top+4" ms-css-width="width" ms-css-height="height-4"></div>'
-        var shadowElement = avalon.parseHTML(shadowTemplate)
-        shadowElement.stopScan = true
-        document.body.appendChild(shadowElement)
-        shadowElement = document.body.lastChild
+        var shadowElement
+        if (options.isSubMenu) {
+            var cls = 'x-css-shadow'
+            if (bizui.isIE) {
+                cls = 'x-ie-shadow'
+            }
+            var shadowTemplate = '<div ms-if="isSubMenu" ms-visible="!hidden" class="' + cls + '" role="presentation" ms-css-z-index="zIndex" style="right: auto; box-shadow: rgb(136, 136, 136) 0px 0px 6px;" ms-css-left="left" ms-css-top="top+4" ms-css-width="width" ms-css-height="height-4"></div>'
+            if (bizui.isIE8m) {
+                shadowTemplate = '<div ms-if="isSubMenu" ms-visible="!hidden" class="x-ie-shadow" role="presentation" style="right: auto; position: ; filter: progid:DXImageTransform.Microsoft.alpha(opacity=50) progid:DXImageTransform.Microsoft.Blur(pixelradius=4);"  ms-css-z-index="zIndex" ms-css-left="left-5" ms-css-top="top-3" ms-css-width="width-1" ms-css-height="height+1"></div>'
+            }
+            shadowElement = avalon.parseHTML(shadowTemplate)
+            shadowElement.stopScan = true
+            document.body.appendChild(shadowElement)
+            shadowElement = document.body.lastChild
+        }
+        if (!bizui.isIE || bizui.isIE8p) {
+            $element.addClass('x-border-box')
+        }
+
         $element.addClass('x-panel x-panel-default x-menu')
             .attr('style', 'margin: 0px 0px 10px;')
             .attr('ms-css-width', 'width')
@@ -123,7 +158,6 @@ define(['avalon'], function (avalon) {
             .attr('ms-css-left', '{{isSubMenu?left:\'\'}}')
             .attr('ms-css-top', '{{isSubMenu?top:\'\'}}')
             .attr('ms-css-z-index', '{{isSubMenu?zIndex+1:\'\'}}')
-            //.attr('ms-click-0', 'itemClick')
             .attr('ms-mouseenter', 'enterSubMenu')
             .attr('ms-visible', '!hidden')
             .attr('ms-class-0', 'x-item-disabled x-masked-relative x-masked:disabled')
@@ -190,18 +224,51 @@ define(['avalon'], function (avalon) {
                 }
             }
         })
-        var template = '<a class="x-menu-item-link" ms-href="href" ms-attr-target="hrefTarget" hidefocus="true" unselectable="on">' +
-            '<img src="data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="' +
-            ' ms-class="x-menu-item-icon {{iconCls}}">' +
-            '<span class="x-menu-item-text">{{text}}</span>' +
-            '<img src="data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" ms-class="x-menu-item-arrow:hasSubMenu">' +
+        //copy from ext-js
+        var renderTpl = [
+
+            '<a ms-attr-id="{{bizuiId}}-itemEl"',
+            ' class="x-menu-item-link"',
+            ' ms-href="href"',
+            ' ms-attr-target="hrefTarget"',
+            ' hidefocus="true"',
+            // For most browsers the text is already unselectable but Opera needs an explicit unselectable="on".
+            ' unselectable="on"',
+            //'<tpl if="tabIndex">',
+            //' tabIndex="{tabIndex}"',
+            //'</tpl>',
+            '>',
+            '<div role="img" ms-attr-id="{{bizuiId}}-iconEl" ms-class="x-menu-item-icon {{iconCls}}',
+            //'{childElCls} {glyphCls}" style="<tpl if="icon">background-image:url({icon});</tpl>',
+            '  ms-css-background-image="{{icon!=\'\'?\'url(\' + icon+\');\':\'\'}}">',
+            //'<tpl if="glyph && glyphFontFamily">font-family:{glyphFontFamily};</tpl>">',
+            //'<tpl if="glyph">&#{glyph};</tpl>',
+            '</div>',
+            '<span ms-attr-id="{{bizuiId}}-textEl" class="x-menu-item-text" unselectable="on">{{text}}</span>',
+            '<img ms-attr-id="{{bizuiId}}-arrowEl" src="data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" ms-class="x-menu-item-arrow:hasSubMenu"/>',
             '</a>'
+
+        ]
+        /*var template = '<a class="x-menu-item-link" ms-href="href" ms-attr-target="hrefTarget" hidefocus="true" unselectable="on">' +
+         '<img src="data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="' +
+         ' ms-class="x-menu-item-icon {{iconCls}}">' +
+         '<span class="x-menu-item-text">{{text}}</span>' +
+         '<img src="data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" ms-class="x-menu-item-arrow:hasSubMenu">' +
+         '</a>'*/
+        var template = renderTpl.join('')
         if (options.type == 'separator') {
             template = ''
+        }
+        if (options.plain === true) {
+            template = '{{text}}'
         }
         if (subMenu) {
             document.body.appendChild(subMenu)
             subMenu = document.body.lastChild
+        }
+        var handler = 'handler'
+        if (typeof vmodel.handler != 'function') {
+            handler = vmodel.handler
         }
         if (options.type == 'separator') {
             $element.addClass('x-component x-box-item x-component-default x-menu-item-separator x-menu-item x-menu-item-plain')
@@ -214,6 +281,7 @@ define(['avalon'], function (avalon) {
                 .attr('style', 'left: 0px; margin: 0px;')
                 .attr('ms-css-width', 'width')
                 .attr('ms-css-top', 'top')
+                .attr('ms-click-0', handler)
                 .attr('ms-mouseenter', 'showSubMenu')
                 .attr('ms-mouseleave', 'hideSubMenu')
                 .attr('ms-hover', 'x-menu-item-active:!disabled')

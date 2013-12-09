@@ -9,6 +9,9 @@
     <script>
         require("bizui.menu", function () {
             var model = avalon.define('xxx', function (vm) {
+                vm.item3Click = function () {
+                    alert('item3 click')
+                }
 
             })
             avalon.scan()
@@ -17,12 +20,13 @@
 </head>
 <body ms-controller="xxx" class="x-body x-webkit x-chrome x-reset">
 <div ms-bizui="menu" data-menu-width="130" data-menu-height="100">
-    <div ms-bizui="menuitem" data-menuitem-text="item 1"></div>
+    <div ms-bizui="menuitem" data-menuitem-text="item 1" data-menuitem-href="http://google.com"
+         data-menuitem-href-target="_blank"></div>
     <div ms-bizui="menuitem" data-menuitem-type="separator"></div>
-    <div ms-bizui="menuitem" data-menuitem-text="item 3"></div>
+    <div ms-bizui="menuitem" data-menuitem-text="item 3" data-menuitem-handler="item3Click"></div>
     <div ms-bizui="menuitem" data-menuitem-text="sub menu">
-        <div ms-bizui="menu"  data-menu-width="200" data-menu-height="108">
-            <div ms-bizui="menuitem" data-menuitem-text="sub menu1"></div>
+        <div ms-bizui="menu" data-menu-width="200" data-menu-height="108">
+            <div ms-bizui="menuitem" data-menuitem-text="sub menu1" data-menuitem-plain="true"></div>
             <div ms-bizui="menuitem" data-menuitem-text="sub menu2"></div>
             <div ms-bizui="menuitem" data-menuitem-type="separator"></div>
             <div ms-bizui="menuitem" data-menuitem-text="sub menu3"></div>

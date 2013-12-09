@@ -7,19 +7,19 @@ define(['avalon', 'bizui.menu'], function (avalon) {
         scale: 'small',
         box: false,
         text: '',
-        icon: '',
-        iconCls: '',
         height: 22,
         buttonHeight: 16,
         iconAlign: 'left',
         enableToggle: false,
         toggled: false,
         handler: avalon.noop,
-        split:false,
+        split: false,
         arrowAlign: 'right',
         baseCls: 'x-btn',
         ui: 'default',
-        uiCls: ''
+        uiCls: '',
+        icon: '',
+        iconCls: ''
     })
     avalon.bizui['button'] = function (element, data, vmodels) {
         var options = avalon.mix(true, {}, bizui.vmodels['button'], data.buttonOptions)
@@ -80,14 +80,18 @@ define(['avalon', 'bizui.menu'], function (avalon) {
                     var menuModel = avalon.vmodels[vmodel.$menuId]
                     if (menuModel) {
                         menuModel.left = e.pageX - e.offsetX
-                        menuModel.top = e.pageY + vmodel.height - e.offsetY - {small: 3, medium: 4, large: 6}[vmodel.scale]
+                        menuModel.top = e.pageY + vmodel.height - e.offsetY + {small: 3, medium: 4, large: 5}[vmodel.scale]
                         menuModel.hidden = !menuModel.hidden
                         menuModel.$watch('hidden', function (newValue) {
                             if (newValue === true) {
                                 vmodel.toggled = false
                             }
                         })
+                        if (menuModel.hidden === false) {
+                            return false
+                        }
                     }
+
                 }
             }
         })
@@ -95,21 +99,21 @@ define(['avalon', 'bizui.menu'], function (avalon) {
         var frameTableTpl = [
                 '<table class="x-table-plain" cellpadding="0"><tbody>',
                 '  <tr>',//x-frame-tl x-btn-tl x-btn-default-small-tl x-btn-default-small-uicls-tl x-btn-default-small-icon-text-left-tl
-                '    <td class="x-frame-tl" ms-class="{{baseCls}}-tl {{baseCls}}-{{ui}}-tl" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-tl:uiCls" role="presentation"></td>',
-                '    <td class="x-frame-tc" ms-class="{{baseCls}}-tc {{baseCls}}-{{ui}}-tc" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-tc:uiCls" role="presentation"></td>',
-                '    <td class="x-frame-tr" ms-class="{{baseCls}}-tr {{baseCls}}-{{ui}}-tr" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-tr:uiCls" role="presentation"></td>',
+                '    <td class="x-frame-tl" ms-class="{{baseCls}}-tl {{baseCls}}-{{ui}}-tl" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-tl:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation"></td>',
+                '    <td class="x-frame-tc" ms-class="{{baseCls}}-tc {{baseCls}}-{{ui}}-tc" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-tc:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation"></td>',
+                '    <td class="x-frame-tr" ms-class="{{baseCls}}-tr {{baseCls}}-{{ui}}-tr" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-tr:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation"></td>',
                 '  </tr>',
                 '  <tr>',
-                '    <td class="x-frame-ml" ms-class="{{baseCls}}-ml {{baseCls}}-{{ui}}-ml" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-ml:uiCls" role="presentation"></td>',
-                '    <td class="x-frame-mc" ms-class="{{baseCls}}-mc {{baseCls}}-{{ui}}-mc" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-mc:uiCls" role="presentation">',
-                '{${$contentTemplate$}$}</td>',
+                '    <td class="x-frame-ml" ms-class="{{baseCls}}-ml {{baseCls}}-{{ui}}-ml" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-ml:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation"></td>',
+                '    <td class="x-frame-mc" ms-class="{{baseCls}}-mc {{baseCls}}-{{ui}}-mc" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-mc:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation">',
+                '{${$contentTemplate$}$}',
                 '    </td>',
-                '    <td class="x-frame-mr" ms-class="{{baseCls}}-mr {{baseCls}}-{{ui}}-mr" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-mr:uiCls" role="presentation"></td>',
+                '    <td class="x-frame-mr" ms-class="{{baseCls}}-mr {{baseCls}}-{{ui}}-mr" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-mr:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation"></td>',
                 '  </tr>',
                 '  <tr>',
-                '    <td class="x-frame-bl" ms-class="{{baseCls}}-bl {{baseCls}}-{{ui}}-bl" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-bl:uiCls" role="presentation"></td>',
-                '    <td class="x-frame-bc" ms-class="{{baseCls}}-bc {{baseCls}}-{{ui}}-bc" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-bc:uiCls" role="presentation"></td>',
-                '    <td class="x-frame-br" ms-class="{{baseCls}}-br {{baseCls}}-{{ui}}-br" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-br:uiCls" role="presentation"></td>',
+                '    <td class="x-frame-bl" ms-class="{{baseCls}}-bl {{baseCls}}-{{ui}}-bl" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-bl:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation"></td>',
+                '    <td class="x-frame-bc" ms-class="{{baseCls}}-bc {{baseCls}}-{{ui}}-bc" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-bc:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation"></td>',
+                '    <td class="x-frame-br" ms-class="{{baseCls}}-br {{baseCls}}-{{ui}}-br" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-br:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation"></td>',
                 '  </tr>',
                 '</tbody></table>'
             ],
@@ -138,7 +142,7 @@ define(['avalon', 'bizui.menu'], function (avalon) {
             '<span ms-class="{{baseCls}}-icon " ms-css-background-image="{{icon!=\'\'?\'url(\'+icon+\')\':\'\'}}"></span>' +
             '</button></em>'
         template = renderTpl.join('')
-        if (bizui.isIE7m) {
+        if (bizui.isIE8m) {
             template = frameTableTpl.join('').replace('{${$contentTemplate$}$}', renderTpl.join(''))
         }
         if (menu) {
@@ -153,6 +157,7 @@ define(['avalon', 'bizui.menu'], function (avalon) {
                 $element.attr('ms-click-1', 'showMenu')
             }
             $element
+                .attr('ms-click', handler)
                 .attr('ms-class', '{{baseCls}}')
                 .attr('ms-class-0', 'x-noicon {{baseCls}}-noicon {{baseCls}}-{{ui}}-noicon:!icon')
                 .attr('ms-class-1', '{{baseCls}}-{{ui}}')

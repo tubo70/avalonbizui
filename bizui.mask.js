@@ -23,7 +23,7 @@ define(['avalon'], function (avalon) {
             zIndex: options.zIndex
         }
         if (maskModel) {
-            maskModel.newMask(mask)
+            maskModel.newMask.apply(maskModel,[mask])
             element.parentNode.removeChild(element)
             return maskModel
         }
@@ -94,7 +94,7 @@ define(['avalon'], function (avalon) {
                 avalon.unbind(window, 'resize', me.windowResize)
             }
         })
-        vmodel.newMask(mask)
+        vmodel.newMask.apply(vmodel,[mask])
         bizui.currentMask = vmodel
         avalon.nextTick(function () {
             vmodel.width = avalon(window).width()

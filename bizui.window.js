@@ -60,7 +60,7 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'bizui.button', 'bizui.toolbar', '
             vm.$watch('hidden', function (newValue, oldValue) {
                 if (newValue === true && vm.modal === true) {
                     if (bizui.currentMask) {
-                        bizui.currentMask.removeMask()
+                        bizui.currentMask.removeMask.apply(bizui.currentMask)
                     }
                 }
             })

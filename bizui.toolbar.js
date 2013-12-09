@@ -1,7 +1,7 @@
 /**
  * Created by quan on 13-12-6.
  */
-define(['avalon'], function (avalon) {
+define(['avalon','bizui.panel'], function (avalon) {
         bizui.vmodels['toolbar'] = avalon.mix(true, {}, bizui.vmodels['panel'], {
             $bizuiType: 'toolbar',
             enableOverflow: false,//Todo Configure true to make the toolbar provide a button which activates a dropdown Menu to show items which overflow the Toolbar's width.

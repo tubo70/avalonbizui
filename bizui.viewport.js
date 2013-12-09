@@ -177,7 +177,7 @@ define(["avalon", "avalon.draggable"], function (avalon) {
                 if (child) {
                     var childModel = avalon.vmodels[child.$bizuiId]
                     if (childModel && childModel.collapsible === true && childModel.collapse) {
-                        var collapsed = childModel.collapse()
+                        var collapsed = childModel.collapse.apply(childModel)
                         child.$width = childModel.$collapseWidth
                         child.$height = childModel.$collapseHeight
                         if (region in bizui.eastWestRegion) {
