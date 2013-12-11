@@ -465,7 +465,7 @@
         avalon(bd).addClass(cls.join(' '));
         return true;
     };
-    //renderable
+    //frameHelper
     bizui.frameHelper = {}
     avalon.mix(bizui.frameHelper, {
         getClass: function (frameCls, baseCls, ui, uiCls, suffix, dynamicCls) {
@@ -485,15 +485,16 @@
                 cls[cls.length] = baseCls + '-' + ui + '-' + suffix
                 if (uiCls) {
                     for (var i = 0, il = uiCls.length; i < il; i++) {
-                        cls[cls.length] = baseCls + '-'+ui + '-' + uiCls[i] + '-' + suffix
+                        cls[cls.length] = baseCls + '-' + ui + '-' + uiCls[i] + '-' + suffix
                     }
                 }
             }
             return cls.join(' ')
         },
-        getOneSide: function (out, frameCls, baseCls, ui, uiCls, side, idSuffix, dynamic, extraAttrs) {
-            var cls = this.getClass(frameCls, baseCls, ui, uiCls, side.toLowerCase(), dynamic)
-            out[out.length] = '<div ms-attr-id="{{bizuiId}}' + idSuffix + side + '" '
+        getOneSide: function (out, frameCls, baseCls, ui, uiCls, side, idSuffix, dynamic, extraAttrs, isTable) {
+            var cls = this.getClass(frameCls, baseCls, ui, uiCls, side.toLowerCase(), dynamic),
+                tag = isTable ? 'td' : 'div'
+            out[out.length] = '<' + tag + ' ms-attr-id="{{bizuiId}}' + idSuffix + side + '" '
             if (dynamic === true) {
                 out[out.length] = 'ms-class="' + cls + '"'
             } else {
@@ -511,108 +512,53 @@
                 frameCls = config.frameCls, baseCls = config.baseCls,
                 ui = config.ui, uiCls = config.uiCls,
                 top = config.top, left = config.left, bottom = config.bottom, right = config.right,
-                extraAttrs = config.extraAttrs
+                extraAttrs = config.extraAttrs,
+                table = config.table === true ? 1 : 0,
+                tdCloseTags = ['', '</td>'], divCloseTage = ['</div>', ''],
+                trOpenTags = ['', '<tr>'], trCloseTags = ['', '</tr>'],
+                me = this
+            if (table) {
+                tpl[tpl.length] = '<table class="x-table-plain" cellpadding="0"><tbody>'
+            }
+            function oneLine(position, attrs) {
+                attrs = attrs || ''
+                tpl[tpl.length] = trOpenTags[table]
+                if (left) {
+                    me.getOneSide(tpl, frameCls, baseCls, ui, uiCls, position + 'L', idSuffix, dynamic, '', table)
+                    tpl[tpl.length] = tdCloseTags[table]
+                }
+                if (right && table === 0) {
+                    me.getOneSide(tpl, frameCls, baseCls, ui, uiCls, position + 'R', idSuffix, dynamic, '', table)
+                }
+                me.getOneSide(tpl, frameCls, baseCls, ui, uiCls, position + 'C', idSuffix, dynamic, attrs, table)
+                if (position === 'M') {
+                    tpl[tpl.length] = '{{frameContent}}'
+                }
+                tpl[tpl.length] = tdCloseTags[table]
+                tpl[tpl.length] = divCloseTage[table]
+                if (right && table === 1) {
+                    me.getOneSide(tpl, frameCls, baseCls, ui, uiCls, position + 'R', idSuffix, dynamic, '', table)
+                    tpl[tpl.length] = tdCloseTags[table]
+                }
+                tpl[tpl.length] = trCloseTags[table]
+                if (right) {
+                    tpl[tpl.length] = divCloseTage[table]
+                }
+                if (left) {
+                    tpl[tpl.length] = divCloseTage[table]
+                }
+            }
             if (top) {
-                if (left) {
-                    this.getOneSide(tpl, frameCls, baseCls, ui, uiCls, 'TL',idSuffix, dynamic)
-                }
-                if (right) {
-                    this.getOneSide(tpl, frameCls, baseCls, ui, uiCls, 'TR',idSuffix, dynamic)
-                }
-                this.getOneSide(tpl, frameCls, baseCls, ui, uiCls, 'TC',idSuffix, dynamic)
-                tpl[tpl.length] = '</div>'
-                if (right) {
-                    tpl[tpl.length] = '</div>'
-                }
-                if (left) {
-                    tpl[tpl.length] = '</div>'
-                }
+                oneLine('T')
             }
-            if (left) {
-                this.getOneSide(tpl, frameCls, baseCls, ui, uiCls, 'ML',idSuffix, dynamic)
-            }
-            if (right) {
-                this.getOneSide(tpl, frameCls, baseCls, ui, uiCls, 'MR',idSuffix, dynamic)
-            }
-            this.getOneSide(tpl, frameCls, baseCls, ui, uiCls, 'MC',idSuffix, dynamic, extraAttrs)
-            tpl[tpl.length] = '{{frameContent}}'
-            tpl[tpl.length] = '</div>'
-            if (right) {
-                tpl[tpl.length] = '</div>'
-            }
-            if (left) {
-                tpl[tpl.length] = '</div>'
-            }
+            oneLine('M', extraAttrs)
             if (bottom) {
-                if (left) {
-                    this.getOneSide(tpl, frameCls, baseCls, ui, uiCls, 'BL',idSuffix, dynamic)
-                }
-                if (right) {
-                    this.getOneSide(tpl, frameCls, baseCls, ui, uiCls, 'BR',idSuffix, dynamic)
-                }
-                this.getOneSide(tpl, frameCls, baseCls, ui, uiCls, 'BC',idSuffix, dynamic)
-                tpl[tpl.length] = '</div>'
-                if (right) {
-                    tpl[tpl.length] = '</div>'
-                }
-                if (left) {
-                    tpl[tpl.length] = '</div>'
-                }
+                oneLine('B')
+            }
+            if (table) {
+                tpl[tpl.length] = '</tbody></table>'
             }
             return tpl.join(' ')
-            var frameTpl = [
-                    '{%this.renderDockedItems(out,values,0);%}',
-                    '<tpl if="top">',
-                    '<tpl if="left"><div id="{fgid}TL" class="{frameCls}-tl {baseCls}-tl {baseCls}-{ui}-tl<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-tl</tpl>{frameElCls}" role="presentation"></tpl>',
-                    '<tpl if="right"><div id="{fgid}TR" class="{frameCls}-tr {baseCls}-tr {baseCls}-{ui}-tr<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-tr</tpl>{frameElCls}" role="presentation"></tpl>',
-                    '<div id="{fgid}TC" class="{frameCls}-tc {baseCls}-tc {baseCls}-{ui}-tc<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-tc</tpl>{frameElCls}" role="presentation"></div>',
-                    '<tpl if="right"></div></tpl>',
-                    '<tpl if="left"></div></tpl>',
-                    '</tpl>',
-                    '<tpl if="left"><div id="{fgid}ML" class="{frameCls}-ml {baseCls}-ml {baseCls}-{ui}-ml<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-ml</tpl>{frameElCls}" role="presentation"></tpl>',
-                    '<tpl if="right"><div id="{fgid}MR" class="{frameCls}-mr {baseCls}-mr {baseCls}-{ui}-mr<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-mr</tpl>{frameElCls}" role="presentation"></tpl>',
-                    '<div id="{fgid}MC" class="{frameCls}-mc {baseCls}-mc {baseCls}-{ui}-mc<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-mc</tpl>{frameElCls}" role="presentation">',
-                    '{%this.applyRenderTpl(out, values)%}',
-                    '</div>',
-                    '<tpl if="right"></div></tpl>',
-                    '<tpl if="left"></div></tpl>',
-                    '<tpl if="bottom">',
-                    '<tpl if="left"><div id="{fgid}BL" class="{frameCls}-bl {baseCls}-bl {baseCls}-{ui}-bl<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-bl</tpl>{frameElCls}" role="presentation"></tpl>',
-                    '<tpl if="right"><div id="{fgid}BR" class="{frameCls}-br {baseCls}-br {baseCls}-{ui}-br<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-br</tpl>{frameElCls}" role="presentation"></tpl>',
-                    '<div id="{fgid}BC" class="{frameCls}-bc {baseCls}-bc {baseCls}-{ui}-bc<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-bc</tpl>{frameElCls}" role="presentation"></div>',
-                    '<tpl if="right"></div></tpl>',
-                    '<tpl if="left"></div></tpl>',
-                    '</tpl>',
-                    '{%this.renderDockedItems(out,values,1);%}'
-                ],
-
-                frameTableTpl = [
-                    '{%this.renderDockedItems(out,values,0);%}',
-                    '<table class="', Ext.plainTableCls, '" cellpadding="0"><tbody>',
-                    '<tpl if="top">',
-                    '<tr>',
-                    '<tpl if="left"><td id="{fgid}TL" class="{frameCls}-tl {baseCls}-tl {baseCls}-{ui}-tl<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-tl</tpl>{frameElCls}" role="presentation"></td></tpl>',
-                    '<td id="{fgid}TC" class="{frameCls}-tc {baseCls}-tc {baseCls}-{ui}-tc<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-tc</tpl>{frameElCls}" role="presentation"></td>',
-                    '<tpl if="right"><td id="{fgid}TR" class="{frameCls}-tr {baseCls}-tr {baseCls}-{ui}-tr<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-tr</tpl>{frameElCls}" role="presentation"></td></tpl>',
-                    '</tr>',
-                    '</tpl>',
-                    '<tr>',
-                    '<tpl if="left"><td id="{fgid}ML" class="{frameCls}-ml {baseCls}-ml {baseCls}-{ui}-ml<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-ml</tpl>{frameElCls}" role="presentation"></td></tpl>',
-                    '<td id="{fgid}MC" class="{frameCls}-mc {baseCls}-mc {baseCls}-{ui}-mc<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-mc</tpl>{frameElCls}" role="presentation">',
-                    '{%this.applyRenderTpl(out, values)%}',
-                    '</td>',
-                    '<tpl if="right"><td id="{fgid}MR" class="{frameCls}-mr {baseCls}-mr {baseCls}-{ui}-mr<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-mr</tpl>{frameElCls}" role="presentation"></td></tpl>',
-                    '</tr>',
-                    '<tpl if="bottom">',
-                    '<tr>',
-                    '<tpl if="left"><td id="{fgid}BL" class="{frameCls}-bl {baseCls}-bl {baseCls}-{ui}-bl<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-bl</tpl>{frameElCls}" role="presentation"></td></tpl>',
-                    '<td id="{fgid}BC" class="{frameCls}-bc {baseCls}-bc {baseCls}-{ui}-bc<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-bc</tpl>{frameElCls}" role="presentation"></td>',
-                    '<tpl if="right"><td id="{fgid}BR" class="{frameCls}-br {baseCls}-br {baseCls}-{ui}-br<tpl for="uiCls"> {parent.baseCls}-{parent.ui}-{.}-br</tpl>{frameElCls}" role="presentation"></td></tpl>',
-                    '</tr>',
-                    '</tpl>',
-                    '</tbody></table>',
-                    '{%this.renderDockedItems(out,values,1);%}'
-                ]
         }
     })
     avalon.ready(function () {

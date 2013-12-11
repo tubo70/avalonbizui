@@ -69,8 +69,9 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'bizui.button', 'bizui.toolbar', '
             })
             vm.$watch('height', function (newValue, oldValue) {
                 var fbarModel = avalon.vmodels[vmodel.$fbarId]
+                var adjustHeight = bizui.isIE ? 6 : 8
                 if (fbarModel) {
-                    fbarModel.top = newValue - vmodel.footerHeight - 8
+                    fbarModel.top = newValue - vmodel.footerHeight - adjustHeight
 
                 }
             })
@@ -199,11 +200,11 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'bizui.button', 'bizui.toolbar', '
                 bottom: false,
                 extraAttrs: ' ms-css-width="width-12"'
             })
-            var bodyUiCls =[]
-            if(options.closable){
+            var bodyUiCls = []
+            if (options.closable) {
                 bodyUiCls.push('closeable')
             }
-            if(options.resizable){
+            if (options.resizable) {
                 bodyUiCls.push('resizable')
             }
             bodyIeTpl = bizui.frameHelper.getFrameTpl({
@@ -242,31 +243,22 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'bizui.button', 'bizui.toolbar', '
             '<div ms-attr-id="{{bizuiId}}-body" class="x-window-body x-window-body-default x-layout-fit"',
             '  ms-class-0="x-closable x-window-body-closable x-window-body-default-closable:closable"',
             '  ms-class-1="x-resizable x-window-body-resizable x-window-body-default-resizable:resizable"',
-            '  style="overflow: auto; left: 0px;' + (bizui.isIE8m ? 'position:relative;overflow:auto;' : '') + '"',
-            '  ms-css-width="width-10" ms-css-height="{{height<=(headerHeight+footerHeight+9)?\'\':height-(headerHeight+footerHeight+9)}}"',
+            '  style="left: 0px;' + (bizui.isIE8m ? 'position:relative;' : '') + '"',
+            '  ms-css-width="width-10" ms-css-height="{{height<=(footerHeight+9)?\'\':height-(footerHeight+9)}}"',
             '  ms-css-overflow="{{autoScroll?\'auto\':\'\'}}">',
             element.innerHTML,
             '</div>'
         ]
         var bodyTemplate = bodyTpl.join(' ')
         if (bizui.isIE8m) {
-            //headerTemplate = headerIETpl.join(' ').replace('{${$headerContent$}$}', headerTemplate)
             headerTemplate = headerIETpl.replace('{{frameContent}}', headerTemplate)
-            bodyTemplate = bodyIeTpl.replace('{{frameContent}}',bodyTemplate)
+            bodyTemplate = bodyIeTpl.replace('{{frameContent}}', bodyTemplate)
         }
         var windowTemplate = '<div ms-attr-id="{{bizuiId}}_header" class="x-window-header x-header x-header-horizontal x-docked x-unselectable x-window-header-default x-horizontal x-window-header-horizontal x-window-header-default-horizontal x-top x-window-header-top x-window-header-default-top x-docked-top x-window-header-docked-top x-window-header-default-docked-top"' +
             ' ms-class="x-header-draggable:draggable"' +
             ' style="' + headerLeftTop + '" ms-css-width="width">' +
             headerTemplate +
             '</div>' +
-            //'<div class="x-window-header-body x-window-header-body-default x-window-header-body-horizontal x-window-header-body-default-horizontal x-window-header-body-top x-window-header-body-default-top x-window-header-body-docked-top x-window-header-body-default-docked-top x-window-header-body-default-horizontal x-window-header-body-default-top x-window-header-body-default-docked-top x-box-layout-ct" ms-css-width="width-12">' +
-            //'<div class="x-box-inner " role="presentation" ms-css-width="width-12" style="height: 17px;">' +
-            //'<div style="position: absolute; left: 0px; top: 0px; height: 1px;" ms-css-width="width-12">' +
-            //'<div class="x-component x-window-header-text-container x-box-item x-component-default"' +
-            //' style="text-align: left; left: 0px; top: 0px; margin: 0px;" ms-css-width="width-29">' +
-            //'<span class="x-window-header-text x-window-header-text-default">{{title}}</span></div>' +
-            //'<div   style="position:absolute !important;" ms-css-left="width-12-16"><div ms-bizui="tool" data-tool-handler="close" data-tool-type="close"></div></div></div></div></div></div>' +
-            //'<div class="x-window-body x-window-body-default x-closable x-window-body-closable x-window-body-default-closable x-layout-fit" ms-css-width="width-10" ms-css-height="{{height<=(headerHeight+footerHeight+9)?\'\':height-(headerHeight+footerHeight+9)}}" ms-css-overflow="{{autoScroll?\'auto\':\'\'}}" style="left: 0px; top: 20px;">' + element.innerHTML + '</div>' +
             bodyTemplate +
             fbar.outerHTML +
             '<div ms-if="resizable" data-position="north" ms-draggable="' + data.windowId + '" data-drag-drag="resizeDrag" data-drag-stop="resizeDragStop" data-drag-axis="y" class="x-resizable-handle x-window-handle x-resizable-handle-north x-unselectable"></div>' +
@@ -323,471 +315,19 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'bizui.button', 'bizui.toolbar', '
                     avalon.scan(resizeElement, [vmodel].concat(vmodels))
                 }
             })
-            //if(fbar){
-            //    avalon.scan(fbar,[vmodel].concat(vmodels))
-            // }
             avalon.nextTick(function () {
+                var rect = element.getBoundingClientRect()
                 if (vmodel.width <= 0) {
-                    vmodel.width = $element.width()
+                    vmodel.width = rect.right - rect.left + 1
                 }
                 if (vmodel.height <= 0) {
-                    vmodel.height = $element.height() + vmodel.headerHeight + vmodel.footerHeight
+                    vmodel.height = rect.bottom - rect.top + 1 + vmodel.footerHeight
                 }
+                console.log(rect)
+                console.log(vmodel.height)
             })
         })
         return vmodel
     }
     avalon.bizui['window'].defaults = {}
 })
-/*
- function anonymous(Ext) {
- var fm = Ext.util.Format, ts = Object.prototype.toString;
- var validTypes = {string: 1, number: 1, boolean: 1};
- return function (out, values, parent, xindex, xcount, xkey) {
- var c0 = values, a0 = ts.call(c0) === "[object Array]", p0 = parent, n0 = xcount, i0 = xindex, k0, v;
- this.renderDockedItems(out, values, 0);
- if (values['top']) {
- if (values['left']) {
- out[out.length] = '<div id="'
- if ((v = values['fgid']) != null) out[out.length] = v + ''
- out[out.length] = 'TL" class="'
- if ((v = values['frameCls']) != null) out[out.length] = v + ''
- out[out.length] = '-tl '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-tl '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = values['ui']) != null) out[out.length] = v + ''
- out[out.length] = '-tl'
- var i1 = 0, n1 = 0, c1 = values['uiCls'], a1 = ts.call(c1) === "[object Array]", r1 = values, p1, k1;
- p1 = parent = a0 ? c0[i0] : c0
- if (c1) {
- if (a1) {
- n1 = c1.length;
- } else if (c1.isMixedCollection) {
- c1 = c1.items;
- n1 = c1.length;
- } else if (c1.isStore) {
- c1 = c1.data.items;
- n1 = c1.length;
- } else {
- c1 = [c1];
- n1 = 1;
- }
- }
- for (xcount = n1; i1 < n1; ++i1) {
- values = c1[i1]
- xindex = i1 + 1
- out[out.length] = ' '
- if ((v = parent.baseCls) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = parent.ui) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = validTypes[typeof values] || ts.call(values) === "[object Date]" ? values : "") != null) out[out.length] = v + ''
- out[out.length] = '-tl'
- }
- parent = p0;
- values = r1;
- xcount = n0;
- xindex = i0 + 1;
- xkey = k0;
- if ((v = values['frameElCls']) != null) out[out.length] = v + ''
- out[out.length] = '" role="presentation">'
- }
- if (values['right']) {
- out[out.length] = '<div id="'
- if ((v = values['fgid']) != null) out[out.length] = v + ''
- out[out.length] = 'TR" class="'
- if ((v = values['frameCls']) != null) out[out.length] = v + ''
- out[out.length] = '-tr '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-tr '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = values['ui']) != null) out[out.length] = v + ''
- out[out.length] = '-tr'
- i1 = 0, n1 = 0, c1 = values['uiCls'], a1 = ts.call(c1) === "[object Array]", r1 = values, p1, k1;
- p1 = parent = a0 ? c0[i0] : c0
- if (c1) {
- if (a1) {
- n1 = c1.length;
- } else if (c1.isMixedCollection) {
- c1 = c1.items;
- n1 = c1.length;
- } else if (c1.isStore) {
- c1 = c1.data.items;
- n1 = c1.length;
- } else {
- c1 = [c1];
- n1 = 1;
- }
- }
- for (xcount = n1; i1 < n1; ++i1) {
- values = c1[i1]
- xindex = i1 + 1
- out[out.length] = ' '
- if ((v = parent.baseCls) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = parent.ui) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = validTypes[typeof values] || ts.call(values) === "[object Date]" ? values : "") != null) out[out.length] = v + ''
- out[out.length] = '-tr'
- }
- parent = p0;
- values = r1;
- xcount = n0;
- xindex = i0 + 1;
- xkey = k0;
- if ((v = values['frameElCls']) != null) out[out.length] = v + ''
- out[out.length] = '" role="presentation">'
- }
- out[out.length] = '<div id="'
- if ((v = values['fgid']) != null) out[out.length] = v + ''
- out[out.length] = 'TC" class="'
- if ((v = values['frameCls']) != null) out[out.length] = v + ''
- out[out.length] = '-tc '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-tc '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = values['ui']) != null) out[out.length] = v + ''
- out[out.length] = '-tc'
- i1 = 0, n1 = 0, c1 = values['uiCls'], a1 = ts.call(c1) === "[object Array]", r1 = values, p1, k1;
- p1 = parent = a0 ? c0[i0] : c0
- if (c1) {
- if (a1) {
- n1 = c1.length;
- } else if (c1.isMixedCollection) {
- c1 = c1.items;
- n1 = c1.length;
- } else if (c1.isStore) {
- c1 = c1.data.items;
- n1 = c1.length;
- } else {
- c1 = [c1];
- n1 = 1;
- }
- }
- for (xcount = n1; i1 < n1; ++i1) {
- values = c1[i1]
- xindex = i1 + 1
- out[out.length] = ' '
- if ((v = parent.baseCls) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = parent.ui) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = validTypes[typeof values] || ts.call(values) === "[object Date]" ? values : "") != null) out[out.length] = v + ''
- out[out.length] = '-tc'
- }
- parent = p0;
- values = r1;
- xcount = n0;
- xindex = i0 + 1;
- xkey = k0;
- if ((v = values['frameElCls']) != null) out[out.length] = v + ''
- out[out.length] = '" role="presentation"></div>'
- if (values['right']) {
- out[out.length] = '</div>'
- }
- if (values['left']) {
- out[out.length] = '</div>'
- }
- }
- if (values['left']) {
- out[out.length] = '<div id="'
- if ((v = values['fgid']) != null) out[out.length] = v + ''
- out[out.length] = 'ML" class="'
- if ((v = values['frameCls']) != null) out[out.length] = v + ''
- out[out.length] = '-ml '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-ml '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = values['ui']) != null) out[out.length] = v + ''
- out[out.length] = '-ml'
- i1 = 0, n1 = 0, c1 = values['uiCls'], a1 = ts.call(c1) === "[object Array]", r1 = values, p1, k1;
- p1 = parent = a0 ? c0[i0] : c0
- if (c1) {
- if (a1) {
- n1 = c1.length;
- } else if (c1.isMixedCollection) {
- c1 = c1.items;
- n1 = c1.length;
- } else if (c1.isStore) {
- c1 = c1.data.items;
- n1 = c1.length;
- } else {
- c1 = [c1];
- n1 = 1;
- }
- }
- for (xcount = n1; i1 < n1; ++i1) {
- values = c1[i1]
- xindex = i1 + 1
- out[out.length] = ' '
- if ((v = parent.baseCls) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = parent.ui) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = validTypes[typeof values] || ts.call(values) === "[object Date]" ? values : "") != null) out[out.length] = v + ''
- out[out.length] = '-ml'
- }
- parent = p0;
- values = r1;
- xcount = n0;
- xindex = i0 + 1;
- xkey = k0;
- if ((v = values['frameElCls']) != null) out[out.length] = v + ''
- out[out.length] = '" role="presentation">'
- }
- if (values['right']) {
- out[out.length] = '<div id="'
- if ((v = values['fgid']) != null) out[out.length] = v + ''
- out[out.length] = 'MR" class="'
- if ((v = values['frameCls']) != null) out[out.length] = v + ''
- out[out.length] = '-mr '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-mr '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = values['ui']) != null) out[out.length] = v + ''
- out[out.length] = '-mr'
- i1 = 0, n1 = 0, c1 = values['uiCls'], a1 = ts.call(c1) === "[object Array]", r1 = values, p1, k1;
- p1 = parent = a0 ? c0[i0] : c0
- if (c1) {
- if (a1) {
- n1 = c1.length;
- } else if (c1.isMixedCollection) {
- c1 = c1.items;
- n1 = c1.length;
- } else if (c1.isStore) {
- c1 = c1.data.items;
- n1 = c1.length;
- } else {
- c1 = [c1];
- n1 = 1;
- }
- }
- for (xcount = n1; i1 < n1; ++i1) {
- values = c1[i1]
- xindex = i1 + 1
- out[out.length] = ' '
- if ((v = parent.baseCls) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = parent.ui) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = validTypes[typeof values] || ts.call(values) === "[object Date]" ? values : "") != null) out[out.length] = v + ''
- out[out.length] = '-mr'
- }
- parent = p0;
- values = r1;
- xcount = n0;
- xindex = i0 + 1;
- xkey = k0;
- if ((v = values['frameElCls']) != null) out[out.length] = v + ''
- out[out.length] = '" role="presentation">'
- }
- out[out.length] = '<div id="'
- if ((v = values['fgid']) != null) out[out.length] = v + ''
- out[out.length] = 'MC" class="'
- if ((v = values['frameCls']) != null) out[out.length] = v + ''
- out[out.length] = '-mc '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-mc '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = values['ui']) != null) out[out.length] = v + ''
- out[out.length] = '-mc'
- i1 = 0, n1 = 0, c1 = values['uiCls'], a1 = ts.call(c1) === "[object Array]", r1 = values, p1, k1;
- p1 = parent = a0 ? c0[i0] : c0
- if (c1) {
- if (a1) {
- n1 = c1.length;
- } else if (c1.isMixedCollection) {
- c1 = c1.items;
- n1 = c1.length;
- } else if (c1.isStore) {
- c1 = c1.data.items;
- n1 = c1.length;
- } else {
- c1 = [c1];
- n1 = 1;
- }
- }
- for (xcount = n1; i1 < n1; ++i1) {
- values = c1[i1]
- xindex = i1 + 1
- out[out.length] = ' '
- if ((v = parent.baseCls) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = parent.ui) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = validTypes[typeof values] || ts.call(values) === "[object Date]" ? values : "") != null) out[out.length] = v + ''
- out[out.length] = '-mc'
- }
- parent = p0;
- values = r1;
- xcount = n0;
- xindex = i0 + 1;
- xkey = k0;
- if ((v = values['frameElCls']) != null) out[out.length] = v + ''
- out[out.length] = '" role="presentation">'
- this.applyRenderTpl(out, values)
- out[out.length] = '</div>'
- if (values['right']) {
- out[out.length] = '</div>'
- }
- if (values['left']) {
- out[out.length] = '</div>'
- }
- if (values['bottom']) {
- if (values['left']) {
- out[out.length] = '<div id="'
- if ((v = values['fgid']) != null) out[out.length] = v + ''
- out[out.length] = 'BL" class="'
- if ((v = values['frameCls']) != null) out[out.length] = v + ''
- out[out.length] = '-bl '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-bl '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = values['ui']) != null) out[out.length] = v + ''
- out[out.length] = '-bl'
- i1 = 0, n1 = 0, c1 = values['uiCls'], a1 = ts.call(c1) === "[object Array]", r1 = values, p1, k1;
- p1 = parent = a0 ? c0[i0] : c0
- if (c1) {
- if (a1) {
- n1 = c1.length;
- } else if (c1.isMixedCollection) {
- c1 = c1.items;
- n1 = c1.length;
- } else if (c1.isStore) {
- c1 = c1.data.items;
- n1 = c1.length;
- } else {
- c1 = [c1];
- n1 = 1;
- }
- }
- for (xcount = n1; i1 < n1; ++i1) {
- values = c1[i1]
- xindex = i1 + 1
- out[out.length] = ' '
- if ((v = parent.baseCls) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = parent.ui) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = validTypes[typeof values] || ts.call(values) === "[object Date]" ? values : "") != null) out[out.length] = v + ''
- out[out.length] = '-bl'
- }
- parent = p0;
- values = r1;
- xcount = n0;
- xindex = i0 + 1;
- xkey = k0;
- if ((v = values['frameElCls']) != null) out[out.length] = v + ''
- out[out.length] = '" role="presentation">'
- }
- if (values['right']) {
- out[out.length] = '<div id="'
- if ((v = values['fgid']) != null) out[out.length] = v + ''
- out[out.length] = 'BR" class="'
- if ((v = values['frameCls']) != null) out[out.length] = v + ''
- out[out.length] = '-br '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-br '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = values['ui']) != null) out[out.length] = v + ''
- out[out.length] = '-br'
- i1 = 0, n1 = 0, c1 = values['uiCls'], a1 = ts.call(c1) === "[object Array]", r1 = values, p1, k1;
- p1 = parent = a0 ? c0[i0] : c0
- if (c1) {
- if (a1) {
- n1 = c1.length;
- } else if (c1.isMixedCollection) {
- c1 = c1.items;
- n1 = c1.length;
- } else if (c1.isStore) {
- c1 = c1.data.items;
- n1 = c1.length;
- } else {
- c1 = [c1];
- n1 = 1;
- }
- }
- for (xcount = n1; i1 < n1; ++i1) {
- values = c1[i1]
- xindex = i1 + 1
- out[out.length] = ' '
- if ((v = parent.baseCls) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = parent.ui) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = validTypes[typeof values] || ts.call(values) === "[object Date]" ? values : "") != null) out[out.length] = v + ''
- out[out.length] = '-br'
- }
- parent = p0;
- values = r1;
- xcount = n0;
- xindex = i0 + 1;
- xkey = k0;
- if ((v = values['frameElCls']) != null) out[out.length] = v + ''
- out[out.length] = '" role="presentation">'
- }
- out[out.length] = '<div id="'
- if ((v = values['fgid']) != null) out[out.length] = v + ''
- out[out.length] = 'BC" class="'
- if ((v = values['frameCls']) != null) out[out.length] = v + ''
- out[out.length] = '-bc '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-bc '
- if ((v = values['baseCls']) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = values['ui']) != null) out[out.length] = v + ''
- out[out.length] = '-bc'
- i1 = 0, n1 = 0, c1 = values['uiCls'], a1 = ts.call(c1) === "[object Array]", r1 = values, p1, k1;
- p1 = parent = a0 ? c0[i0] : c0
- if (c1) {
- if (a1) {
- n1 = c1.length;
- } else if (c1.isMixedCollection) {
- c1 = c1.items;
- n1 = c1.length;
- } else if (c1.isStore) {
- c1 = c1.data.items;
- n1 = c1.length;
- } else {
- c1 = [c1];
- n1 = 1;
- }
- }
- for (xcount = n1; i1 < n1; ++i1) {
- values = c1[i1]
- xindex = i1 + 1
- out[out.length] = ' '
- if ((v = parent.baseCls) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = parent.ui) != null) out[out.length] = v + ''
- out[out.length] = '-'
- if ((v = validTypes[typeof values] || ts.call(values) === "[object Date]" ? values : "") != null) out[out.length] = v + ''
- out[out.length] = '-bc'
- }
- parent = p0;
- values = r1;
- xcount = n0;
- xindex = i0 + 1;
- xkey = k0;
- if ((v = values['frameElCls']) != null) out[out.length] = v + ''
- out[out.length] = '" role="presentation"></div>'
- if (values['right']) {
- out[out.length] = '</div>'
- }
- if (values['left']) {
- out[out.length] = '</div>'
- }
- }
- this.renderDockedItems(out, values, 1);
-
- }
- }*/

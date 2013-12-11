@@ -3,17 +3,31 @@
  */
 define(['avalon'], function (avalon) {
     bizui.subMenuIds = []
-    avalon(window).bind('click', function () {
-        if (bizui.subMenuIds.length != 0) {
-            var menuId
-            while (menuId = bizui.subMenuIds.pop()) {
-                var menuModel = avalon.vmodels[menuId]
-                if (menuModel) {
-                    menuModel.hidden = true
+    if (bizui.isIE8m) {
+        window.onclick = function () {
+            if (bizui.subMenuIds.length != 0) {
+                var menuId
+                while (menuId = bizui.subMenuIds.pop()) {
+                    var menuModel = avalon.vmodels[menuId]
+                    if (menuModel) {
+                        menuModel.hidden = true
+                    }
                 }
             }
         }
-    })
+    } else {
+        avalon(window).bind('click', function () {
+            if (bizui.subMenuIds.length != 0) {
+                var menuId
+                while (menuId = bizui.subMenuIds.pop()) {
+                    var menuModel = avalon.vmodels[menuId]
+                    if (menuModel) {
+                        menuModel.hidden = true
+                    }
+                }
+            }
+        })
+    }
     bizui.vmodels['menu'] = avalon.mix(true, {}, bizui.containerVModel, {
         $bizuiType: 'menu',
         hidden: false,

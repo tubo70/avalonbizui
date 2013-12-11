@@ -9,12 +9,10 @@
     <script>
         require('bizui.button,bizui.toolbar', function () {
             var model = avalon.define('xxx', function (vm) {
-
+                vm.click=function(){
+                    alert('hi')
+                }
             })
-            model.click=function(){
-                alert('hi')
-            }
-            model.$model.click=model.click
             avalon.scan()
         })
     </script>
@@ -30,7 +28,7 @@
         </div>
     </div>
     <div ms-bizui="toolbaritem" data-toolbaritem-type="separator"></div>
-    <div ms-bizui="toolbaritem" data-toolbaritem-text="text1"></div>
+    <div ms-bizui="toolbaritem" data-toolbaritem-text="text1"><div class="x-clear"></div></div>
     <div ms-bizui="toolbaritem" data-toolbaritem-type="spacer" data-toolbaritem-width="50"></div>
     <div ms-bizui="toolbaritem" data-toolbaritem-text="text2"></div>
 </div>

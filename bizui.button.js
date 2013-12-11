@@ -7,9 +7,9 @@ define(['avalon', 'bizui.menu'], function (avalon) {
         scale: 'small',
         box: false,
         text: '',
+        textAlign: 'center',
         height: 22,
         buttonHeight: 16,
-        iconAlign: 'left',
         enableToggle: false,
         toggled: false,
         handler: avalon.noop,
@@ -19,6 +19,7 @@ define(['avalon', 'bizui.menu'], function (avalon) {
         ui: 'default',
         uiCls: '',
         icon: '',
+        iconAlign: 'left',
         iconCls: ''
     })
     avalon.bizui['button'] = function (element, data, vmodels) {
@@ -80,7 +81,7 @@ define(['avalon', 'bizui.menu'], function (avalon) {
                     var menuModel = avalon.vmodels[vmodel.$menuId]
                     if (menuModel) {
                         menuModel.left = e.pageX - e.offsetX
-                        menuModel.top = e.pageY + vmodel.height - e.offsetY + {small: 3, medium: 4, large: 5}[vmodel.scale]
+                        menuModel.top = e.pageY + vmodel.height - e.offsetY - {small: 3, medium: 4, large: 5}[vmodel.scale]
                         menuModel.hidden = !menuModel.hidden
                         menuModel.$watch('hidden', function (newValue) {
                             if (newValue === true) {
@@ -95,55 +96,51 @@ define(['avalon', 'bizui.menu'], function (avalon) {
                 }
             }
         })
-
-        var frameTableTpl = [
-                '<table class="x-table-plain" cellpadding="0"><tbody>',
-                '  <tr>',//x-frame-tl x-btn-tl x-btn-default-small-tl x-btn-default-small-uicls-tl x-btn-default-small-icon-text-left-tl
-                '    <td class="x-frame-tl" ms-class="{{baseCls}}-tl {{baseCls}}-{{ui}}-tl" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-tl:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation"></td>',
-                '    <td class="x-frame-tc" ms-class="{{baseCls}}-tc {{baseCls}}-{{ui}}-tc" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-tc:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation"></td>',
-                '    <td class="x-frame-tr" ms-class="{{baseCls}}-tr {{baseCls}}-{{ui}}-tr" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-tr:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation"></td>',
-                '  </tr>',
-                '  <tr>',
-                '    <td class="x-frame-ml" ms-class="{{baseCls}}-ml {{baseCls}}-{{ui}}-ml" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-ml:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation"></td>',
-                '    <td class="x-frame-mc" ms-class="{{baseCls}}-mc {{baseCls}}-{{ui}}-mc" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-mc:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation">',
-                '{${$contentTemplate$}$}',
-                '    </td>',
-                '    <td class="x-frame-mr" ms-class="{{baseCls}}-mr {{baseCls}}-{{ui}}-mr" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-mr:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation"></td>',
-                '  </tr>',
-                '  <tr>',
-                '    <td class="x-frame-bl" ms-class="{{baseCls}}-bl {{baseCls}}-{{ui}}-bl" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-bl:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation"></td>',
-                '    <td class="x-frame-bc" ms-class="{{baseCls}}-bc {{baseCls}}-{{ui}}-bc" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-bc:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation"></td>',
-                '    <td class="x-frame-br" ms-class="{{baseCls}}-br {{baseCls}}-{{ui}}-br" ms-class-1="{{baseCls}}-{{ui}}-{{uiCls}}-br:uiCls" ms-class-2="{{baseCls}}-{{ui}}-noicon-tl:!icon" ms-class-3="{{baseCls}}-{{ui}}-icon-text-left-tl:icon" role="presentation"></td>',
-                '  </tr>',
-                '</tbody></table>'
-            ],
-            renderTpl = [
-                '<span  ms-class="{{baseCls}}-wrap" ms-class-0="{{baseCls}}-arrow {{baseCls}}-arrow-{{arrowAlign}}:split" unselectable="on">',
-                '  <span ms-class="{{baseCls}}-button">',
-                '    <span ms-class="{{baseCls}}-inner {innerCls}"  unselectable="on">',
-                '      {{text}}',
-                '    </span>',
-                '    <span role="img" ms-class="{{baseCls}}-icon-el {{iconCls}}" unselectable="on" ms-css-background-image="{{icon!=\'\'?\'url(\'+icon+\')\':\'\'}}">',
-                //'<tpl if="glyph">&#{glyph};</tpl><tpl if="iconCls || iconUrl">&#160;</tpl>',
-                '    </span>',
-                '  </span>',
-                '</span>',
-                // if "closable" (tab) add a close element icon
-                //'<tpl if="closable">',
-                //'<span id="{id}-closeEl" class="{baseCls}-close-btn" title="{closeText}" tabIndex="0"></span>',
-                //'</tpl>'
-            ]
+        var frameTableTpl
+        if (bizui.isIE8m) {
+            var uiCls = []
+            if (options.icon) {
+                uiCls.push('icon-text-' + options.iconAlign)
+            } else {
+                uiCls.push('noicon')
+            }
+            frameTableTpl = bizui.frameHelper.getFrameTpl({
+                frameCls: 'x-frame',
+                baseCls: options.baseCls,
+                ui: options.ui,
+                uiCls: uiCls,
+                dynamic: false,
+                idSuffix: '-frame',
+                top: true,
+                left: true,
+                right: true,
+                bottom: true,
+                extraAttrs: '',
+                table: true
+            })
+        }
+        var renderTpl = [
+            '<span  ms-class="{{baseCls}}-wrap" ms-class-0="{{baseCls}}-arrow {{baseCls}}-arrow-{{arrowAlign}}:split" unselectable="on">',
+            '  <span ms-class="{{baseCls}}-button">',
+            '    <span ms-class="{{baseCls}}-inner {innerCls}"  unselectable="on">',
+            '      {{text}}',
+            '    </span>',
+            '    <span role="img" ms-class="{{baseCls}}-icon-el {{iconCls}}" unselectable="on" ms-css-background-image="{{icon!=\'\'?\'url(\'+icon+\')\':\'\'}}">',
+            '    </span>',
+            '  </span>',
+            '</span>',
+            // if "closable" (tab) add a close element icon
+            //'<tpl if="closable">',
+            //'<span id="{id}-closeEl" class="{baseCls}-close-btn" title="{closeText}" tabIndex="0"></span>',
+            //'</tpl>'
+        ]
         var handler = 'handler'
         if (typeof vmodel.handler != 'function') {
             handler = vmodel.handler
         }
-        var template = '<em ms-class="{{baseCls}}-arrow {{baseCls}}-arrow-{{arrowAlign}}:split"><button type="button" ms-click="' + handler + '" ms-class-0="{{baseCls}}-center" hidefocus="true" role="button" autocomplete="off" ms-css-height="buttonHeight">' +
-            '<span ms-class="{{baseCls}}-inner">{{text}}</span>' +
-            '<span ms-class="{{baseCls}}-icon " ms-css-background-image="{{icon!=\'\'?\'url(\'+icon+\')\':\'\'}}"></span>' +
-            '</button></em>'
-        template = renderTpl.join('')
+        var template = renderTpl.join('')
         if (bizui.isIE8m) {
-            template = frameTableTpl.join('').replace('{${$contentTemplate$}$}', renderTpl.join(''))
+            template = frameTableTpl.replace('{{frameContent}}', template)
         }
         if (menu) {
             document.body.appendChild(menu)
@@ -178,8 +175,9 @@ define(['avalon', 'bizui.menu'], function (avalon) {
                 avalon.scan(menu, [vmodel].concat(vmodels))
             }
             avalon.nextTick(function () {
-                vmodel.height = $element.height()
-                vmodel.width = $element.width()
+                var rect = element.getBoundingClientRect()
+                vmodel.width = rect.right - rect.left + 1
+                vmodel.height = rect.bottom - rect.top + 1
             })
         })
         return vmodel

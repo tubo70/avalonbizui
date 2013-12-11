@@ -1,7 +1,7 @@
 /**
  * Created by quan on 13-12-6.
  */
-define(['avalon','bizui.panel'], function (avalon) {
+define(['avalon', 'bizui.panel'], function (avalon) {
         bizui.vmodels['toolbar'] = avalon.mix(true, {}, bizui.vmodels['panel'], {
             $bizuiType: 'toolbar',
             enableOverflow: false,//Todo Configure true to make the toolbar provide a button which activates a dropdown Menu to show items which overflow the Toolbar's width.
@@ -134,12 +134,13 @@ define(['avalon','bizui.panel'], function (avalon) {
 
 
             avalon.nextTick(function () {
-                avalon.innerHTML(element, template)
+                avalon.innerHTML(element, template)//+'<div style="clear:both;font: 0px/0 Arial;height: 0;visibility: hidden;"></div>')
                 element.stopScan = false
                 avalon.scan(element, [vmodel].concat(vmodels))
                 if (options.type === 'text') {
                     avalon.nextTick(function () {
-                        vmodel.width = $element.width()
+                        var rect = element.getBoundingClientRect()
+                        vmodel.width = rect.right - rect.left + 1
                     })
                 }
             })
