@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html class="x-border-box x-strict x-viewport">
+<head>
+    <title>Tab</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../resources/css/ext-all-debug.css">
+    <script type="text/javascript" src="../avalon.js"></script>
+    <script type="text/javascript" src="../bizui.js"></script>
+    <script>
+        require("bizui.tab", function () {
+            avalon.define('tab', function (vm) {
+                vm.abc = 0
+                vm.panelRefresh = function () {
+                    alert('refresh clicked')
+                }
+                vm.panelClose = function () {
+                    alert('panelClose clicked')
+                }
+                vm.panelHelp = function () {
+                    alert('panelHelp clicked')
+                }
+                vm.toolType = 'refresh'
+            })
+            avalon.scan()
+        })
+    </script>
+</head>
+<body ms-controller="tab">
+
+<div ms-bizui="tab">
+    <div ms-bizui="panel" data-panel-title="tab1" data-panel-closable="true">tab1</div>
+    <div ms-bizui="panel" data-panel-title="tab2">tab2</div>
+</div>
+</body>
+</html>
