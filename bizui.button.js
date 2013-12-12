@@ -110,12 +110,14 @@ define(['avalon', 'bizui.menu'], function (avalon) {
                 baseCls: options.baseCls,
                 ui: options.ui,
                 uiCls: uiCls,
+                conditionalUiCls:options.conditionalUiCls,
                 framingInfoCls: options.baseCls + '-' + options.ui,
                 dynamic: false,
                 idSuffix: '-frame',
                 extraAttrs: ''
 
             })
+
         }
         var renderTpl = [
             '<span  ms-class="{{baseCls}}-wrap" ms-class-0="{{baseCls}}-arrow {{baseCls}}-arrow-{{arrowAlign}}:split" unselectable="on">',
