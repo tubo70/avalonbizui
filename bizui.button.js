@@ -11,6 +11,7 @@ define(['avalon', 'bizui.menu'], function (avalon) {
         height: 22,
         buttonHeight: 16,
         enableToggle: false,
+        closable: false,
         toggled: false,
         handler: avalon.noop,
         split: false,
@@ -25,6 +26,7 @@ define(['avalon', 'bizui.menu'], function (avalon) {
     avalon.bizui['button'] = function (element, data, vmodels) {
         var options = avalon.mix(true, {}, bizui.vmodels['button'], data.buttonOptions)
         var $element = avalon(element), menu, menuOptions
+        var baseCls, ui, iconAlign
         element.stopScan = true
         var comps = bizui.getChildren(element, data.buttonId, vmodels, 'menu')
         options.split = false
@@ -52,25 +54,24 @@ define(['avalon', 'bizui.menu'], function (avalon) {
             options.buttonHeight += 18
         }
         options.height = options.buttonHeight + 8
-        if (options.ui) {
-            options.ui = 'default-' + options.scale
+        if (options.scale) {
+            options.ui = options.ui + '-' + options.scale
         }
-        else {
-            options.ui = 'default'
+        if (options.position) {
+            options.ui = options.ui + '-' + options.position
         }
+        baseCls = options.baseCls
+        ui = options.ui
+        iconAlign = options.iconAlign
+
         var vmodel = avalon.define(data.buttonId, function (vm) {
+            vm.$skipArray=['baseCls','ui']
             avalon.mix(vm, options)
             vm.toggleClick = function () {
                 if (vmodel.enableToggle) {
                     vmodel.toggled = !vmodel.toggled
                 }
             }
-            vm.$watch('scale', function (newValue) {
-                var uis = vmodel.ui.split('-')
-                uis.pop()
-                uis.push(newValue)
-                vmodel.ui = uis.join('-')
-            })
             if (menuOptions) {
                 vm['$' + menuOptions.bizuiId] = {}
                 avalon.mix(true, vm['$' + menuOptions.bizuiId], menuOptions)
@@ -98,7 +99,7 @@ define(['avalon', 'bizui.menu'], function (avalon) {
         })
         var frameTableTpl
         if (bizui.isIE8m) {
-            var uiCls = []
+            var uiCls = options.uiCls || []
             if (options.icon) {
                 uiCls.push('icon-text-' + options.iconAlign)
             } else {
@@ -109,14 +110,11 @@ define(['avalon', 'bizui.menu'], function (avalon) {
                 baseCls: options.baseCls,
                 ui: options.ui,
                 uiCls: uiCls,
+                framingInfoCls: options.baseCls + '-' + options.ui,
                 dynamic: false,
                 idSuffix: '-frame',
-                top: true,
-                left: true,
-                right: true,
-                bottom: true,
-                extraAttrs: '',
-                table: true
+                extraAttrs: ''
+
             })
         }
         var renderTpl = [
@@ -129,10 +127,7 @@ define(['avalon', 'bizui.menu'], function (avalon) {
             '    </span>',
             '  </span>',
             '</span>',
-            // if "closable" (tab) add a close element icon
-            //'<tpl if="closable">',
-            //'<span id="{id}-closeEl" class="{baseCls}-close-btn" title="{closeText}" tabIndex="0"></span>',
-            //'</tpl>'
+            '<span ms-if="closable" ms-attr-id="{{bizuiId}}-closeEl" ms-hover="' + options.closeElOverCls + '" class="' + options.baseCls + '-close-btn" title="{{text}}" tabIndex="0"></span>'
         ]
         var handler = 'handler'
         if (typeof vmodel.handler != 'function') {
@@ -146,28 +141,27 @@ define(['avalon', 'bizui.menu'], function (avalon) {
             document.body.appendChild(menu)
             menu = document.body.lastChild
         }
+        if (options.enableToggle) {
+            $element.attr('ms-click-0', 'toggleClick')
+        }
+        if (options.split) {
+            $element.attr('ms-click-1', 'showMenu')
+        }
+        $element
+            .attr('ms-click', handler)
+            .addClass(baseCls + ' ' + baseCls + '-' + ui)
+            .attr('ms-class-0', 'x-noicon ' + baseCls + '-noicon ' + baseCls + '-' + ui + '-noicon:!icon')
+            .attr('ms-class-2', 'x-icon-text-' + iconAlign + ' ' + baseCls + '-icon-text-' + iconAlign + ' ' + baseCls + '-' + ui + '-icon-text-' + iconAlign + ':icon')
+            .attr('ms-class-3', 'x-pressed ' + baseCls + '-pressed ' + baseCls + '-' + ui + '-pressed:toggled')
+            .attr('ms-class-4', 'x-item-disabled x-disabled ' + baseCls + '-disabled ' + baseCls + '-' + ui + '-disabled:disabled')
+            .attr('ms-class-5', 'x-box-item:box')
+            .attr('ms-class-6', 'x-{{uiCls}} {{baseCls}}-{{uiCls}} {{baseCls}}-{{ui}}-{{uiCls}}:uiCls')
+            .attr('style', 'border-width:1px 1px 1px 1px;')
+            .attr('ms-hover', 'over x-over ' + baseCls + '-over ' + baseCls + '-' + ui + '-over')
+            .attr('ms-active', 'x-pressed ' + baseCls + '-pressed ' + baseCls + '-' + ui + '-pressed:!enableToggle')
+            .attr('ms-css-left', 'left')//'{{left>0?left:\'\'}}')
+            .attr('ms-css-top', '{{top>0?top:\'\'}}')
         avalon.nextTick(function () {
-            if (options.enableToggle) {
-                $element.attr('ms-click-0', 'toggleClick')
-            }
-            if (options.split) {
-                $element.attr('ms-click-1', 'showMenu')
-            }
-            $element
-                .attr('ms-click', handler)
-                .attr('ms-class', '{{baseCls}}')
-                .attr('ms-class-0', 'x-noicon {{baseCls}}-noicon {{baseCls}}-{{ui}}-noicon:!icon')
-                .attr('ms-class-1', '{{baseCls}}-{{ui}}')
-                .attr('ms-class-2', 'x-icon-text-{{iconAlign}} {{baseCls}}-icon-text-{{iconAlign}} {{baseCls}}-{{ui}}-icon-text-{{iconAlign}}:icon')
-                .attr('ms-class-3', 'x-pressed x-btn-pressed {{baseCls}}-{{ui}}-pressed:toggled')
-                .attr('ms-class-4', 'x-item-disabled x-disabled {{baseCls}}-disabled {{baseCls}}-{{ui}}-disabled:disabled')
-                .attr('ms-class-5', 'x-box-item:box')
-                .attr('ms-class-6', 'x-{{uiCls}} {{baseCls}}-{{uiCls}} {{baseCls}}-{{ui}}-{{uiCls}}:uiCls')
-                .attr('style', 'border-width:1px 1px 1px 1px;')
-                .attr('ms-hover', 'over x-over x-btn-over {{baseCls}}-{{ui}}-over')
-                .attr('ms-active', 'x-pressed x-btn-pressed {{baseCls}}-{{ui}}-pressed:!enableToggle')
-                .attr('ms-css-left', 'left')//'{{left>0?left:\'\'}}')
-                .attr('ms-css-top', '{{top>0?top:\'\'}}')
             avalon.innerHTML(element, template)
             element.stopScan = false
             avalon.scan(element, [vmodel].concat(vmodels))

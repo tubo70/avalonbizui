@@ -465,79 +465,188 @@
         avalon(bd).addClass(cls.join(' '));
         return true;
     };
+    bizui.clsHelper = {}
+    avalon.mix(bizui.clsHelper, {
+        addUICls: function (baseCls, ui, uiCls, skipSelf) {
+            var clsArray = [],
+                i = 0,
+                length,
+                cls
+            if (typeof uiCls === "string") {
+                uiCls = (uiCls.indexOf(' ') < 0) ? [uiCls] : uiCls.split(' ')
+            }
+            length = uiCls.length
+
+            for (; i < length; i++) {
+                cls = uiCls[i];
+                if (cls) {
+                    if (skipSelf === true) {
+                        clsArray.push('x-' + cls)
+                    }
+                    clsArray.push(baseCls + '-' + cls)
+                    clsArray.push(baseCls + '-' + ui + '-' + cls)
+                }
+            }
+            return clsArray
+        }
+    })
     //frameHelper
     bizui.frameHelper = {}
     avalon.mix(bizui.frameHelper, {
-        getClass: function (frameCls, baseCls, ui, uiCls, suffix, dynamicCls) {
-            var cls = []
-            if (dynamicCls === true) {
-                cls[cls.length] = frameCls + '-' + suffix
-                cls[cls.length] = '{{baseCls}}-' + suffix
-                cls[cls.length] = '{{baseCls}}-{{ui}}-' + suffix
-                if (uiCls) {
-                    for (var i = 0, il = uiCls.length; i < il; i++) {
-                        cls[cls.length] = '{{baseCls}}-{{ui}}-' + uiCls[i] + '-' + suffix
-                    }
-                }
-            } else {
-                cls[cls.length] = frameCls + '-' + suffix
-                cls[cls.length] = baseCls + '-' + suffix
-                cls[cls.length] = baseCls + '-' + ui + '-' + suffix
-                if (uiCls) {
-                    for (var i = 0, il = uiCls.length; i < il; i++) {
-                        cls[cls.length] = baseCls + '-' + ui + '-' + uiCls[i] + '-' + suffix
-                    }
-                }
-            }
-            return cls.join(' ')
-        },
-        getOneSide: function (out, frameCls, baseCls, ui, uiCls, side, idSuffix, dynamic, extraAttrs, isTable) {
-            var cls = this.getClass(frameCls, baseCls, ui, uiCls, side.toLowerCase(), dynamic),
-                tag = isTable ? 'td' : 'div'
-            out[out.length] = '<' + tag + ' ms-attr-id="{{bizuiId}}' + idSuffix + side + '" '
-            if (dynamic === true) {
-                out[out.length] = 'ms-class="' + cls + '"'
-            } else {
-                out[out.length] = 'class="' + cls + '"'
-            }
-            if (extraAttrs) {
-                out[out.length] = extraAttrs
-            }
-            out[out.length] = 'role = "presentation">'
-            //skip frameElCls
-        },
+        frameInfoCache: {},
+        styleProxyEl: null,
         getFrameTpl: function (config) {
             var tpl = [], dynamic = config.dynamic, cls,
                 idSuffix = config.idSuffix,
-                frameCls = config.frameCls, baseCls = config.baseCls,
+                frameCls = config.frameCls, baseCls = config.baseCls, conditionalUiCls = config.conditionalUiCls,
                 ui = config.ui, uiCls = config.uiCls,
-                top = config.top, left = config.left, bottom = config.bottom, right = config.right,
+                top, left, bottom, right, table,
                 extraAttrs = config.extraAttrs,
-                table = config.table === true ? 1 : 0,
                 tdCloseTags = ['', '</td>'], divCloseTage = ['</div>', ''],
                 trOpenTags = ['', '<tr>'], trCloseTags = ['', '</tr>'],
-                me = this
-            if (table) {
-                tpl[tpl.length] = '<table class="x-table-plain" cellpadding="0"><tbody>'
+                frameCls = config.framingInfoCls + '-frameInfo',
+                me = this, frameInfo = me.frameInfoCache[frameCls]
+            if (frameInfo == null) {
+                if (me.styleProxyEl == null) {
+                    bizui.body.appendChild(avalon.parseHTML('<div style="position: absolute;top:-10000px;"></div>'))
+                    me.styleProxyEl = bizui.body.lastChild
+                }
+                me.styleProxyEl.className = frameCls
+                var info = avalon(me.styleProxyEl).css('font-family')
+                if (info) {
+                    info = info.split('-')
+                    var max = Math.max,
+                        frameTop, frameRight, frameBottom, frameLeft,
+                        borderWidthT, borderWidthR, borderWidthB, borderWidthL,
+                        paddingT, paddingR, paddingB, paddingL,
+                        borderRadiusTL, borderRadiusTR, borderRadiusBR, borderRadiusBL
+
+                    borderRadiusTL = parseInt(info[1], 10);
+                    borderRadiusTR = parseInt(info[2], 10);
+                    borderRadiusBR = parseInt(info[3], 10);
+                    borderRadiusBL = parseInt(info[4], 10);
+                    borderWidthT = parseInt(info[5], 10);
+                    borderWidthR = parseInt(info[6], 10);
+                    borderWidthB = parseInt(info[7], 10);
+                    borderWidthL = parseInt(info[8], 10);
+                    paddingT = parseInt(info[9], 10);
+                    paddingR = parseInt(info[10], 10);
+                    paddingB = parseInt(info[11], 10);
+                    paddingL = parseInt(info[12], 10);
+
+                    // This calculation should follow ext-theme-base/etc/mixins/frame.css
+                    // with respect to the CSS3 equivalent formulation:
+                    frameTop = max(borderWidthT, max(borderRadiusTL, borderRadiusTR));
+                    frameRight = max(borderWidthR, max(borderRadiusTR, borderRadiusBR));
+                    frameBottom = max(borderWidthB, max(borderRadiusBL, borderRadiusBR));
+                    frameLeft = max(borderWidthL, max(borderRadiusTL, borderRadiusBL));
+                    frameInfo = {
+                        table: info[0].charAt(0) === 't' ? 1 : 0,
+                        vertical: info[0].charAt(1) === 'v',
+
+                        top: frameTop,
+                        right: frameRight,
+                        bottom: frameBottom,
+                        left: frameLeft
+                    }
+                    me.frameInfoCache[frameCls] = frameInfo
+                }
             }
+            top = frameInfo.top
+            left = frameInfo.left
+            bottom = frameInfo.bottom
+            right = frameInfo.right
+            table = frameInfo.table
+            function getClass(suffix) {
+                var cls = []
+                if (dynamic === true) {
+                    cls[cls.length] = frameCls + '-' + suffix
+                    cls[cls.length] = '{{baseCls}}-' + suffix
+                    cls[cls.length] = '{{baseCls}}-{{ui}}-' + suffix
+                    if (uiCls) {
+                        for (var i = 0, il = uiCls.length; i < il; i++) {
+                            cls[cls.length] = '{{baseCls}}-{{ui}}-' + uiCls[i] + '-' + suffix
+                        }
+                    }
+                } else {
+                    cls[cls.length] = frameCls + '-' + suffix
+                    cls[cls.length] = baseCls + '-' + suffix
+                    cls[cls.length] = baseCls + '-' + ui + '-' + suffix
+                    if (uiCls) {
+                        for (var i = 0, il = uiCls.length; i < il; i++) {
+                            cls[cls.length] = baseCls + '-' + ui + '-' + uiCls[i] + '-' + suffix
+                        }
+                    }
+                }
+                return cls.join(' ')
+            }
+
+            function getConditionalClass(suffix) {
+                var cls = []
+                if (conditionalUiCls && conditionalUiCls.length > 0) {
+
+                    for (var i = 0, il = conditionalUiCls.length; i < il; i++) {
+                        var condition = conditionalUiCls[i].condition,
+                            uicls = conditionalUiCls[i].uiCls,
+                            conditionCls = []
+                        for (var j = 0, jl = uicls.length; j < jl; j++) {
+                            conditionCls[conditionCls.length] = baseCls + '-' + ui + '-' + uicls[i] + '-' + suffix
+                        }
+                        if (conditionCls.length > 0) {
+                            conditionCls[conditionCls.length] = ':' + condition
+                            cls.push(conditionCls.join(' '))
+                        }
+                    }
+                }
+                return cls
+            }
+
+            function getOneSide(side, addExtraAttrs) {
+                var cls = getClass(side.toLowerCase()),
+                    conditionalCls = getConditionalClass(side.toLowerCase()),
+                    index = 99
+                tag = table ? 'td' : 'div'
+                tpl[tpl.length] = '<' + tag + ' ms-attr-id="{{bizuiId}}' + idSuffix + side + '" '
+                if (dynamic === true) {
+                    tpl[tpl.length] = 'ms-class="' + cls + '"'
+                } else {
+                    tpl[tpl.length] = 'class="' + cls + '"'
+                }
+                if (addExtraAttrs) {
+                    tpl[tpl.length] = extraAttrs
+                }
+                if (conditionalCls && conditionalCls.length > 0) {
+                    for (var i = 0, il = conditionalCls.length; i < il; i++) {
+                        tpl[tpl.length] = 'ms-class-' + index + '="' + conditionalCls + '"'
+                        index -= 1
+                    }
+                }
+                tpl[tpl.length] = 'role = "presentation">'
+                //skip frameElCls
+            }
+
             function oneLine(position, attrs) {
-                attrs = attrs || ''
+
                 tpl[tpl.length] = trOpenTags[table]
                 if (left) {
-                    me.getOneSide(tpl, frameCls, baseCls, ui, uiCls, position + 'L', idSuffix, dynamic, '', table)
+                    //me.getOneSide(tpl, frameCls, baseCls, ui, uiCls, position + 'L', idSuffix, dynamic, '', table)
+                    getOneSide(position + 'L', attrs)
                     tpl[tpl.length] = tdCloseTags[table]
                 }
                 if (right && table === 0) {
-                    me.getOneSide(tpl, frameCls, baseCls, ui, uiCls, position + 'R', idSuffix, dynamic, '', table)
+                    //me.getOneSide(tpl, frameCls, baseCls, ui, uiCls, position + 'R', idSuffix, dynamic, '', table)
+                    getOneSide(position + 'R', attrs)
                 }
-                me.getOneSide(tpl, frameCls, baseCls, ui, uiCls, position + 'C', idSuffix, dynamic, attrs, table)
+                //me.getOneSide(tpl, frameCls, baseCls, ui, uiCls, position + 'C', idSuffix, dynamic, attrs, table)
+                getOneSide(position + 'C', attrs)
                 if (position === 'M') {
                     tpl[tpl.length] = '{{frameContent}}'
                 }
                 tpl[tpl.length] = tdCloseTags[table]
                 tpl[tpl.length] = divCloseTage[table]
                 if (right && table === 1) {
-                    me.getOneSide(tpl, frameCls, baseCls, ui, uiCls, position + 'R', idSuffix, dynamic, '', table)
+                    //me.getOneSide(tpl, frameCls, baseCls, ui, uiCls, position + 'R', idSuffix, dynamic, '', table)
+                    getOneSide(position + 'R', attrs)
                     tpl[tpl.length] = tdCloseTags[table]
                 }
                 tpl[tpl.length] = trCloseTags[table]
@@ -548,10 +657,14 @@
                     tpl[tpl.length] = divCloseTage[table]
                 }
             }
+
+            if (table) {
+                tpl[tpl.length] = '<table class="x-table-plain" cellpadding="0"><tbody>'
+            }
             if (top) {
                 oneLine('T')
             }
-            oneLine('M', extraAttrs)
+            oneLine('M', true)
             if (bottom) {
                 oneLine('B')
             }

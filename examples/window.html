@@ -4,26 +4,7 @@
     <title>Window</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="../resources/css/ext-all-debug.css">
-    <script type="text/javascript" src="../avalon.js"></script>
-    <script type="text/javascript" src="../bizui.js"></script>
-    <script>
-        require("bizui.window", function () {
-            avalon.define('window1', function (vm) {
-                vm.abc = 0
-                vm.panelRefresh = function () {
-                    alert('refresh clicked')
-                }
-                vm.panelClose = function () {
-                    alert('panelClose clicked')
-                }
-                vm.panelHelp = function () {
-                    alert('panelHelp clicked')
-                }
-                vm.toolType = 'refresh'
-            })
-            avalon.scan()
-        })
-    </script>
+
 </head>
 <body ms-controller="window1">
 
@@ -46,5 +27,25 @@
         <div ms-bizui="toolbaritem" data-toolbaritem-text="text2"></div>
     </div>
 </div>
+<script type="text/javascript" src="../avalon.js"></script>
+<script type="text/javascript" src="../bizui.js"></script>
+<script>
+    require("bizui.window", function () {
+        avalon.define('window1', function (vm) {
+            vm.abc = 0
+            vm.panelRefresh = function () {
+                alert('refresh clicked')
+            }
+            vm.panelClose = function () {
+                alert('panelClose clicked')
+            }
+            vm.panelHelp = function () {
+                alert('panelHelp clicked')
+            }
+            vm.toolType = 'refresh'
+        })
+        avalon.scan()
+    })
+</script>
 </body>
 </html>

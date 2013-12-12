@@ -191,13 +191,10 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'bizui.button', 'bizui.toolbar', '
                 frameCls: 'x-frame',
                 baseCls: options.baseCls + '-header',
                 ui: options.ui,
+                framingInfoCls:options.baseCls + '-header-' + options.ui + '-top' ,
                 uiCls: ['horizontal', 'top', 'docked-top'],
                 dynamic: false,
                 idSuffix: '_header-frame',
-                top: true,
-                left: true,
-                right: true,
-                bottom: false,
                 extraAttrs: ' ms-css-width="width-12"'
             })
             var bodyUiCls = []
@@ -212,12 +209,9 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'bizui.button', 'bizui.toolbar', '
                 baseCls: options.baseCls,
                 ui: options.ui,
                 uiCls: bodyUiCls,
+                framingInfoCls:options.baseCls + '-' + options.ui ,
                 dynamic: false,
                 idSuffix: '-frame',
-                top: true,
-                left: true,
-                right: true,
-                bottom: true,
                 extraAttrs: 'ms-css-height="height-10" ms-css-width="width-10"'
             })
         }
@@ -244,7 +238,8 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'bizui.button', 'bizui.toolbar', '
             '  ms-class-0="x-closable x-window-body-closable x-window-body-default-closable:closable"',
             '  ms-class-1="x-resizable x-window-body-resizable x-window-body-default-resizable:resizable"',
             '  style="left: 0px;' + (bizui.isIE8m ? 'position:relative;' : '') + '"',
-            '  ms-css-width="width-10" ms-css-height="{{height<=(footerHeight+9)?\'\':height-(footerHeight+9)}}"',
+            '  ms-css-width="width-10" ms-css-height="{{height<=(headerHeight + footerHeight+9)?\'\':height-(headerHeight + footerHeight+9)}}"',
+            '  ms-css-top="headerHeight-1"',
             '  ms-css-overflow="{{autoScroll?\'auto\':\'\'}}">',
             element.innerHTML,
             '</div>'
@@ -302,7 +297,6 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'bizui.button', 'bizui.toolbar', '
             parentNode.removeChild(element)
             document.body.appendChild(element)
             element.stopScan = false
-            window.console.log(element.outerHTML)
             avalon.scan(element, [vmodel].concat(vmodels))
             avalon.nextTick(function () {
                 if (shadowElement) {
@@ -321,10 +315,8 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'bizui.button', 'bizui.toolbar', '
                     vmodel.width = rect.right - rect.left + 1
                 }
                 if (vmodel.height <= 0) {
-                    vmodel.height = rect.bottom - rect.top + 1 + vmodel.footerHeight
+                    vmodel.height = rect.bottom - rect.top + 1 + vmodel.headerHeight + vmodel.footerHeight
                 }
-                console.log(rect)
-                console.log(vmodel.height)
             })
         })
         return vmodel

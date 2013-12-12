@@ -4,22 +4,10 @@
     <title>Button</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="../resources/css/ext-all-debug.css">
-    <script type="text/javascript" src="../avalon.js"></script>
-    <script type="text/javascript" src="../bizui.js"></script>
-    <script>
-        require("bizui.button", function () {
-            var model = avalon.define('xxx', function (vm) {
-                vm.click=function(){
-                    alert('hi')
-                }
 
-            })
-            avalon.scan()
-        })
-    </script>
 </head>
 <body  ms-controller="xxx">
-<!--
+
 Size:<br/>
 <div ms-bizui="button" data-button-text="Small and try to click me" data-button-handler="click"></div>
 <div ms-bizui="button" data-button-text="Medium" data-button-scale="medium"></div>
@@ -87,7 +75,7 @@ menu<br/>
         <div ms-bizui="menuitem" data-menuitem-type="separator"></div>
         <div ms-bizui="menuitem" data-menuitem-text="item 2"></div>
     </div>
-</div>-->
+</div>
 <div ms-bizui="button" data-button-text="Menu button" data-button-scale="large" data-button-arrow-align="bottom" data-button-left="600">
     <div ms-bizui="menu" data-menu-width="130" data-menu-height="100">
         <div ms-bizui="menuitem" data-menuitem-text="item 1"></div>
@@ -102,6 +90,18 @@ menu<br/>
         <div ms-bizui="menuitem" data-menuitem-text="item 3"></div>
     </div>
 </div>
+<script type="text/javascript" src="../avalon.js"></script>
+<script type="text/javascript" src="../bizui.js"></script>
+<script>
+    require("bizui.button", function () {
+        var model = avalon.define('xxx', function (vm) {
+            vm.click=function(){
+                alert('hi')
+            }
 
+        })
+        avalon.scan()
+    })
+</script>
 </body>
 </html>
