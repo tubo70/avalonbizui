@@ -480,7 +480,7 @@
             for (; i < length; i++) {
                 cls = uiCls[i];
                 if (cls) {
-                    if (skipSelf === true) {
+                    if (skipSelf !== true) {
                         clsArray.push('x-' + cls)
                     }
                     clsArray.push(baseCls + '-' + cls)
@@ -488,6 +488,22 @@
                 }
             }
             return clsArray
+        },
+        getConditionalClass: function (conditionalUiCls, baseCls, ui, suffix) {
+            var cls = [], suffix = suffix ? '-' + suffix : ''
+            if (conditionalUiCls && conditionalUiCls.length > 0) {
+
+                for (var i = 0, il = conditionalUiCls.length; i < il; i++) {
+                    var condition = conditionalUiCls[i].condition,
+                        uicls = conditionalUiCls[i].uiCls,
+                        conditionCls = this.addUICls(baseCls,ui,uicls)
+                    if (conditionCls.length > 0) {
+                        conditionCls[conditionCls.length] = ':' + condition
+                        cls.push(conditionCls.join(' '))
+                    }
+                }
+            }
+            return cls
         }
     })
     //frameHelper
@@ -504,14 +520,14 @@
                 extraAttrs = config.extraAttrs,
                 tdCloseTags = ['', '</td>'], divCloseTage = ['</div>', ''],
                 trOpenTags = ['', '<tr>'], trCloseTags = ['', '</tr>'],
-                frameCls = config.framingInfoCls + '-frameInfo',
+                frameInfoCls = config.framingInfoCls + '-frameInfo',
                 me = this, frameInfo = me.frameInfoCache[frameCls]
             if (frameInfo == null) {
                 if (me.styleProxyEl == null) {
                     bizui.body.appendChild(avalon.parseHTML('<div style="position: absolute;top:-10000px;"></div>'))
                     me.styleProxyEl = bizui.body.lastChild
                 }
-                me.styleProxyEl.className = frameCls
+                me.styleProxyEl.className = frameInfoCls
                 var info = avalon(me.styleProxyEl).css('font-family')
                 if (info) {
                     info = info.split('-')
@@ -590,7 +606,7 @@
                             uicls = conditionalUiCls[i].uiCls,
                             conditionCls = []
                         for (var j = 0, jl = uicls.length; j < jl; j++) {
-                            conditionCls[conditionCls.length] = baseCls + '-' + ui + '-' + uicls[i] + '-' + suffix
+                            conditionCls[conditionCls.length] = baseCls + '-' + ui + '-' + uicls[j] + '-' + suffix
                         }
                         if (conditionCls.length > 0) {
                             conditionCls[conditionCls.length] = ':' + condition
@@ -604,7 +620,7 @@
             function getOneSide(side, addExtraAttrs) {
                 var cls = getClass(side.toLowerCase()),
                     conditionalCls = getConditionalClass(side.toLowerCase()),
-                    index = 99
+                    index = 99,
                 tag = table ? 'td' : 'div'
                 tpl[tpl.length] = '<' + tag + ' ms-attr-id="{{bizuiId}}' + idSuffix + side + '" '
                 if (dynamic === true) {

@@ -7,6 +7,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
         region: 'none',
         border: true,
         split: false,
+        hidden:false,
         title: '',
         headerHeight: 25,
         headerToolAmount: 0,
@@ -272,7 +273,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
 
         //console.log(el.outerHTML)
         $element.addClass('x-panel x-border-item x-box-item x-panel-default')
-            .attr('ms-visible', '!collapsed')
+            .attr('ms-visible', '!collapsed && !hidden')
             .attr('style', 'margin: 0px;')
             .attr('ms-css-left', 'left')
             .attr('ms-css-top', 'top')

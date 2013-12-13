@@ -18,17 +18,17 @@ define(['avalon', 'bizui.menu'], function (avalon) {
         arrowAlign: 'right',
         baseCls: 'x-btn',
         ui: 'default',
-        uiCls: '',
+        uiCls: [],
         icon: '',
         iconAlign: 'left',
         iconCls: ''
     })
     avalon.bizui['button'] = function (element, data, vmodels) {
-        var options = avalon.mix(true, {}, bizui.vmodels['button'], data.buttonOptions)
-        var $element = avalon(element), menu, menuOptions
-        var baseCls, ui, iconAlign
         element.stopScan = true
-        var comps = bizui.getChildren(element, data.buttonId, vmodels, 'menu')
+        var options = avalon.mix(true, {}, bizui.vmodels['button'], data.buttonOptions)
+        var $element = avalon(element), menu, menuOptions,
+            baseCls, ui, iconAlign, uiCls, conditionalCls = [],
+            comps = bizui.getChildren(element, data.buttonId, vmodels, 'menu')
         options.split = false
         if (comps.children.length > 0) {
             options.split = true
@@ -58,14 +58,21 @@ define(['avalon', 'bizui.menu'], function (avalon) {
             options.ui = options.ui + '-' + options.scale
         }
         if (options.position) {
-            options.ui = options.ui + '-' + options.position
+            options.uiCls.push(options.position)
+        }
+        if (options.closable) {
+            options.uiCls.push('closable')
         }
         baseCls = options.baseCls
         ui = options.ui
         iconAlign = options.iconAlign
-
+        uiCls = options.uiCls
+        if (options.conditionalUiCls) {
+            conditionalCls = options.conditionalUiCls
+            delete options.conditionalUiCls
+        }
         var vmodel = avalon.define(data.buttonId, function (vm) {
-            vm.$skipArray=['baseCls','ui']
+            vm.skipArray = ['baseCls', 'ui']
             avalon.mix(vm, options)
             vm.toggleClick = function () {
                 if (vmodel.enableToggle) {
@@ -99,7 +106,7 @@ define(['avalon', 'bizui.menu'], function (avalon) {
         })
         var frameTableTpl
         if (bizui.isIE8m) {
-            var uiCls = options.uiCls || []
+            //var uiCls = options.uiCls || []
             if (options.icon) {
                 uiCls.push('icon-text-' + options.iconAlign)
             } else {
@@ -110,14 +117,13 @@ define(['avalon', 'bizui.menu'], function (avalon) {
                 baseCls: options.baseCls,
                 ui: options.ui,
                 uiCls: uiCls,
-                conditionalUiCls:options.conditionalUiCls,
-                framingInfoCls: options.baseCls + '-' + options.ui,
+                conditionalUiCls: conditionalCls,
+                framingInfoCls: baseCls + '-' + ui + (options.position ? '-' + options.position : ''),
                 dynamic: false,
                 idSuffix: '-frame',
                 extraAttrs: ''
 
             })
-
         }
         var renderTpl = [
             '<span  ms-class="{{baseCls}}-wrap" ms-class-0="{{baseCls}}-arrow {{baseCls}}-arrow-{{arrowAlign}}:split" unselectable="on">',
@@ -129,7 +135,7 @@ define(['avalon', 'bizui.menu'], function (avalon) {
             '    </span>',
             '  </span>',
             '</span>',
-            '<span ms-if="closable" ms-attr-id="{{bizuiId}}-closeEl" ms-hover="' + options.closeElOverCls + '" class="' + options.baseCls + '-close-btn" title="{{text}}" tabIndex="0"></span>'
+            '<span ms-if="closable" ms-attr-id="{{bizuiId}}-closeEl" ms-hover="' + options.closeElOverCls + '" class="' + options.baseCls + '-close-btn" ms-attr-title="{{text}}" tabIndex="0"></span>'
         ]
         var handler = 'handler'
         if (typeof vmodel.handler != 'function') {
@@ -149,17 +155,29 @@ define(['avalon', 'bizui.menu'], function (avalon) {
         if (options.split) {
             $element.attr('ms-click-1', 'showMenu')
         }
+        var elementUiCls = bizui.clsHelper.addUICls(baseCls, ui, uiCls)
+        elementUiCls.push(baseCls)
+        elementUiCls.push(baseCls + '-' + ui)
+        elementUiCls.push('x-unselectable')
+        conditionalCls = bizui.clsHelper.getConditionalClass(conditionalCls, baseCls, ui)
+        for (var i = 0, il = conditionalCls.length; i < il; i++) {
+            $element.attr('ms-class-' + (90 + i), conditionalCls[i])
+        }
+        var overCls = 'over x-over ' + baseCls + '-over ' + baseCls + '-' + ui + '-over'
+        if (options.position) {
+            overCls += 'x-' + options.position + '-over ' + baseCls + '-' + options.position + '-over ' + baseCls + '-' + ui + '-' + options.position + '-over'
+        }
         $element
             .attr('ms-click', handler)
-            .addClass(baseCls + ' ' + baseCls + '-' + ui)
+            .addClass(elementUiCls.join(' '))
             .attr('ms-class-0', 'x-noicon ' + baseCls + '-noicon ' + baseCls + '-' + ui + '-noicon:!icon')
             .attr('ms-class-2', 'x-icon-text-' + iconAlign + ' ' + baseCls + '-icon-text-' + iconAlign + ' ' + baseCls + '-' + ui + '-icon-text-' + iconAlign + ':icon')
             .attr('ms-class-3', 'x-pressed ' + baseCls + '-pressed ' + baseCls + '-' + ui + '-pressed:toggled')
             .attr('ms-class-4', 'x-item-disabled x-disabled ' + baseCls + '-disabled ' + baseCls + '-' + ui + '-disabled:disabled')
             .attr('ms-class-5', 'x-box-item:box')
-            .attr('ms-class-6', 'x-{{uiCls}} {{baseCls}}-{{uiCls}} {{baseCls}}-{{ui}}-{{uiCls}}:uiCls')
+            //.attr('ms-class-6', 'x-{{uiCls}} {{baseCls}}-{{uiCls}} {{baseCls}}-{{ui}}-{{uiCls}}:uiCls')
             .attr('style', 'border-width:1px 1px 1px 1px;')
-            .attr('ms-hover', 'over x-over ' + baseCls + '-over ' + baseCls + '-' + ui + '-over')
+            .attr('ms-hover', overCls)
             .attr('ms-active', 'x-pressed ' + baseCls + '-pressed ' + baseCls + '-' + ui + '-pressed:!enableToggle')
             .attr('ms-css-left', 'left')//'{{left>0?left:\'\'}}')
             .attr('ms-css-top', '{{top>0?top:\'\'}}')
