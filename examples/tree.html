@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html class="x-border-box x-strict x-viewport">
+<head>
+    <title>Tab</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../resources/css/ext-all-debug.css">
+    <script type="text/javascript" src="../avalon.js"></script>
+    <script type="text/javascript" src="../bizui.js"></script>
+    <script>
+        require("bizui.tree", function () {
+            avalon.define('tree', function (vm) {
+                vm.$tree={
+                    root:{
+                        expanded: true,
+                        children: [
+                            { text: "detention", leaf: true },
+                            { text: "homework", expanded: true, children: [
+                                { text: "book report", leaf: false, children: [
+                                    { text: "book report", leaf: true },
+                                    { text: "algebra", leaf: true}
+                                ] },
+                                { text: "algebra", leaf: true}
+                            ] },
+                            { text: "buy lottery tickets", leaf: true }
+                        ]
+                    }
+                }
+            })
+            avalon.scan()
+        })
+    </script>
+</head>
+<body ms-controller="tree">
+
+<div ms-bizui="tree" data-tree-width="200" data-tree-height="400" data-tree-title="树">
+</div>
+</body>
+</html>

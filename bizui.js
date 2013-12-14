@@ -50,6 +50,7 @@
     avalon.bizui = avalon.bizui || {}
     bizui = avalon.bizui;
     avalon.mix(bizui, {
+        baseCSSPrefix:'x-',
         isStrict: isStrict,
         isIEQuirks: isIE && (!isStrict && (isIE6 || isIE7 || isIE8 || isIE9)),
         isOpera: isOpera,

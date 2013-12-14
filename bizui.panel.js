@@ -2,29 +2,12 @@
  * Created by quan on 13-11-21.
  */
 define(["avalon", "bizui.tool"], function (avalon) {
-    bizui.vmodels['panel'] = avalon.mix(true, {}, bizui.containerVModel, {
-        $bizuiType: 'panel',
-        region: 'none',
-        border: true,
-        split: false,
-        hidden:false,
-        title: '',
-        headerHeight: 25,
-        headerToolAmount: 0,
-        collapsible: false,
-        collapsed: false,
-        getContentSize: function () {
-            return {
-                width: this.width,
-                height: this.height - this.headerHeight
-            }
-        }
-    })
-    var toolTypeMaps = {}
-    toolTypeMaps['north'] = 'collapse-top'
-    toolTypeMaps['south'] = 'collapse-bottom'
-    toolTypeMaps['east'] = 'collapse-right'
-    toolTypeMaps['west'] = 'collapse-left'
+    bizui.panel={}
+    bizui.panel.toolTypeMaps = {}
+    bizui.panel.toolTypeMaps['north'] = 'collapse-top'
+    bizui.panel.toolTypeMaps['south'] = 'collapse-bottom'
+    bizui.panel.toolTypeMaps['east'] = 'collapse-right'
+    bizui.panel.toolTypeMaps['west'] = 'collapse-left'
 
     var dragRegionMaps = {}
     dragRegionMaps['north'] = 'top'
@@ -37,58 +20,105 @@ define(["avalon", "bizui.tool"], function (avalon) {
     splitterStyleMaps['east'] = 'width: 5px; height: {{height}}px; left: {{left - 5}}px; top: {{top}}px;'
     splitterStyleMaps['north'] = 'width: {{width}}px; height: 5px; left: 0px; top: {{top+height}}px;'
     splitterStyleMaps['west'] = 'width: 5px; height: {{height}}px; left: {{left + width}}px; top: {{top}}px;'
+    bizui.vmodels['panel'] = avalon.mix(true, {}, bizui.containerVModel, {
+        $bizuiType: 'panel',
+        region: 'none',
+        border: true,
+        split: false,
+        hidden: false,
+        title: '',
+        baseCls: bizui.baseCSSPrefix + 'panel',
+        ui: 'default',
+        headerHeight: 25,
+        headerToolAmount: 0,
+        headerOrientation: 'horizontal',
+        headerDock: 'top',
+        collapsible: false,
+        collapsed: false,
+        getContentSize: function () {
+            return {
+                width: this.width,
+                height: this.height - this.headerHeight
+            }
+        },
+        //Ext.panel.Header
+        headerBaseCls: bizui.baseCSSPrefix + 'panel-header',
+        headerUi: 'default',
+        headerCls: bizui.baseCSSPrefix + 'header',
+        getHeaderCls: function () {
+            var me = this
+            var cls = [me.headerBaseCls, me.headerBaseCls + '-' + me.headerUi,
+                me.headerCls, me.headerCls + '-' + me.headerOrientation, bizui.baseCSSPrefix+ 'docked']
+            return cls
+        },
+        getHeaderUiCls: function () {
+            var me = this, uiCls = [me.headerDock, 'docked-' + me.headerDock, me.headerOrientation]
+            return uiCls
+        },
+        getHeaderToolTemplate:function(){
+            var me=this, headerTools = [],toolsTemplate=''
+            me.$titleHeight = me.headerHeight
+            if (!me.title) {
+                me.headerHeight = 0
+            }
+            if (me.tools) {
+                var tools = me.tools.split(',')
+                for (var i = 0, il = tools.length; i < il; i++) {
+                    var toolOpts = tools[i].split('|')
+                    headerTools.push({
+                        type: toolOpts[0],
+                        handler: toolOpts[1] || ''
+                    })
+                }
+            }
+
+            delete me.tools
+            if (me.region && headerTools.length == 0 && me.collapsible === true) {
+                var toolType = bizui.panel.toolTypeMaps[me.region]
+                headerTools.push({
+                    type: toolType,
+                    handler: 'onCollapseClick'
+                })
+            }
+            if (headerTools.length > 0) {
+                me.headerHeight = me.$titleHeight
+            }
+            me.headerToolAmount = headerTools.length
+            for (var i = 0, il = headerTools.length; i < il; i++) {
+                var tool = headerTools[i]
+                if (i == 0) {
+                    toolsTemplate += '<div  style="position:absolute !important;" ms-css-left="width-12-headerToolAmount*16">'
+                }
+                toolsTemplate += '<div ms-bizui="tool" data-tool-type="' + tool.type + '"' + 'data-tool-left="' + 16 * i + '"'
+                if (tool.handler) {
+                    toolsTemplate += 'data-tool-handler="' + tool.handler + '"'
+                }
+                toolsTemplate += '></div>'
+            }
+
+            if (toolsTemplate) {
+                toolsTemplate += '</div>'
+            }
+            return toolsTemplate
+        }
+    })
     avalon.bizui['panel'] = function (element, data, vmodels) {
         var options = avalon.mix(true, {}, bizui.vmodels['panel'], data.panelOptions)
         var $element = avalon(element)
         element.stopScan = true
-        options.$titleHeight = options.headerHeight
-        if (!options.title) {
-            options.headerHeight = 0
-        }
-        var headerTools = []
-        if (options.tools) {
-            var tools = options.tools.split(',')
-            for (var i = 0, il = tools.length; i < il; i++) {
-                var toolOpts = tools[i].split('|')
-                headerTools.push({
-                    type: toolOpts[0],
-                    handler: toolOpts[1] || ''
-                })
-            }
-        }
-
-        delete options.tools
-        if (options.region && headerTools.length == 0 && options.collapsible === true) {
-            var toolType = toolTypeMaps[options.region]
-            headerTools.push({
-                type: toolType,
-                handler: 'onCollapseClick'
-            })
-        }
-        if (headerTools.length > 0) {
-            options.headerHeight = options.$titleHeight
-        }
-        options.headerToolAmount = headerTools.length
         var comps = bizui.getChildren(element, data.panelId, vmodels)
-        var toolsTemplate = ''
-        for (var i = 0, il = headerTools.length; i < il; i++) {
-            var tool = headerTools[i]
-            if (i == 0) {
-                toolsTemplate += '<div  style="position:absolute !important;" ms-css-left="width-12-headerToolAmount*16">'
-            }
-            toolsTemplate += '<div ms-bizui="tool" data-tool-type="' + tool.type + '"' + 'data-tool-left="' + 16 * i + '"'
-            if (tool.handler) {
-                toolsTemplate += 'data-tool-handler="' + tool.handler + '"'
-            }
-            toolsTemplate += '></div>'
-        }
-
-        if (toolsTemplate) {
-            toolsTemplate += '</div>'
-        }
-        var headerTemplate = '<div ms-if="headerHeight!=0" class="x-panel-header x-docked x-panel-header-default x-horizontal x-panel-header-horizontal x-panel-header-default-horizontal x-top x-panel-header-top x-panel-header-default-top x-docked-top x-panel-header-docked-top x-panel-header-default-docked-top x-unselectable"' +
+        var toolsTemplate =options.getHeaderToolTemplate()
+        var headerCls = options.getHeaderCls()
+        headerCls.push('x-unselectable')
+        headerCls = headerCls.join(' ')
+        var headerUiCls = options.getHeaderUiCls()
+        var UiCls = bizui.clsHelper.addUICls(options.headerBaseCls, options.headerUi,headerUiCls)
+        headerCls +=' ' + UiCls.join(' ')
+        var headerBodyCls = bizui.clsHelper.addUICls(options.headerBaseCls + '-body',options.headerUi, headerUiCls, true)
+        headerBodyCls.push('x-box-layout-ct')
+        var headerTemplate = '<div ms-if="headerHeight!=0" class="'+headerCls+'"' +
             ' style="left: 0px; top: 0px;" ms-css-width="width">' +
-            '<div class="x-panel-header-body x-panel-header-body-default x-panel-header-body-horizontal x-panel-header-body-default-horizontal x-panel-header-body-top x-panel-header-body-default-top x-panel-header-body-docked-top x-panel-header-body-default-docked-top x-panel-header-body-default-horizontal x-panel-header-body-default-top x-panel-header-body-default-docked-top x-box-layout-ct" ' +
+            '<div class="'+headerBodyCls.join(' ')+'" ' +
             ' ms-css-width="width">' +
             '<div class="x-box-inner " role="presentation"' +
             ' ms-css-width="width-12" ms-css-height="headerHeight-8">' +
@@ -149,7 +179,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
                 var me = this
                 var $me = avalon(me)
                 var datas = $me.data()
-                $me.removeClass('x-splitter-active')
+                $me.removeClass(bizui.baseCSSPrefix + 'splitter-active')
                 var heightChanged = data.top - data.startTop
                 var widthChanged = data.left - data.startLeft
                 var region = datas.region
@@ -198,7 +228,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
             })
         }
 
-        var template = ' <div class="x-panel-body x-panel-body-default x-panel-body-default"' +
+        var template = ' <div class="x-panel-body x-panel-body-default"' +
             ' ms-class-0="x-docked-noborder-top:!border"' +
             ' ms-class-1="x-docked-noborder-left:!border"' +
             ' ms-class-2="x-docked-noborder-right:!border"' +

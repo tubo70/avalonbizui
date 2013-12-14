@@ -1,29 +1,229 @@
 /**
  * Created by weiwei on 13-12-14.
  */
+define(['avalon', 'bizui.panel'], function (avalon) {
+    bizui.vmodels['tree'] = avalon.mix(true, {}, bizui.vmodels['panel'], {
+        $bizuiType: 'tree',
+        lines: true,
+        rowLines: false,
+        useArrows: false,
+        baseCls: bizui.baseCSSPrefix + 'panel',
+        ui: 'default',
+        uiCls: '',
+        //Ext.panel.Table
+        extraBaseCls: bizui.baseCSSPrefix + 'grid',
+        extraBodyCls: bizui.baseCSSPrefix + 'grid-body',
+        colLinesCls: bizui.baseCSSPrefix + 'grid-with-col-lines',
+        rowLinesCls: bizui.baseCSSPrefix + 'grid-with-row-lines',
+        noRowLinesCls: bizui.baseCSSPrefix + 'grid-no-row-lines',
+        hiddenHeaderCtCls: bizui.baseCSSPrefix + 'grid-header-ct-hidden',
+        hiddenHeaderCls: bizui.baseCSSPrefix + 'grid-header-hidden',
+        resizeMarkerCls: bizui.baseCSSPrefix + 'grid-resize-marker',
+        emptyCls: bizui.baseCSSPrefix + 'grid-empty',
+        //Ext.panel.Tree
+        treeCls: bizui.baseCSSPrefix + 'tree-panel',
+        arrowCls: bizui.baseCSSPrefix + 'tree-arrows',
+        linesCls: bizui.baseCSSPrefix + 'tree-lines',
+        noLinesCls: bizui.baseCSSPrefix + 'tree-no-lines',
+        autoWidthCls: bizui.baseCSSPrefix + 'autowidth-table',
+
+        iconCls: bizui.baseCSSPrefix + 'tree-icon',
+        checkboxCls: bizui.baseCSSPrefix + 'tree-checkbox',
+        elbowCls: bizui.baseCSSPrefix + 'tree-elbow',
+        expanderCls: bizui.baseCSSPrefix + 'tree-expander',
+        textCls: bizui.baseCSSPrefix + 'tree-node-text',
+        innerCls: bizui.baseCSSPrefix + 'grid-cell-inner-treecolumn',
+///src/view/Table.js
+        firstCls: bizui.baseCSSPrefix + 'grid-cell-first',
+        lastCls: bizui.baseCSSPrefix + 'grid-cell-last',
+        selectedItemCls: bizui.baseCSSPrefix + 'grid-row-selected',
+        beforeSelectedItemCls: bizui.baseCSSPrefix + 'grid-row-before-selected',
+        selectedCellCls: bizui.baseCSSPrefix + 'grid-cell-selected',
+        focusedItemCls: bizui.baseCSSPrefix + 'grid-row-focused',
+        beforeFocusedItemCls: bizui.baseCSSPrefix + 'grid-row-before-focused',
+        tableFocusedFirstCls: bizui.baseCSSPrefix + 'grid-table-focused-first',
+        tableSelectedFirstCls: bizui.baseCSSPrefix + 'grid-table-selected-first',
+        tableOverFirstCls: bizui.baseCSSPrefix + 'grid-table-over-first',
+        overItemCls: bizui.baseCSSPrefix + 'grid-row-over',
+        beforeOverItemCls: bizui.baseCSSPrefix + 'grid-row-before-over',
+        altRowCls: bizui.baseCSSPrefix + 'grid-row-alt',
+        dirtyCls: bizui.baseCSSPrefix + 'grid-dirty-cell',
+        rowClsRe: new RegExp('(?:^|\\s*)' + bizui.baseCSSPrefix + 'grid-row-(first|last|alt)(?:\\s+|$)', 'g'),
+        cellRe: new RegExp(bizui.baseCSSPrefix + 'grid-cell-([^\\s]+) ', '')
+    })
+    avalon.bizui['tree'] = function (element, data, vmodels) {
+        element.stopScan = true
+        var $element = avalon(element)
+        avalon.clearChild(element)
+        var options = avalon.mix(true, {}, bizui.vmodels['tree'], data.treeOptions)
+        var panelCls = [options.baseCls, options.baseCls + '-' + options.ui, options.treeCls,
+            options.extraBaseCls, options.extraBodyCls, options.hiddenHeaderCls]
+        if (options.useArrows) {
+            panelCls.push(options.arrowCls)
+            options.lines = false
+        }
+
+        if (options.lines) {
+            panelCls.push(options.linesCls)
+        } else if (!options.useArrows) {
+            panelCls.push(options.noLinesCls)
+        }
+        if (options.rowLines) {
+            panelCls.push(options.rowLinesCls)
+        } else {
+            panelCls.push(options.noRowLinesCls)
+        }
+        panelCls = panelCls.join(' ')
+        $element.addClass(panelCls)
+            .attr('ms-css-width', 'width')
+            .attr('ms-css-height', 'height')
+        var toolsTemplate = options.getHeaderToolTemplate()
+        var headerCls = options.getHeaderCls()
+        headerCls.push('x-unselectable')
+        headerCls = headerCls.join(' ')
+        var headerUiCls = options.getHeaderUiCls()
+        var uiCls = bizui.clsHelper.addUICls(options.headerBaseCls, options.headerUi, headerUiCls)
+        headerCls += ' ' + uiCls.join(' ')
+        var headerBodyCls = bizui.clsHelper.addUICls(options.headerBaseCls + '-body', options.headerUi, headerUiCls, true)
+        headerBodyCls.push('x-box-layout-ct')
+        var headerTemplate = '<div ms-if="headerHeight!=0" class="' + headerCls + '"' +
+            ' style="left: 0px; top: 0px;" ms-css-width="width">' +
+            '<div class="' + headerBodyCls.join(' ') + '" ' +
+            ' ms-css-width="width">' +
+            '<div class="x-box-inner " role="presentation"' +
+            ' ms-css-width="width-12" ms-css-height="headerHeight-8">' +
+            '<div style="position: absolute; left: 0px; top: 0px; height: 1px;" ms-css-width="width-12">' +
+            '<div class="x-component x-panel-header-text-container x-box-item x-component-default"' +
+            ' style="text-align: left; left: 0px; top: 0px; margin: 0px;" ms-css-width="width-12-headerToolAmount*16">' +
+            '<span class="x-panel-header-text x-panel-header-text-default">{{title}}</span>' +
+            '</div>' +
+            toolsTemplate +
+            '</div></div></div></div>'
+        var panelBodyCls = 'x-panel-body x-grid-body x-panel-body-default x-layout-fit'
+        var panelBodyTemplate = [
+            '<div class="' + panelBodyCls + '" style="left: 0px; top: 25px;"',
+            '  ms-css-width="width" ms-css-height="height-25">',
+            '  <div class="x-tree-view x-fit-item x-tree-view-default x-unselectable" style="overflow: auto; margin: 0px;"',
+            '    ms-css-width="width-2" ms-css-height="height-27">',
+            '    {{treeTemplate}}',
+            '  </div>',
+            '</div>']
+        var tableCls = [bizui.baseCSSPrefix + 'grid-table']
+        if (options.rowLines) {
+            tableCls.push(options.rowLinesCls)
+        } else {
+            tableCls.push(options.noRowLinesCls)
+        }
+        var tableTemplate = '<table role="presentation" ms-attr-id="{{bizuiId}}-table"' +
+            ' class="' + tableCls.join(' ') + '" border="0" cellspacing="0" cellpadding="0" ' +
+            ' tabIndex="-1" style="width: 10000px;">' +
+            ' <tbody ms-each-row="rows">' +
+            ' {{rowsTemplate}}</tbody></div>'
+        var rowCls = [bizui.baseCSSPrefix + 'grid-row', bizui.baseCSSPrefix + 'grid-data-row']
+        var rowsTemplate = [
+            '<tr class="' + rowCls.join(' ') + '"',
+            '  ms-class-0="' + options.selectedItemCls + ':row.selected"',
+            '  ms-class-0="' + options.focusedItemCls + ':row.selected"',
+            '  ms-hover="' + options.overItemCls + '"',
+            '  ms-class-1="' + options.beforeSelectedItemCls + ':??????"',
+            '  ms-class-2="' + options.beforeOverItemCls + ':?????"',
+            '  ms-class-3="' + options.beforeFocusedItemCls + ':????">',
+            '  {{cellTemplate}}',
+            '</tr>'
+
+        ]
+        var cellTemplate = [
+            '<img ms-repeat-line="row.lines" src="{parent.blankUrl}" class="' + options.elbowCls + '-img"',
+            '  ms-class-0="' + options.elbowCls + '-line:line" ms-class-1="' + options.elbowCls + '-empty:!line"/>',
+            '<img src="{blankUrl}" class="' + options.elbowCls + '-img"',
+            '  ms-class-0="' + options.elbowCls + '-end:$last"',
+            '  ms-class-1="' + options.elbowCls + '-plus ' + options.expanderCls + ':row.expandable"/>',
+            '<input ms-if="row.checked!==null" class="' + options.checkboxCls + '" type="button" role="checkbox"',
+            '  ms-attr-aria-checked="{{row.checked?\'true\':\'\'}}"',
+            '  ms-class-0="' + options.checkboxCls + '-checked:row.checked" />'
+        ]
+        panelBodyTemplate = panelBodyTemplate.join(' ')
+        var vmodel = avalon.define(data.treeId, function (vm) {
+            avalon.mix(vm, options)
+
+        })
+        avalon.nextTick(function () {
+            avalon.innerHTML(element, headerTemplate + panelBodyTemplate)
+            element.stopScan = false
+            avalon.scan(element, [vmodel].concat(vmodels))
+        })
+        return vmodel
+    }
+    avalon.bizui['tree'].defaults = {}
+    return avalon
+})
 /*
 
-//\ext-4.2.1.883\src\tree\Column.js
-cellTpl: [
-    '<tpl for="lines">',
-    '<img src="{parent.blankUrl}" class="{parent.childCls} {parent.elbowCls}-img ',
-    '{parent.elbowCls}-<tpl if=".">line<tpl else>empty</tpl>"/>',
-    '</tpl>',
-    '<img src="{blankUrl}" class="{childCls} {elbowCls}-img {elbowCls}',
-    '<tpl if="isLast">-end</tpl><tpl if="expandable">-plus {expanderCls}</tpl>"/>',
-    '<tpl if="checked !== null">',
-    '<input type="button" role="checkbox" <tpl if="checked">aria-checked="true" </tpl>',
-    'class="{childCls} {checkboxCls}<tpl if="checked"> {checkboxCls}-checked</tpl>"/>',
-    '</tpl>',
-    '<img src="{blankUrl}" class="{childCls} {baseIconCls} ',
-    '{baseIconCls}-<tpl if="leaf">leaf<tpl else>parent</tpl> {iconCls}"',
-    '<tpl if="icon">style="background-image:url({icon})"</tpl>/>',
-    '<tpl if="href">',
-    '<a href="{href}" target="{hrefTarget}" class="{textCls} {childCls}">{value}</a>',
-    '<tpl else>',
-    '<span class="{textCls} {childCls}">{value}</span>',
-    '</tpl>'
-]
+ tableTpl: [
+ '{%',
+ // Add the row/column line classes to the table element.
+ 'var view=values.view,tableCls=["' + Ext.baseCSSPrefix + '" + view.id + "-table ' + Ext.baseCSSPrefix + 'grid-table"];',
+ 'if (view.columnLines) tableCls[tableCls.length]=view.ownerCt.colLinesCls;',
+ 'if (view.rowLines) tableCls[tableCls.length]=view.ownerCt.rowLinesCls;',
+ '%}',
+ '<table role="presentation" id="{view.id}-table" class="{[tableCls.join(" ")]}" border="0" cellspacing="0" cellpadding="0" style="{tableStyle}" tabIndex="-1">',
+ '{[view.renderColumnSizer(out)]}',
+ '{[view.renderTHead(values, out)]}',
+ '{[view.renderTFoot(values, out)]}',
+ '<tbody id="{view.id}-body">',
+ '{%',
+ 'view.renderRows(values.rows, values.viewStartIndex, out);',
+ '%}',
+ '</tbody>',
+ '</table>',
+ {
+ priority: 0
+ }
+ ],
+
+ rowTpl: [
+ '{%',
+ 'var dataRowCls = values.recordIndex === -1 ? "" : " ' + Ext.baseCSSPrefix + 'grid-data-row";',
+ '%}',
+ '<tr role="row" {[values.rowId ? ("id=\\"" + values.rowId + "\\"") : ""]} ',
+ 'data-boundView="{view.id}" ',
+ 'data-recordId="{record.internalId}" ',
+ 'data-recordIndex="{recordIndex}" ',
+ 'class="{[values.itemClasses.join(" ")]} {[values.rowClasses.join(" ")]}{[dataRowCls]}" ',
+ '{rowAttr:attributes} tabIndex="-1">',
+ '<tpl for="columns">' +
+ '{%',
+ 'parent.view.renderCell(values, parent.record, parent.recordIndex, xindex - 1, out, parent)',
+ '%}',
+ '</tpl>',
+ '</tr>',
+ {
+ priority: 0
+ }
+ ],
+
+
+ //\ext-4.2.1.883\src\tree\Column.js
+ cellTpl: [
+ '<tpl for="lines">',
+ '<img src="{parent.blankUrl}" class="{parent.childCls} {parent.elbowCls}-img ',
+ '{parent.elbowCls}-<tpl if=".">line<tpl else>empty</tpl>"/>',
+ '</tpl>',
+ '<img src="{blankUrl}" class="{childCls} {elbowCls}-img {elbowCls}',
+ '<tpl if="isLast">-end</tpl><tpl if="expandable">-plus {expanderCls}</tpl>"/>',
+ '<tpl if="checked !== null">',
+ '<input type="button" role="checkbox" <tpl if="checked">aria-checked="true" </tpl>',
+ 'class="{childCls} {checkboxCls}<tpl if="checked"> {checkboxCls}-checked</tpl>"/>',
+ '</tpl>',
+ '<img src="{blankUrl}" class="{childCls} {baseIconCls} ',
+ '{baseIconCls}-<tpl if="leaf">leaf<tpl else>parent</tpl> {iconCls}"',
+ '<tpl if="icon">style="background-image:url({icon})"</tpl>/>',
+ '<tpl if="href">',
+ '<a href="{href}" target="{hrefTarget}" class="{textCls} {childCls}">{value}</a>',
+ '<tpl else>',
+ '<span class="{textCls} {childCls}">{value}</span>',
+ '</tpl>'
+ ]
  treeRenderer: function(value, metaData, record, rowIdx, colIdx, store, view){
  var me = this,
  cls = record.get('cls'),
@@ -100,7 +300,7 @@ cellTpl: [
  ]);
 
 
-///src/view/Table.js
+ ///src/view/Table.js
  renderCell: function(column, record, recordIndex, columnIndex, out) {
  var me = this,
  selModel = me.selModel,
@@ -178,79 +378,79 @@ cellTpl: [
 
 
 
-///src/view/Table.js
+ ///src/view/Table.js
 
-renderRows: function(rows, viewStartIndex, out) {
-    var rowValues = this.rowValues,
-        rowCount = rows.length,
-        i;
+ renderRows: function(rows, viewStartIndex, out) {
+ var rowValues = this.rowValues,
+ rowCount = rows.length,
+ i;
 
-    rowValues.view = this;
-    rowValues.columns = this.ownerCt.columnManager.getColumns();
+ rowValues.view = this;
+ rowValues.columns = this.ownerCt.columnManager.getColumns();
 
-    for (i = 0; i < rowCount; i++, viewStartIndex++) {
-        rowValues.itemClasses.length = rowValues.rowClasses.length = 0;
-        this.renderRow(rows[i], viewStartIndex, out);
-    }
+ for (i = 0; i < rowCount; i++, viewStartIndex++) {
+ rowValues.itemClasses.length = rowValues.rowClasses.length = 0;
+ this.renderRow(rows[i], viewStartIndex, out);
+ }
 
-    // Dereference objects since rowValues is a persistent on our prototype
-    rowValues.view = rowValues.columns = rowValues.record = null;
-}
+ // Dereference objects since rowValues is a persistent on our prototype
+ rowValues.view = rowValues.columns = rowValues.record = null;
+ }
 
-renderRow: function(record, rowIdx, out) {
-    var me = this,
-        isMetadataRecord = rowIdx === -1,
-        selModel = me.selModel,
-        rowValues = me.rowValues,
-        itemClasses = rowValues.itemClasses,
-        rowClasses = rowValues.rowClasses,
-        cls,
-        rowTpl = me.rowTpl;
+ renderRow: function(record, rowIdx, out) {
+ var me = this,
+ isMetadataRecord = rowIdx === -1,
+ selModel = me.selModel,
+ rowValues = me.rowValues,
+ itemClasses = rowValues.itemClasses,
+ rowClasses = rowValues.rowClasses,
+ cls,
+ rowTpl = me.rowTpl;
 
-    // Set up mandatory properties on rowValues
-    rowValues.record = record;
-    rowValues.recordId = record.internalId;
-    rowValues.recordIndex = rowIdx;
-    rowValues.rowId = me.getRowId(record);
-    rowValues.itemCls = rowValues.rowCls = '';
-    if (!rowValues.columns) {
-        rowValues.columns = me.ownerCt.columnManager.getColumns();
-    }
+ // Set up mandatory properties on rowValues
+ rowValues.record = record;
+ rowValues.recordId = record.internalId;
+ rowValues.recordIndex = rowIdx;
+ rowValues.rowId = me.getRowId(record);
+ rowValues.itemCls = rowValues.rowCls = '';
+ if (!rowValues.columns) {
+ rowValues.columns = me.ownerCt.columnManager.getColumns();
+ }
 
-    itemClasses.length = rowClasses.length = 0;
+ itemClasses.length = rowClasses.length = 0;
 
-    // If it's a metadata record such as a summary record.
-    // So do not decorate it with the regular CSS.
-    // The Feature which renders it must know how to decorate it.
-    if (!isMetadataRecord) {
-        itemClasses[0] = Ext.baseCSSPrefix + "grid-row";
-        if (selModel && selModel.isRowSelected) {
-            if (selModel.isRowSelected(rowIdx + 1)) {
-                itemClasses.push(me.beforeSelectedItemCls);
-            }
-            if (selModel.isRowSelected(record)) {
-                itemClasses.push(me.selectedItemCls);
-            }
-        }
+ // If it's a metadata record such as a summary record.
+ // So do not decorate it with the regular CSS.
+ // The Feature which renders it must know how to decorate it.
+ if (!isMetadataRecord) {
+ itemClasses[0] = Ext.baseCSSPrefix + "grid-row";
+ if (selModel && selModel.isRowSelected) {
+ if (selModel.isRowSelected(rowIdx + 1)) {
+ itemClasses.push(me.beforeSelectedItemCls);
+ }
+ if (selModel.isRowSelected(record)) {
+ itemClasses.push(me.selectedItemCls);
+ }
+ }
 
-        if (me.stripeRows && rowIdx % 2 !== 0) {
-            rowClasses.push(me.altRowCls);
-        }
+ if (me.stripeRows && rowIdx % 2 !== 0) {
+ rowClasses.push(me.altRowCls);
+ }
 
-        if (me.getRowClass) {
-            cls = me.getRowClass(record, rowIdx, null, me.dataSource);
-            if (cls) {
-                rowClasses.push(cls);
-            }
-        }
-    }
+ if (me.getRowClass) {
+ cls = me.getRowClass(record, rowIdx, null, me.dataSource);
+ if (cls) {
+ rowClasses.push(cls);
+ }
+ }
+ }
 
-    if (out) {
-        rowTpl.applyOut(rowValues, out);
-    } else {
-        return rowTpl.apply(rowValues);
-    }
-},
+ if (out) {
+ rowTpl.applyOut(rowValues, out);
+ } else {
+ return rowTpl.apply(rowValues);
+ }
+ },
  (function(Ext) {
  var fm=Ext.util.Format,ts=Object.prototype.toString;
  return function (out,values,parent,xindex,xcount,xkey) {
@@ -284,4 +484,72 @@ renderRow: function(record, rowIdx, out) {
  out.push('</tr>')
 
  }
- })    */
+ })
+ ///src/data/NodeStore.js
+ onNodeExpand: function(parent, records, suppressEvent) {
+ var me = this,
+ insertIndex = me.indexOf(parent) + 1,
+ toAdd = [];
+
+ // Used by the TreeView to bracket recursive expand & collapse ops
+ // and refresh the size. This is most effective when folder nodes are loaded,
+ // and this method is able to recurse.
+ if (!suppressEvent) {
+ me.fireEvent('beforeexpand', parent, records, insertIndex);
+ }
+
+ me.handleNodeExpand(parent, records, toAdd);
+
+ // The add event from this insertion is handled by TreeView.onAdd.
+ // That implementation calls parent and then ensures the previous sibling's joining lines are correct.
+ // The datachanged event is relayed by the TreeStore. Internally, that's not used.
+ me.insert(insertIndex, toAdd);
+
+ // Triggers the TreeView's onExpand method which calls refreshSize,
+ // and fires its afteritemexpand event
+ if (!suppressEvent) {
+ me.fireEvent('expand', parent, records);
+ }
+ },
+
+ // Collects child nodes to remove into the passed toRemove array.
+ // When available, all descendant nodes are pushed into that array using recursion.
+ handleNodeExpand: function(parent, records, toAdd) {
+ var me = this,
+ ln = records ? records.length : 0,
+ i, record;
+
+ // recursive is hardcoded to true in TreeView.
+ if (!me.recursive && parent !== me.node) {
+ return;
+ }
+
+ if (parent !== this.node && !me.isVisible(parent)) {
+ return;
+ }
+
+ if (ln) {
+ // The view items corresponding to these are rendered.
+ // Loop through and expand any of the non-leaf nodes which are expanded
+ for (i = 0; i < ln; i++) {
+ record = records[i];
+
+ // Add to array being collected by recursion when child nodes are loaded.
+ // Must be done here in loop so that child nodes are inserted into the stream in place
+ // in recursive calls.
+ toAdd.push(record);
+
+ if (record.isExpanded()) {
+ if (record.isLoaded()) {
+ // Take a shortcut - appends to toAdd array
+ me.handleNodeExpand(record, record.childNodes, toAdd);
+ }
+ else {
+ // Might be asynchronous if child nodes are not immediately available
+ record.set('expanded', false);
+ record.expand();
+ }
+ }
+ }
+ }
+ },*/
