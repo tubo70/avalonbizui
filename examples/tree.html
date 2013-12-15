@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="x-border-box x-strict x-viewport">
 <head>
-    <title>Tab</title>
+    <title>Tree</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="../resources/css/ext-all-debug.css">
     <script type="text/javascript" src="../avalon.js"></script>
@@ -9,11 +9,11 @@
     <script>
         require("bizui.tree", function () {
             avalon.define('tree', function (vm) {
-                vm.$tree={
-                    root:{
+                vm.$tree = {
+                    root: {
                         expanded: true,
                         children: [
-                            { text: "detention", leaf: true },
+                            { text: "detention", leaf: true ,checked:true},
                             { text: "homework", expanded: true, children: [
                                 { text: "book report", leaf: false, children: [
                                     { text: "book report", leaf: true },
@@ -32,7 +32,8 @@
 </head>
 <body ms-controller="tree">
 
-<div ms-bizui="tree" data-tree-width="200" data-tree-height="400" data-tree-title="树">
+<div ms-bizui="tree,$,$tree" data-tree-width="150" data-tree-height="200" data-tree-title="树">
 </div>
+
 </body>
 </html>

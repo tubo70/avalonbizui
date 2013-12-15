@@ -101,7 +101,8 @@
         eastWestRegion: {east: 1, west: 1},
         southNorthRegion: {south: 1, north: 1},
         zIndex: 19000,
-        vmodels: {}
+        vmodels: {},
+        BLANK_IMAGE_URL : (isIE6 || isIE7) ? '/' + '/www.sencha.com/s.gif' : 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='
     })
     bizui.filterData = function (obj, prefix) {
         var result = {}

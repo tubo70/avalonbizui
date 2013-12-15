@@ -49,7 +49,15 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         altRowCls: bizui.baseCSSPrefix + 'grid-row-alt',
         dirtyCls: bizui.baseCSSPrefix + 'grid-dirty-cell',
         rowClsRe: new RegExp('(?:^|\\s*)' + bizui.baseCSSPrefix + 'grid-row-(first|last|alt)(?:\\s+|$)', 'g'),
-        cellRe: new RegExp(bizui.baseCSSPrefix + 'grid-cell-([^\\s]+) ', '')
+        cellRe: new RegExp(bizui.baseCSSPrefix + 'grid-cell-([^\\s]+) ', ''),
+///src/tree/View.js
+        loadingCls: bizui.baseCSSPrefix + 'grid-tree-loading',
+        expandedCls: bizui.baseCSSPrefix + 'grid-tree-node-expanded',
+        leafCls: bizui.baseCSSPrefix + 'grid-tree-node-leaf',
+
+        //expanderSelector: '.' + Ext.baseCSSPrefix + 'tree-expander',
+        //checkboxSelector: '.' + Ext.baseCSSPrefix + 'tree-checkbox',
+        expanderIconOverCls: bizui.baseCSSPrefix + 'tree-expander-over'
     })
     avalon.bizui['tree'] = function (element, data, vmodels) {
         element.stopScan = true
@@ -57,7 +65,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         avalon.clearChild(element)
         var options = avalon.mix(true, {}, bizui.vmodels['tree'], data.treeOptions)
         var panelCls = [options.baseCls, options.baseCls + '-' + options.ui, options.treeCls,
-            options.extraBaseCls, options.extraBodyCls, options.hiddenHeaderCls]
+            options.extraBaseCls, options.extraBodyCls, options.hiddenHeaderCls, 'x-autowidth-table']
         if (options.useArrows) {
             panelCls.push(options.arrowCls)
             options.lines = false
@@ -114,38 +122,139 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         } else {
             tableCls.push(options.noRowLinesCls)
         }
-        var tableTemplate = '<table role="presentation" ms-attr-id="{{bizuiId}}-table"' +
+        var tableTemplate = '<table role="presentation" ms-ondbclick="nodeDbClick" ms-click="nodeClick" ms-attr-id="{{bizuiId}}-table"' +
             ' class="' + tableCls.join(' ') + '" border="0" cellspacing="0" cellpadding="0" ' +
             ' tabIndex="-1" style="width: 10000px;">' +
+            '<colgroup><col style="width: 10000px;"></colgroup>' +
             ' <tbody ms-each-row="rows">' +
-            ' {{rowsTemplate}}</tbody></div>'
+            ' {{rowsTemplate}}</tbody></table>'
         var rowCls = [bizui.baseCSSPrefix + 'grid-row', bizui.baseCSSPrefix + 'grid-data-row']
         var rowsTemplate = [
-            '<tr class="' + rowCls.join(' ') + '"',
-            '  ms-class-0="' + options.selectedItemCls + ':row.selected"',
-            '  ms-class-0="' + options.focusedItemCls + ':row.selected"',
+            '<tr role="row" ms-data-recordid="row.id" ms-data-index="$index" class="' + rowCls.join(' ') + '"',
+            '  ms-class-0="' + options.selectedItemCls + ':$index==selectedIndex"',
+            '  ms-class-1="' + options.focusedItemCls + ':$index==selectedIndex"',
             '  ms-hover="' + options.overItemCls + '"',
-            '  ms-class-1="' + options.beforeSelectedItemCls + ':??????"',
-            '  ms-class-2="' + options.beforeOverItemCls + ':?????"',
-            '  ms-class-3="' + options.beforeFocusedItemCls + ':????">',
+            '  ms-class-2="' + options.beforeSelectedItemCls + ':($index+1) == selectedIndex"',
+            //'  ms-class-3="' + options.beforeOverItemCls + ':?????"',
+            '  ms-class-4="' + options.beforeFocusedItemCls + ':($index+1) == selectedIndex"',
+            '  ms-class-5="' + options.expandedCls + ':row.expanded">',
             '  {{cellTemplate}}',
             '</tr>'
 
         ]
-        var cellTemplate = [
-            '<img ms-repeat-line="row.lines" src="{parent.blankUrl}" class="' + options.elbowCls + '-img"',
+        var cellTemplate = ['<td role="gridcell" class="x-grid-cell x-grid-td  x-grid-cell-treecolumn x-grid-cell-first x-grid-cell-last x-unselectable x-grid-cell-treecolumn">',
+            '<div unselectable="on" class="x-grid-cell-inner x-grid-cell-inner-treecolumn" style="text-align:left;">',
+            '<img ms-repeat-line="row.lines" src="' + bizui.BLANK_IMAGE_URL + '" class="' + options.elbowCls + '-img"',
             '  ms-class-0="' + options.elbowCls + '-line:line" ms-class-1="' + options.elbowCls + '-empty:!line"/>',
-            '<img src="{blankUrl}" class="' + options.elbowCls + '-img"',
-            '  ms-class-0="' + options.elbowCls + '-end:$last"',
-            '  ms-class-1="' + options.elbowCls + '-plus ' + options.expanderCls + ':row.expandable"/>',
+            '<img src="' + bizui.BLANK_IMAGE_URL + '" class="' + options.elbowCls + '-img"',
+            '  ms-class-0="' + options.elbowCls + ':!row.isLast && !row.expandable"',
+            '  ms-class-1="' + options.elbowCls + '-end:row.isLast && !row.expandable"',
+            '  ms-class-2="' + options.elbowCls + '-plus:row.expandable && !row.isLast"',
+            '  ms-class-3="' + options.elbowCls + '-end-plus:row.expandable && row.isLast"',
+            '  ms-class-4="' + options.expanderCls + ':row.expandable"/>',
             '<input ms-if="row.checked!==null" class="' + options.checkboxCls + '" type="button" role="checkbox"',
             '  ms-attr-aria-checked="{{row.checked?\'true\':\'\'}}"',
-            '  ms-class-0="' + options.checkboxCls + '-checked:row.checked" />'
+            '  ms-class-0="' + options.checkboxCls + '-checked:row.checked" />',
+            '<img src="' + bizui.BLANK_IMAGE_URL + '" class="' + options.iconCls + '"',
+            '  ms-class-0="' + options.iconCls + '-leaf:row.leaf"',
+            '  ms-class-1="' + options.iconCls + '-parent:!row.leaf"',
+            '  ms-class-2="row.iconCls:row.iconCls"',
+            '  ms-css-background-image="{{row.icon?\'url(\'+row.icon+\')\':\'\'}}"/>',
+            '<a ms-if="row.href" ms-href="row.href" ms-attr-target="row.hrefTarget" class="{textCls} {childCls}">{{row.text}}</a>',
+            '<span ms-if="!row.href" class="' + options.textCls + '">{{row.text}}</span></div></td>',
         ]
-        panelBodyTemplate = panelBodyTemplate.join(' ')
-        var vmodel = avalon.define(data.treeId, function (vm) {
-            avalon.mix(vm, options)
+        rowsTemplate = rowsTemplate.join(' ').replace('{{cellTemplate}}', cellTemplate.join(''))
+        tableTemplate = tableTemplate.replace('{{rowsTemplate}}', rowsTemplate)
+        avalon.log(tableTemplate)
+        panelBodyTemplate = panelBodyTemplate.join(' ').replace('{{treeTemplate}}', tableTemplate)
+        var rows = []
+        var oneRow = {parentId: null,
+            index: 0,
+            depth: 0,
+            expanded: false,
+            expandable: true,
+            checked: null,
+            leaf: false,
+            cls: '',
+            iconCls: '',
+            icon: '',
+            root: false,
+            isLast: false,
+            isFirst: false,
+            allowDrop: true,
+            allowDrag: true,
+            loaded: false,
+            loading: false,
+            href: '',
+            hrefTarget: '_blank',
+            qtip: '',
+            qtitle: '',
+            qshowDelay: 0,
+            children: null
+        }
 
+        function processNode(parent, node, out, depth) {
+            if (node.children) {
+                node.children[node.children.length - 1].isLast = true
+            }
+            else {
+                node.expandable = false
+                node.expanded = false
+            }
+            var node = avalon.mix({}, oneRow, {id: 'tree' + setTimeout('1')}, node)
+
+            if (out.length == 0) {
+                node.root = true
+                node.isFirst = true
+            }
+            node.index = out.length
+            node.$parentNode = parent
+            node.parentId = parent ? parent.id : null
+            node.depth = depth
+            node.lines = []
+            var parentNode = parent
+            while (parentNode) {
+                node.lines[ parentNode.depth] = parentNode.isLast ? 0 : 1;
+                parentNode = parentNode.$parentNode;
+            }
+            out.push(node)
+            if (node.children && node.expanded === true) {
+                for (var i = 0, il = node.children.length; i < il; i++) {
+                    processNode(node, node.children[i], out, depth + 1)
+                }
+            }
+            if (node.children) {
+                delete  node.children
+            }
+        }
+
+        if (options.root) {
+            options.root.isLast = true
+            processNode(null, options.root, rows, 0)
+        }
+        var vmodel = avalon.define(data.treeId, function (vm) {
+            vm.$skipArray = ['root']
+            avalon.mix(vm, options)
+            vm.rows = rows
+            vm.selectedIndex = -1
+            vm.nodeClick = function (e) {
+                var me = this.$vmodel
+                var target = e.target
+                while (target.tagName != 'TR') {
+                    target = target.parentNode
+                }
+                var index = avalon(target).data('index')
+                me.selectedIndex = index
+            }
+            vm.nodeDbClick=function(e){
+                var me = this.$vmodel
+                var target = e.target
+                while (target.tagName != 'TR') {
+                    target = target.parentNode
+                }
+                var index = avalon(target).data('index')
+                me.selectedIndex = index
+            }
         })
         avalon.nextTick(function () {
             avalon.innerHTML(element, headerTemplate + panelBodyTemplate)
