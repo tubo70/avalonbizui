@@ -478,15 +478,22 @@
     }
     var plugins = {
         alias: function(val) {
-            var map = kernel.alias
+            log("alias方法已经被废弃")
             for (var c in val) {
                 if (ohasOwn.call(val, c)) {
-                    var prevValue = map[c]
                     var currValue = val[c]
-                    if (prevValue) {
-                        avalon.error("注意 " + c + " 已经重写过")
+                    switch (getType(currValue)) {
+                        case "string":
+                            kernel.paths[c] = currValue
+                            break;
+                        case "object":
+                            if (currValue.src) {
+                                kernel.paths[c] = currValue.src
+                                delete currValue.src
+                            }
+                            kernel.shim[c] = currValue
+                            break;
                     }
-                    map[c] = currValue
                 }
             }
         },
@@ -514,7 +521,8 @@
 
     kernel.plugins = plugins
     kernel.plugins['interpolate'](["{{", "}}"])
-    kernel.alias = {}
+    kernel.paths = {}
+    kernel.shim = {}
     avalon.config = kernel
 
     /*********************************************************************
@@ -812,6 +820,18 @@
                 op = alpha ? alpha.opacity : 100
             return (op / 100) + "" //确保返回的是字符串
         }
+        //旧式IE无法通过currentStyle取得没有定义在样式表中的width, height值
+        "width,height".replace(rword, function(name) {
+            cssHooks[name + ":get"] = function(node) {
+                if (name === "width") {
+                    return  node.offsetWidth - avalon.css(node, "paddingLeft", true) - avalon.css(node, "paddingRight", true) -
+                        -avalon.css(node, "borderLeftWidth", true) - avalon.css(node, "borderRightWidth", true)
+                } else {
+                    return  node.offsetHeight - avalon.css(node, "paddingTop", true) - avalon.css(node, "paddingBottom", true) -
+                        -avalon.css(node, "borderTopWidth", true) - avalon.css(node, "borderBottomWidth", true)
+                }
+            }
+        })
     }
 
     "top,left".replace(rword, function(name) {
@@ -1543,22 +1563,26 @@
                 }
             }
         }
-        bindings.sort(function(a, b) {
-            if (a.type === "duplex") { //确保duplex排在ms-value的后面
-                return Infinity
-            }
-            if (b.type == "duplex") {
-                return -Infinity
-            }
-            return a.node.name > b.node.name
-        })
-        if (repeatBinding) {
-            bindings = [repeatBinding]
-        }
+
         if (ifBinding) {
             // 优先处理if绑定， 如果if绑定的表达式为假，那么就不处理同级的绑定属性及扫描子孙节点
             bindingHandlers["if"](ifBinding, vmodels)
         } else {
+            if (repeatBinding) {
+                bindings = [repeatBinding]
+            } else {
+                if (bindings.length >= 2) {
+                    bindings.sort(function(a, b) {
+                        if (a.type === "duplex") { //确保duplex排在ms-value的后面
+                            return Infinity
+                        }
+                        if (b.type == "duplex") {
+                            return -Infinity
+                        }
+                        return a.node.name > b.node.name
+                    })
+                }
+            }
             executeBindings(bindings, vmodels)
             if ((!elem.stopScan) && !stopScan[elem.tagName] && rbind.test(elem.innerHTML)) {
                 scanNodes(elem, vmodels) //扫描子孙元素
@@ -2934,7 +2958,7 @@
         var group = data.group
         var parent = data.parent
         var mapper = data.mapper
-        if (method == "del" || method == "move" ) {
+        if (method == "del" || method == "move") {
             var locatedNode = getLocatedNode(parent, data, pos)
         }
         switch (method) {
@@ -3568,12 +3592,11 @@
                 return url
             }
             //2. 转化为完整路径
-            if (kernel.alias[url]) { //别名机制
-                url = kernel.alias[url]
-                if (typeof url === "object") {
-                    shim = url
-                    url = url.src
-                }
+            if (kernel.shim[url] === "object") {
+                shim = kernel.shim[url]
+            }
+            if (kernel.paths[url]) { //别名机制
+                url = kernel.paths[url]
             }
             //3.  处理text!  css! 等资源
             var plugin

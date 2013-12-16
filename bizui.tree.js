@@ -122,7 +122,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         } else {
             tableCls.push(options.noRowLinesCls)
         }
-        var tableTemplate = '<table role="presentation" ms-ondbclick="nodeDbClick" ms-click="nodeClick" ms-attr-id="{{bizuiId}}-table"' +
+        var tableTemplate = '<table role="presentation" ms-on-dblclick="nodeDblClick" ms-click="nodeClick" ms-attr-id="{{bizuiId}}-table"' +
             ' class="' + tableCls.join(' ') + '" border="0" cellspacing="0" cellpadding="0" ' +
             ' tabIndex="-1" style="width: 10000px;">' +
             '<colgroup><col style="width: 10000px;"></colgroup>' +
@@ -165,7 +165,6 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         ]
         rowsTemplate = rowsTemplate.join(' ').replace('{{cellTemplate}}', cellTemplate.join(''))
         tableTemplate = tableTemplate.replace('{{rowsTemplate}}', rowsTemplate)
-        avalon.log(tableTemplate)
         panelBodyTemplate = panelBodyTemplate.join(' ').replace('{{treeTemplate}}', tableTemplate)
         var rows = []
         var oneRow = {parentId: null,
@@ -190,10 +189,12 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             qtip: '',
             qtitle: '',
             qshowDelay: 0,
-            children: null
+            children: null,
+            $skipArray: ['childern']
         }
 
-        function processNode(parent, node, out, depth) {
+        function processNode(parent, node, out, depth, skips) {
+            skips = skips || -1
             if (node.children) {
                 node.children[node.children.length - 1].isLast = true
             }
@@ -201,59 +202,141 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                 node.expandable = false
                 node.expanded = false
             }
-            var node = avalon.mix({}, oneRow, {id: 'tree' + setTimeout('1')}, node)
-
             if (out.length == 0) {
                 node.root = true
                 node.isFirst = true
             }
-            node.index = out.length
-            node.$parentNode = parent
-            node.parentId = parent ? parent.id : null
-            node.depth = depth
-            node.lines = []
-            var parentNode = parent
-            while (parentNode) {
-                node.lines[ parentNode.depth] = parentNode.isLast ? 0 : 1;
-                parentNode = parentNode.$parentNode;
-            }
-            out.push(node)
-            if (node.children && node.expanded === true) {
-                for (var i = 0, il = node.children.length; i < il; i++) {
-                    processNode(node, node.children[i], out, depth + 1)
+            if (node.index >= skips) {
+                skips = -1
+                node.index = out.length
+                node.$parentNode = parent
+                node.parentId = parent ? parent.id : null
+                node.depth = depth
+                node.lines = []
+                var parentNode = parent
+                while (parentNode) {
+                    node.lines[ parentNode.depth] = parentNode.isLast ? 0 : 1;
+                    parentNode = parentNode.$parentNode;
                 }
+                out.push(node)
+            }
+            if (node.index == skips - 1) {
+                skips = -1
             }
             if (node.children) {
-                delete  node.children
+                for (var i = 0, il = node.children.length; i < il; i++) {
+                    avalon.mixIf(node.children[i], oneRow, {id: 'tree' + setTimeout('1'), $parentNode: node})
+                    if (node.expanded === true) {
+                        processNode(node, node.children[i], out, depth + 1, skips)
+                    }
+                }
             }
+            node.$skipArray = ['children']
         }
 
         if (options.root) {
             options.root.isLast = true
+            avalon.mixIf(options.root, oneRow, {id: 'tree' + setTimeout('1')})
             processNode(null, options.root, rows, 0)
         }
         var vmodel = avalon.define(data.treeId, function (vm) {
-            vm.$skipArray = ['root']
+            vm.$skipArray = ['root', 'listeners',
+                'extraBaseCls',
+                'extraBodyCls',
+                'colLinesCls',
+                'rowLinesCls',
+                'noRowLinesCls',
+                'hiddenHeaderCtCls',
+                'hiddenHeaderCls',
+                'resizeMarkerCls',
+                'emptyCls',
+                'treeCls',
+                'arrowCls',
+                'linesCls',
+                'noLinesCls',
+                'autoWidthCls',
+                'iconCls',
+                'checkboxCls',
+                'elbowCls',
+                'expanderCls',
+                'textCls',
+                'innerCls',
+                'firstCls',
+                'lastCls',
+                'selectedItemCls',
+                'beforeSelectedItemCls',
+                'selectedCellCls',
+                'focusedItemCls',
+                'beforeFocusedItemCls',
+                'tableFocusedFirstCls',
+                'tableSelectedFirstCls',
+                'tableOverFirstCls',
+                'overItemCls',
+                'beforeOverItemCls',
+                'altRowCls',
+                'dirtyCls',
+                'rowClsRe',
+                'cellRe',
+                'loadingCls',
+                'expandedCls',
+                'leafCls',
+                'expanderIconOverCls']
             avalon.mix(vm, options)
             vm.rows = rows
             vm.selectedIndex = -1
-            vm.nodeClick = function (e) {
-                var me = this.$vmodel
-                var target = e.target
-                while (target.tagName != 'TR') {
-                    target = target.parentNode
+            if (options.listeners) {
+                for (var name in options.listeners) {
+                    vm.$watch(name, options.listeners[name])
                 }
-                var index = avalon(target).data('index')
-                me.selectedIndex = index
             }
-            vm.nodeDbClick=function(e){
-                var me = this.$vmodel
-                var target = e.target
+            vm.nodeClick = function (e) {
+                var me = this.$vmodel,
+                    target = e.target,
+                    $target = avalon(target),
+                    expandAction = false
+                if ($target.hasClass(me.expanderCls)) {
+                    expandAction = true
+                }
+
                 while (target.tagName != 'TR') {
                     target = target.parentNode
                 }
                 var index = avalon(target).data('index')
-                me.selectedIndex = index
+                var node = me.rows[index]
+                if ($target.hasClass(me.checkboxCls)) {
+                    node.checked = !node.checked
+                }
+                if (expandAction) {
+                    node.expanded = !node.expanded
+                    me.rows.splice(index + 1, me.rows.length - index - 1)
+                    processNode(null, me.root, me.rows, 0, index + 1)
+                    if (node.expanded) {
+                        me.$fire.apply(me, ['itemexpand', node.$model])
+                    } else {
+                        me.$fire.apply(me, ['itemcollapse', node.$model])
+                    }
+
+                } else {
+                    me.selectedIndex = index
+                    me.$fire.apply(me, ['itemclick', node.$model, target, index, e])
+                }
+            }
+            vm.nodeDblClick = function (e) {
+                var me = this.$vmodel,
+                    target = e.target
+                if (avalon(target).hasClass(options.expanderCls)) {
+                    return
+                }
+                while (target.tagName != 'TR') {
+                    target = target.parentNode
+                }
+                var index = avalon(target).data('index')
+                var node = me.rows[index]
+                if (node.children) {
+                    node.expanded = !node.expanded
+                    me.rows.splice(index + 1, me.rows.length - index - 1)
+                    processNode(null, me.root, me.rows, 0, index + 1)
+                }
             }
         })
         avalon.nextTick(function () {
