@@ -94,19 +94,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         headerCls += ' ' + uiCls.join(' ')
         var headerBodyCls = bizui.clsHelper.addUICls(options.headerBaseCls + '-body', options.headerUi, headerUiCls, true)
         headerBodyCls.push('x-box-layout-ct')
-        var headerTemplate = '<div ms-if="headerHeight!=0" class="' + headerCls + '"' +
-            ' style="left: 0px; top: 0px;" ms-css-width="width">' +
-            '<div class="' + headerBodyCls.join(' ') + '" ' +
-            ' ms-css-width="width">' +
-            '<div class="x-box-inner " role="presentation"' +
-            ' ms-css-width="width-12" ms-css-height="headerHeight-8">' +
-            '<div style="position: absolute; left: 0px; top: 0px; height: 1px;" ms-css-width="width-12">' +
-            '<div class="x-component x-panel-header-text-container x-box-item x-component-default"' +
-            ' style="text-align: left; left: 0px; top: 0px; margin: 0px;" ms-css-width="width-12-headerToolAmount*16">' +
-            '<span class="x-panel-header-text x-panel-header-text-default">{{title}}</span>' +
-            '</div>' +
-            toolsTemplate +
-            '</div></div></div></div>'
+        var headerTemplate = options.getHeaderTemplate(headerCls, headerBodyCls.join(' '), toolsTemplate)
         var panelBodyCls = 'x-panel-body x-grid-body x-panel-body-default x-layout-fit'
         var panelBodyTemplate = [
             '<div class="' + panelBodyCls + '" style="left: 0px; top: 25px;"',

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html class="x-border-box x-strict x-viewport">
+<head>
+    <title>Tree</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../resources/css/ext-all-debug.css">
+    <script type="text/javascript" src="../avalon.js"></script>
+    <script type="text/javascript" src="../bizui.js"></script>
+    <script>
+        require("bizui.grid", function () {
+            var vmodel = avalon.define('grid', function (vm) {
+                vm.$grid = {
+                    listeners: {
+                        itemclick: function () {
+                            console.log(arguments)
+                        }
+                    },
+                    fields: ['name', 'email', 'phone'],
+                    columns: [
+                        { text: 'Name', dataIndex: 'name' },
+                        { text: 'Email', dataIndex: 'email', flex: 1 },
+                        { text: 'Phone', dataIndex: 'phone' }
+                    ],
+                    data: [
+                        { 'name': 'Lisa', "email": "lisa@simpsons.com", "phone": "555-111-1224"  },
+                        { 'name': 'Bart', "email": "bart@simpsons.com", "phone": "555-222-1234" },
+                        { 'name': 'Homer', "email": "home@simpsons.com", "phone": "555-222-1244"  },
+                        { 'name': 'Marge', "email": "marge@simpsons.com", "phone": "555-222-1254"  }
+                    ]
+                }
+            })
+            avalon.scan()
+        })
+    </script>
+</head>
+<body ms-controller="grid">
+
+<div ms-bizui="grid,$,$grid" data-grid-width="400" data-grid-height="200" data-grid-title="Grid">
+</div>
+
+</body>
+</html>

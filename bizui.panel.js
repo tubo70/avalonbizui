@@ -2,7 +2,7 @@
  * Created by quan on 13-11-21.
  */
 define(["avalon", "bizui.tool"], function (avalon) {
-    bizui.panel={}
+    bizui.panel = {}
     bizui.panel.toolTypeMaps = {}
     bizui.panel.toolTypeMaps['north'] = 'collapse-top'
     bizui.panel.toolTypeMaps['south'] = 'collapse-bottom'
@@ -48,15 +48,31 @@ define(["avalon", "bizui.tool"], function (avalon) {
         getHeaderCls: function () {
             var me = this
             var cls = [me.headerBaseCls, me.headerBaseCls + '-' + me.headerUi,
-                me.headerCls, me.headerCls + '-' + me.headerOrientation, bizui.baseCSSPrefix+ 'docked']
+                me.headerCls, me.headerCls + '-' + me.headerOrientation, bizui.baseCSSPrefix + 'docked']
             return cls
         },
         getHeaderUiCls: function () {
             var me = this, uiCls = [me.headerDock, 'docked-' + me.headerDock, me.headerOrientation]
             return uiCls
         },
-        getHeaderToolTemplate:function(){
-            var me=this, headerTools = [],toolsTemplate=''
+        getHeaderTemplate:function(headerCls, headerBodyCls, toolsTemplate){
+            var headerTemplate = '<div ms-if="headerHeight!=0" class="' + headerCls + '"' +
+                ' style="left: 0px; top: 0px;" ms-css-width="width">' +
+                '<div class="' + headerBodyCls + '" ' +
+                ' ms-css-width="width">' +
+                '<div class="x-box-inner " role="presentation"' +
+                ' ms-css-width="width-12" ms-css-height="headerHeight-8">' +
+                '<div style="position: absolute; left: 0px; top: 0px; height: 1px;" ms-css-width="width-12">' +
+                '<div class="x-component x-panel-header-text-container x-box-item x-component-default"' +
+                ' style="text-align: left; left: 0px; top: 0px; margin: 0px;" ms-css-width="width-12-headerToolAmount*16">' +
+                '<span class="x-panel-header-text x-panel-header-text-default">{{title}}</span>' +
+                '</div>' +
+                toolsTemplate +
+                '</div></div></div></div>'
+            return headerTemplate
+        },
+        getHeaderToolTemplate: function () {
+            var me = this, headerTools = [], toolsTemplate = ''
             me.$titleHeight = me.headerHeight
             if (!me.title) {
                 me.headerHeight = 0
@@ -107,28 +123,16 @@ define(["avalon", "bizui.tool"], function (avalon) {
         var $element = avalon(element)
         element.stopScan = true
         var comps = bizui.getChildren(element, data.panelId, vmodels)
-        var toolsTemplate =options.getHeaderToolTemplate()
+        var toolsTemplate = options.getHeaderToolTemplate()
         var headerCls = options.getHeaderCls()
         headerCls.push('x-unselectable')
         headerCls = headerCls.join(' ')
         var headerUiCls = options.getHeaderUiCls()
-        var UiCls = bizui.clsHelper.addUICls(options.headerBaseCls, options.headerUi,headerUiCls)
-        headerCls +=' ' + UiCls.join(' ')
-        var headerBodyCls = bizui.clsHelper.addUICls(options.headerBaseCls + '-body',options.headerUi, headerUiCls, true)
+        var UiCls = bizui.clsHelper.addUICls(options.headerBaseCls, options.headerUi, headerUiCls)
+        headerCls += ' ' + UiCls.join(' ')
+        var headerBodyCls = bizui.clsHelper.addUICls(options.headerBaseCls + '-body', options.headerUi, headerUiCls, true)
         headerBodyCls.push('x-box-layout-ct')
-        var headerTemplate = '<div ms-if="headerHeight!=0" class="'+headerCls+'"' +
-            ' style="left: 0px; top: 0px;" ms-css-width="width">' +
-            '<div class="'+headerBodyCls.join(' ')+'" ' +
-            ' ms-css-width="width">' +
-            '<div class="x-box-inner " role="presentation"' +
-            ' ms-css-width="width-12" ms-css-height="headerHeight-8">' +
-            '<div style="position: absolute; left: 0px; top: 0px; height: 1px;" ms-css-width="width-12">' +
-            '<div class="x-component x-panel-header-text-container x-box-item x-component-default"' +
-            ' style="text-align: left; left: 0px; top: 0px; margin: 0px;" ms-css-width="width-12-headerToolAmount*16">' +
-            '<span class="x-panel-header-text x-panel-header-text-default">{{title}}</span>' +
-            '</div>' +
-            toolsTemplate +
-            '</div></div></div></div>'
+        var headerTemplate = options.getHeaderTemplate(headerCls, headerBodyCls.join(' '), toolsTemplate)
         var parentNode = element.parentNode
 
         //定义vmodel
@@ -330,3 +334,4 @@ define(["avalon", "bizui.tool"], function (avalon) {
     }
     avalon.bizui['panel'].defaults = {}
 })
+

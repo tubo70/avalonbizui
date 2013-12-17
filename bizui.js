@@ -343,6 +343,24 @@
             }
         }
     })
+    bizui.containerLayout={}
+    avalon.mix(bizui.containerLayout,{
+        auto:{
+            childEls:[
+                'outerCt',
+                'innerCt',
+                'clearEl'
+            ],
+            getTemplate:function(comp){
+                var template = []
+                if(!bizui.isIE7m){
+                    template.push('<span ms-attr-id="{{bizuiId}}-outerCt" style="display:table;">')
+
+                    template.push('</span>')
+                }
+            }
+        }
+    })
     avalon.bindingHandlers['bizui'] = function (data, vmodels) {
         var args = data.value.match(avalon.rword), element = data.element, widget = args[0], ret = 0
         if (args[1] === "$") {
