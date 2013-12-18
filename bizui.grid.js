@@ -33,6 +33,9 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         //expanderCls: bizui.baseCSSPrefix + 'tree-expander',
         //textCls: bizui.baseCSSPrefix + 'tree-node-text',
         //innerCls: bizui.baseCSSPrefix + 'grid-cell-inner-treecolumn',
+
+        viewBaseCls:bizui.baseCSSPrefix + 'grid-view',
+        viewLayout:'tableview',
 ///src/view/Table.js
         firstCls: bizui.baseCSSPrefix + 'grid-cell-first',
         lastCls: bizui.baseCSSPrefix + 'grid-cell-last',

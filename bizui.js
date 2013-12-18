@@ -346,7 +346,7 @@
     bizui.containerLayout = {}
     avalon.mix(bizui.containerLayout, {
         auto: {
-            targetCls:'',
+            targetCls: '',
             getTemplate: function (comp) {
                 var template = []
                 if (!bizui.isIE7m) {
@@ -372,31 +372,31 @@
             }
         },
         anchor: {
-            targetCls:'',
+            targetCls: '',
             getTemplate: function (comp) {
                 return bizui.containerLayout['auto'].getTemplate(comp)
             }
         },
         border: {
-            targetCls:bizui.baseCSSPrefix + 'border-layout-ct',
+            targetCls: bizui.baseCSSPrefix + 'border-layout-ct',
             getTemplate: function (comp) {
                 return '{{bodyTemplate}}'
             }
         },
         column: {
-            targetCls:bizui.baseCSSPrefix + 'column-layout-ct',
+            targetCls: bizui.baseCSSPrefix + 'column-layout-ct',
             getTemplate: function (comp) {
                 return bizui.containerLayout['auto'].getTemplate(comp)
             }
         },
         fit: {
-            targetCls:bizui.baseCSSPrefix + 'layout-fit',
+            targetCls: bizui.baseCSSPrefix + 'layout-fit',
             getTemplate: function (comp) {
                 return bizui.containerLayout['border'].getTemplate(comp)
             }
         },
         form: {
-            targetCls:'',
+            targetCls: '',
             getTemplate: function (comp) {
                 return '<table ms-attr-id="{{bizuiId}}-formTable" class="x-form-layout-table" style="width:100%" cellpadding="0">' +
                     '{{bodyTemplate}}' +
@@ -404,7 +404,7 @@
             }
         },
         hbox: {
-            targetCls:bizui.baseCSSPrefix + 'box-layout-ct',
+            targetCls: bizui.baseCSSPrefix + 'box-layout-ct',
             getTemplate: function (comp) {
                 var template = [
                     '<div ms-attr-id="{{bizuiId}}-innerCt" class="x-box-inner " role="presentation" ms-css-height="height-headerHeight-2" style="width: 0px;">',
@@ -417,17 +417,23 @@
             }
         },
         vbox: {
-            targetCls:bizui.baseCSSPrefix + 'box-layout-ct',
+            targetCls: bizui.baseCSSPrefix + 'box-layout-ct',
             getTemplate: function (comp) {
                 return bizui.containerLayout['hbox'].getTemplate(comp)
             }
         },
         table: {
-            targetCls:bizui.baseCSSPrefix + 'table-layout-ct',
+            targetCls: bizui.baseCSSPrefix + 'table-layout-ct',
             getTemplate: function (comp) {
                 return '<table role="presentation" class="x-table-layout" cellspacing="0" cellpadding="0"><tbody>' +
                     '  {{bodyTemplate}}' +
                     '</tbody></table>'
+            }
+        },
+        tableview: {
+            targetCls: '',
+            getTemplate: function (comp) {
+                return '{{bodyTemplate}}'
             }
         }
     })
