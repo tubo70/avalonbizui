@@ -2,7 +2,7 @@
  * Created by quan on 13-11-19.
  */
 (function () {
-    avalon.mix = avalon.fn.mix = function() {
+    avalon.mix = avalon.fn.mix = function () {
         var options, name, src, copy, copyIsArray, clone,
             target = arguments[0] || {},
             i = 1,
@@ -17,7 +17,7 @@
             i++
         }
         // 如果最后一个参数为布尔，判定是否是mixIf调用
-        if(typeof lastArg === "boolean") {
+        if (typeof lastArg === "boolean") {
             mixIf = lastArg
             length--
         }
@@ -64,7 +64,7 @@
     }
     avalon.mixIf = avalon.fn.mixIf = function () {
         arguments[arguments.length++] = true
-        return avalon.mix.apply(avalon,arguments)
+        return avalon.mix.apply(avalon, arguments)
     }
     var userAgent = navigator.userAgent.toLowerCase(),
         check = function (regex) {
@@ -114,7 +114,7 @@
     avalon.bizui = avalon.bizui || {}
     bizui = avalon.bizui;
     avalon.mix(bizui, {
-        baseCSSPrefix:'x-',
+        baseCSSPrefix: 'x-',
         isStrict: isStrict,
         isIEQuirks: isIE && (!isStrict && (isIE6 || isIE7 || isIE8 || isIE9)),
         isOpera: isOpera,
@@ -166,7 +166,7 @@
         southNorthRegion: {south: 1, north: 1},
         zIndex: 19000,
         vmodels: {},
-        BLANK_IMAGE_URL : (isIE6 || isIE7) ? '/' + '/www.sencha.com/s.gif' : 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='
+        BLANK_IMAGE_URL: (isIE6 || isIE7) ? '/' + '/www.sencha.com/s.gif' : 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='
     })
     bizui.filterData = function (obj, prefix) {
         var result = {}
@@ -343,21 +343,91 @@
             }
         }
     })
-    bizui.containerLayout={}
-    avalon.mix(bizui.containerLayout,{
-        auto:{
-            childEls:[
-                'outerCt',
-                'innerCt',
-                'clearEl'
-            ],
-            getTemplate:function(comp){
+    bizui.containerLayout = {}
+    avalon.mix(bizui.containerLayout, {
+        auto: {
+            targetCls:'',
+            getTemplate: function (comp) {
                 var template = []
-                if(!bizui.isIE7m){
-                    template.push('<span ms-attr-id="{{bizuiId}}-outerCt" style="display:table;">')
-
-                    template.push('</span>')
+                if (!bizui.isIE7m) {
+                    template = [
+                        '<span ms-attr-id="{{bizuiId}}-outerCt" style="display:table;table-layout: fixed; height: 100%;">',
+                        '  <div ms-attr-id="{{bizuiId}}-innerCt" style="display:table-cell;height:100%;vertical-align:top;">',
+                        '    {{bodyTemplate}}',
+                        '  </div>',
+                        '</span>'
+                    ]
                 }
+                else {
+                    template = [
+                        '<div ms-attr-id="{{bizuiId}}-outerCt" style="height: 100%; zoom: 1;">',
+                        '  <div ms-attr-id="{{bizuiId}}-innerCt" style="height: 100%;zoom: 1;">',
+                        '    {{bodyTemplate}}',
+                        '    <div ms-attr-id="{{bizuiId}}-clearEl" class="' + bizui.baseCSSPrefix + 'clear"></div>',
+                        '  </div>',
+                        '</div>'
+                    ]
+                }
+                return template.join('')
+            }
+        },
+        anchor: {
+            targetCls:'',
+            getTemplate: function (comp) {
+                return bizui.containerLayout['auto'].getTemplate(comp)
+            }
+        },
+        border: {
+            targetCls:bizui.baseCSSPrefix + 'border-layout-ct',
+            getTemplate: function (comp) {
+                return '{{bodyTemplate}}'
+            }
+        },
+        column: {
+            targetCls:bizui.baseCSSPrefix + 'column-layout-ct',
+            getTemplate: function (comp) {
+                return bizui.containerLayout['auto'].getTemplate(comp)
+            }
+        },
+        fit: {
+            targetCls:bizui.baseCSSPrefix + 'layout-fit',
+            getTemplate: function (comp) {
+                return bizui.containerLayout['border'].getTemplate(comp)
+            }
+        },
+        form: {
+            targetCls:'',
+            getTemplate: function (comp) {
+                return '<table ms-attr-id="{{bizuiId}}-formTable" class="x-form-layout-table" style="width:100%" cellpadding="0">' +
+                    '{{bodyTemplate}}' +
+                    '</table>'
+            }
+        },
+        hbox: {
+            targetCls:bizui.baseCSSPrefix + 'box-layout-ct',
+            getTemplate: function (comp) {
+                var template = [
+                    '<div ms-attr-id="{{bizuiId}}-innerCt" class="x-box-inner " role="presentation" ms-css-height="height-headerHeight-2" style="width: 0px;">',
+                    '  <div ms-attr-id="{{bizuiId}}-targetEl" class="x-box-target" style="width: 0px;">',
+                    '    {{bodyTemplate}}',
+                    '  </div>',
+                    '</div>'
+                ]
+                return template.join('')
+            }
+        },
+        vbox: {
+            targetCls:bizui.baseCSSPrefix + 'box-layout-ct',
+            getTemplate: function (comp) {
+                return bizui.containerLayout['hbox'].getTemplate(comp)
+            }
+        },
+        table: {
+            targetCls:bizui.baseCSSPrefix + 'table-layout-ct',
+            getTemplate: function (comp) {
+                return '<table role="presentation" class="x-table-layout" cellspacing="0" cellpadding="0"><tbody>' +
+                    '  {{bodyTemplate}}' +
+                    '</tbody></table>'
             }
         }
     })
@@ -580,7 +650,7 @@
                 for (var i = 0, il = conditionalUiCls.length; i < il; i++) {
                     var condition = conditionalUiCls[i].condition,
                         uicls = conditionalUiCls[i].uiCls,
-                        conditionCls = this.addUICls(baseCls,ui,uicls)
+                        conditionCls = this.addUICls(baseCls, ui, uicls)
                     if (conditionCls.length > 0) {
                         conditionCls[conditionCls.length] = ':' + condition
                         cls.push(conditionCls.join(' '))
@@ -705,7 +775,7 @@
                 var cls = getClass(side.toLowerCase()),
                     conditionalCls = getConditionalClass(side.toLowerCase()),
                     index = 99,
-                tag = table ? 'td' : 'div'
+                    tag = table ? 'td' : 'div'
                 tpl[tpl.length] = '<' + tag + ' ms-attr-id="{{bizuiId}}' + idSuffix + side + '" '
                 if (dynamic === true) {
                     tpl[tpl.length] = 'ms-class="' + cls + '"'

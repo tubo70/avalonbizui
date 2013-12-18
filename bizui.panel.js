@@ -26,6 +26,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
         border: true,
         split: false,
         hidden: false,
+        layout: 'auto',
         title: '',
         baseCls: bizui.baseCSSPrefix + 'panel',
         ui: 'default',
@@ -55,7 +56,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
             var me = this, uiCls = [me.headerDock, 'docked-' + me.headerDock, me.headerOrientation]
             return uiCls
         },
-        getHeaderTemplate:function(headerCls, headerBodyCls, toolsTemplate){
+        getHeaderTemplate: function (headerCls, headerBodyCls, toolsTemplate) {
             var headerTemplate = '<div ms-if="headerHeight!=0" class="' + headerCls + '"' +
                 ' style="left: 0px; top: 0px;" ms-css-width="width">' +
                 '<div class="' + headerBodyCls + '" ' +
@@ -116,6 +117,18 @@ define(["avalon", "bizui.tool"], function (avalon) {
                 toolsTemplate += '</div>'
             }
             return toolsTemplate
+        },
+        getBodyTemplate: function () {
+            var me = this, layout = bizui.containerLayout[me.layout]
+            var bodyTemplate = ' <div class="' + me.baseCls + '-body ' + me.baseCls + '-body-' + me.ui + ' '+ layout.targetCls +'"' +
+                ' ms-class-0="x-docked-noborder-top:!border"' +
+                ' ms-class-1="x-docked-noborder-left:!border"' +
+                ' ms-class-2="x-docked-noborder-right:!border"' +
+                ' ms-class-3="x-docked-noborder-bottom:!border"' +
+                ' ms-css-top="headerHeight" ms-css-width="width" ms-css-height="height-headerHeight">' +
+                layout.getTemplate(me) +
+                '</div>'
+            return bodyTemplate
         }
     })
     avalon.bizui['panel'] = function (element, data, vmodels) {
@@ -134,6 +147,8 @@ define(["avalon", "bizui.tool"], function (avalon) {
         headerBodyCls.push('x-box-layout-ct')
         var headerTemplate = options.getHeaderTemplate(headerCls, headerBodyCls.join(' '), toolsTemplate)
         var parentNode = element.parentNode
+        var bodyTemplate = options.getBodyTemplate()
+        bodyTemplate = bodyTemplate.replace('{{bodyTemplate}}', element.innerHTML)
 
         //定义vmodel
         var vmodel = avalon.define(data.panelId, function (vm) {
@@ -225,21 +240,13 @@ define(["avalon", "bizui.tool"], function (avalon) {
             }
         })
 
-        if (options.layout === 'fit' && parentNode.tagName === 'BODY') {
+        if (options.layout === 'fit' && parentNode.tagName === 'BODY' && !options.width) {
             vmodel.setSize.apply(vmodel, [avalon(window).width(), avalon(window).height()])
             avalon.bind(window, 'resize', function () {
                 vmodel.setSize.apply(vmodel, [avalon(window).width(), avalon(window).height()])
             })
         }
 
-        var template = ' <div class="x-panel-body x-panel-body-default"' +
-            ' ms-class-0="x-docked-noborder-top:!border"' +
-            ' ms-class-1="x-docked-noborder-left:!border"' +
-            ' ms-class-2="x-docked-noborder-right:!border"' +
-            ' ms-class-3="x-docked-noborder-bottom:!border"' +
-            ' ms-css-top="headerHeight" ms-css-width="width" ms-css-height="height-headerHeight">' + element.innerHTML +
-            '<div class="x-clear" role="presentation"></div>' +
-            '</div>'
 
         function getCollapseElement(region, containerNode) {
             var collapseTemplate = ''
@@ -318,7 +325,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
         }
         avalon.nextTick(function () {
             //avalon(element).attr('ms-visible', '!collapsed')
-            avalon.innerHTML(element, headerTemplate + template)
+            avalon.innerHTML(element, headerTemplate + bodyTemplate)
             element.stopScan = false
             avalon.scan(element, [vmodel].concat(vmodels))
             if (collapseEl) {
