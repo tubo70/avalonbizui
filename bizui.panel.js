@@ -118,9 +118,10 @@ define(["avalon", "bizui.tool"], function (avalon) {
             }
             return toolsTemplate
         },
-        getBodyTemplate: function () {
-            var me = this, layout = bizui.containerLayout[me.layout]
-            var bodyTemplate = ' <div class="' + me.baseCls + '-body ' + me.baseCls + '-body-' + me.ui + ' '+ layout.targetCls +'"' +
+        getBodyTemplate: function (bodyCls) {
+            var me = this, layout = bizui.containerLayout[me.layout],
+                bodyCls = bodyCls || ''
+            var bodyTemplate = ' <div class="' + me.baseCls + '-body ' + me.baseCls + '-body-' + me.ui + ' '+ layout.targetCls + ' ' + bodyCls + '"' +
                 ' ms-class-0="x-docked-noborder-top:!border"' +
                 ' ms-class-1="x-docked-noborder-left:!border"' +
                 ' ms-class-2="x-docked-noborder-right:!border"' +
@@ -141,8 +142,8 @@ define(["avalon", "bizui.tool"], function (avalon) {
         headerCls.push('x-unselectable')
         headerCls = headerCls.join(' ')
         var headerUiCls = options.getHeaderUiCls()
-        var UiCls = bizui.clsHelper.addUICls(options.headerBaseCls, options.headerUi, headerUiCls)
-        headerCls += ' ' + UiCls.join(' ')
+        var uiCls = bizui.clsHelper.addUICls(options.headerBaseCls, options.headerUi, headerUiCls)
+        headerCls += ' ' + uiCls.join(' ')
         var headerBodyCls = bizui.clsHelper.addUICls(options.headerBaseCls + '-body', options.headerUi, headerUiCls, true)
         headerBodyCls.push('x-box-layout-ct')
         var headerTemplate = options.getHeaderTemplate(headerCls, headerBodyCls.join(' '), toolsTemplate)

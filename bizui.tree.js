@@ -1,8 +1,8 @@
 /**
  * Created by weiwei on 13-12-14.
  */
-define(['avalon', 'bizui.panel'], function (avalon) {
-    bizui.vmodels['tree'] = avalon.mix(true, {}, bizui.vmodels['panel'], {
+define(['avalon', 'bizui.grid'], function (avalon) {
+    bizui.vmodels['tree'] = avalon.mix(true, {}, bizui.vmodels['grid'], {
         $bizuiType: 'tree',
         lines: true,
         rowLines: false,
@@ -10,16 +10,6 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         baseCls: bizui.baseCSSPrefix + 'panel',
         ui: 'default',
         uiCls: '',
-        //Ext.panel.Table
-        extraBaseCls: bizui.baseCSSPrefix + 'grid',
-        extraBodyCls: bizui.baseCSSPrefix + 'grid-body',
-        colLinesCls: bizui.baseCSSPrefix + 'grid-with-col-lines',
-        rowLinesCls: bizui.baseCSSPrefix + 'grid-with-row-lines',
-        noRowLinesCls: bizui.baseCSSPrefix + 'grid-no-row-lines',
-        hiddenHeaderCtCls: bizui.baseCSSPrefix + 'grid-header-ct-hidden',
-        hiddenHeaderCls: bizui.baseCSSPrefix + 'grid-header-hidden',
-        resizeMarkerCls: bizui.baseCSSPrefix + 'grid-resize-marker',
-        emptyCls: bizui.baseCSSPrefix + 'grid-empty',
         //Ext.panel.Tree
         treeCls: bizui.baseCSSPrefix + 'tree-panel',
         arrowCls: bizui.baseCSSPrefix + 'tree-arrows',
@@ -33,23 +23,6 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         expanderCls: bizui.baseCSSPrefix + 'tree-expander',
         textCls: bizui.baseCSSPrefix + 'tree-node-text',
         innerCls: bizui.baseCSSPrefix + 'grid-cell-inner-treecolumn',
-///src/view/Table.js
-        firstCls: bizui.baseCSSPrefix + 'grid-cell-first',
-        lastCls: bizui.baseCSSPrefix + 'grid-cell-last',
-        selectedItemCls: bizui.baseCSSPrefix + 'grid-row-selected',
-        beforeSelectedItemCls: bizui.baseCSSPrefix + 'grid-row-before-selected',
-        selectedCellCls: bizui.baseCSSPrefix + 'grid-cell-selected',
-        focusedItemCls: bizui.baseCSSPrefix + 'grid-row-focused',
-        beforeFocusedItemCls: bizui.baseCSSPrefix + 'grid-row-before-focused',
-        tableFocusedFirstCls: bizui.baseCSSPrefix + 'grid-table-focused-first',
-        tableSelectedFirstCls: bizui.baseCSSPrefix + 'grid-table-selected-first',
-        tableOverFirstCls: bizui.baseCSSPrefix + 'grid-table-over-first',
-        overItemCls: bizui.baseCSSPrefix + 'grid-row-over',
-        beforeOverItemCls: bizui.baseCSSPrefix + 'grid-row-before-over',
-        altRowCls: bizui.baseCSSPrefix + 'grid-row-alt',
-        dirtyCls: bizui.baseCSSPrefix + 'grid-dirty-cell',
-        rowClsRe: new RegExp('(?:^|\\s*)' + bizui.baseCSSPrefix + 'grid-row-(first|last|alt)(?:\\s+|$)', 'g'),
-        cellRe: new RegExp(bizui.baseCSSPrefix + 'grid-cell-([^\\s]+) ', ''),
 ///src/tree/View.js
         loadingCls: bizui.baseCSSPrefix + 'grid-tree-loading',
         expandedCls: bizui.baseCSSPrefix + 'grid-tree-node-expanded',
@@ -95,7 +68,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         var headerBodyCls = bizui.clsHelper.addUICls(options.headerBaseCls + '-body', options.headerUi, headerUiCls, true)
         headerBodyCls.push('x-box-layout-ct')
         var headerTemplate = options.getHeaderTemplate(headerCls, headerBodyCls.join(' '), toolsTemplate)
-        var panelBodyCls = 'x-panel-body x-grid-body x-panel-body-default x-layout-fit'
+        /*var panelBodyCls = 'x-panel-body x-grid-body x-panel-body-default x-layout-fit'
         var panelBodyTemplate = [
             '<div class="' + panelBodyCls + '" style="left: 0px; top: 25px;"',
             '  ms-css-width="width" ms-css-height="height-25">',
@@ -129,7 +102,11 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             '  {{cellTemplate}}',
             '</tr>'
 
-        ]
+        ]*/
+        var panelBodyTemplate = options.getBodyTemplate(options.extraBodyCls)
+        var viewTemplate = options.getViewTemplate()
+        var tableTemplate = options.getTableTemplate('',' ms-on-dblclick="nodeDblClick" ms-click="nodeClick" ')
+        var rowsTemplate = options.getRowTemplate('',' ms-class-0="' + options.expandedCls + ':row.expanded"')
         var cellTemplate = ['<td role="gridcell" class="x-grid-cell x-grid-td  x-grid-cell-treecolumn x-grid-cell-first x-grid-cell-last x-unselectable x-grid-cell-treecolumn">',
             '<div unselectable="on" class="x-grid-cell-inner x-grid-cell-inner-treecolumn" style="text-align:left;">',
             '<img ms-repeat-line="row.lines" src="' + bizui.BLANK_IMAGE_URL + '" class="' + options.elbowCls + '-img"',
@@ -151,9 +128,10 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             '<a ms-if="row.href" ms-href="row.href" ms-attr-target="row.hrefTarget" class="{textCls} {childCls}">{{row.text}}</a>',
             '<span ms-if="!row.href" class="' + options.textCls + '">{{row.text}}</span></div></td>',
         ]
-        rowsTemplate = rowsTemplate.join(' ').replace('{{cellTemplate}}', cellTemplate.join(''))
-        tableTemplate = tableTemplate.replace('{{rowsTemplate}}', rowsTemplate)
-        panelBodyTemplate = panelBodyTemplate.join(' ').replace('{{treeTemplate}}', tableTemplate)
+        rowsTemplate = rowsTemplate.replace('{{cellTemplate}}', cellTemplate.join(''))
+        tableTemplate = tableTemplate.replace('{{rowsTemplate}}', rowsTemplate).replace('{{columnTemplate}}','')
+        viewTemplate = viewTemplate.replace('{{viewTemplate}}',tableTemplate)
+        panelBodyTemplate = panelBodyTemplate.replace('{{bodyTemplate}}', viewTemplate)
         var rows = []
         var oneRow = {parentId: null,
             index: 0,
