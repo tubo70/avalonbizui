@@ -244,23 +244,76 @@
         }
         return {children: children, bizuiOptions: bizuiOptions}
     }
-    bizui.baseVModel = {
+    bizui.template = {}
+    avalon.mix(bizui.template, {
+            config: {
+                baseCls: '',
+                ui: 'default',
+                itemCls: '',
+                uiCls: [],
+                autoEl: {
+                    tag: 'div',
+                    role: '',
+                    hidefocus: 'on',
+                    unselectable: 'on'
+                },
+                computedClasses: [],
+                computedStyles: [
+                    {name: 'width', value: 'width'}
+                ],
+                computedOns: [],
+                computedHovers: [],
+                computedAttrs: [],
+                computedActives: [],
+                computedVisibles: [],
+                computedIfs: [],
+                computedDatas: [],
+                styles: [
+                    {name: 'width', value: 0}
+                ],
+                attributes: [],
+                layout: {
+                    type: 'auto'
+
+                }
+            },
+            render: function (config) {
+                var autoEl = config.autoEl,
+                    tag = autoEl && autoEl.tag || 'div',
+                    role = autoEl && autoEl.role || '',
+                    hidefocus = autoEl && autoEl.hidefocus || '',
+                    unselectable = autoEl && autoEl.unselectable || '',
+                    template = []
+                template.push('<' + tag)
+                template.push(role ? 'role="' + role + '" ' : '')
+                template.push(unselectable ? 'unselectable="' + unselectable + '" ' : '')
+                template.push(hidefocus ? 'hidefocus="' + hidefocus + '" ' : '')
+
+
+                template.push('>[[content]]')
+                template.push('</'+tag+'>')
+
+            }
+
+        }
+    )
+    bizui.component = {
         bizuiId: '',
-        $bizuiType: 'base',
+        $bizuiType: 'component',
         $layout: '',
         $containerId: '',
         $callback: avalon.noop,
         hidden: false,
         disabled: false,
-        baseCls: 'x-',
-        ui: '',
-        uiCls: '',
+        baseCls: bizui.baseCSSPrefix + 'component',
+        ui: 'default',
+        uiCls: [],
+        disabledCls: bizui.baseCSSPrefix + 'item-disabled',
         left: 0,
         top: 0,
         width: 0,
         height: 0,
         tooltip: '',
-        ui: '',
         setLeft: function (left) {
             if (typeof left == 'number') {
                 this.left = left
@@ -301,7 +354,8 @@
         },
         onContainerSizeChanged: avalon.noop
     }
-    bizui.containerVModel = avalon.mix(true, {}, bizui.baseVModel, {
+    bizui.baseVModel = bizui.component
+    bizui.container = avalon.mix(true, {}, bizui.component, {
         $bizuiType: 'container',
         $childIds: [],
         src: '',
@@ -343,6 +397,7 @@
             }
         }
     })
+    bizui.containerVModel = bizui.container
     bizui.containerLayout = {}
     avalon.mix(bizui.containerLayout, {
         container: {

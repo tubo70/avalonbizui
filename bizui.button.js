@@ -2,7 +2,7 @@
  * Created by quan on 13-12-4.
  */
 define(['avalon', 'bizui.menu'], function (avalon) {
-    bizui.vmodels['button'] = avalon.mix(true, {}, bizui.baseVModel, {
+    bizui.vmodels['button'] = avalon.mix(true, {}, bizui.component, {
         $bizuiType: 'button',
         scale: 'small',
         box: false,
@@ -16,7 +16,7 @@ define(['avalon', 'bizui.menu'], function (avalon) {
         handler: avalon.noop,
         split: false,
         arrowAlign: 'right',
-        baseCls: 'x-btn',
+        baseCls: bizui.baseCSSPrefix + 'btn',
         ui: 'default',
         uiCls: [],
         icon: '',
@@ -163,14 +163,20 @@ define(['avalon', 'bizui.menu'], function (avalon) {
         for (var i = 0, il = conditionalCls.length; i < il; i++) {
             $element.attr('ms-class-' + (90 + i), conditionalCls[i])
         }
-        var overCls = 'over x-over ' + baseCls + '-over ' + baseCls + '-' + ui + '-over'
+        var overUiCls = ['over'] //bizui.clsHelper.addUICls(baseCls,['over']) 'over x-over ' + baseCls + '-over ' + baseCls + '-' + ui + '-over'
         if (options.position) {
-            overCls += 'x-' + options.position + '-over ' + baseCls + '-' + options.position + '-over ' + baseCls + '-' + ui + '-' + options.position + '-over'
+            overUiCls.push(options.position + '-over')
+            //overCls += 'x-' + options.position + '-over ' + baseCls + '-' + options.position + '-over ' + baseCls + '-' + ui + '-' + options.position + '-over'
         }
+        var overCls = bizui.clsHelper.addUICls(baseCls, overUiCls)
+        var noiconUiCls = bizui.clsHelper.addUICls(baseCls, ['noicon'])
+        var iconUiCls = bizui.clsHelper.addUICls(baseCls, ['icon-text-' + iconAlign])
+        var pressedUiCls = bizui.clsHelper.addUICls(baseCls, ['pressed'])
+        var disabledUiCls = bizui.clsHelper.addUICls(baseCls, ['disabled'])
         $element
             .attr('ms-click', handler)
             .addClass(elementUiCls.join(' '))
-            .attr('ms-class-0', 'x-noicon ' + baseCls + '-noicon ' + baseCls + '-' + ui + '-noicon:!icon')
+            .attr('ms-class-0', noiconUiCls.join(' ') + ':!icon')
             .attr('ms-class-2', 'x-icon-text-' + iconAlign + ' ' + baseCls + '-icon-text-' + iconAlign + ' ' + baseCls + '-' + ui + '-icon-text-' + iconAlign + ':icon')
             .attr('ms-class-3', 'x-pressed ' + baseCls + '-pressed ' + baseCls + '-' + ui + '-pressed:toggled')
             .attr('ms-class-4', 'x-item-disabled x-disabled ' + baseCls + '-disabled ' + baseCls + '-' + ui + '-disabled:disabled')

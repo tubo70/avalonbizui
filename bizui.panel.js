@@ -118,16 +118,20 @@ define(["avalon", "bizui.tool"], function (avalon) {
             }
             return toolsTemplate
         },
-        getBodyTemplate: function (bodyCls) {
-            var me = this, layout = bizui.containerLayout[me.layout],
-                bodyCls = bodyCls || ''
-            var bodyTemplate = ' <div class="' + me.baseCls + '-body ' + me.baseCls + '-body-' + me.ui + ' '+ layout.targetCls + ' ' + bodyCls + '"' +
+
+        getBodyTemplate: function (config, bodyCls) {
+            var me = this
+            config = config || me
+            var layout = bizui.containerLayout[config.layout],
+                computedClasses = config.computedClasses || [],
+                computedStyles = config.computedStyles || []
+            var bodyTemplate = ' <div class="' + config.baseCls + '-body ' + config.baseCls + '-body-' + config.ui + ' ' + layout.targetCls + ' ' + config.itemCls + '"' +
                 ' ms-class-0="x-docked-noborder-top:!border"' +
                 ' ms-class-1="x-docked-noborder-left:!border"' +
                 ' ms-class-2="x-docked-noborder-right:!border"' +
                 ' ms-class-3="x-docked-noborder-bottom:!border"' +
                 ' ms-css-top="headerHeight" ms-css-width="width" ms-css-height="height-headerHeight">' +
-                layout.getTemplate(me) +
+                layout.getTemplate(config) +
                 '</div>'
             return bodyTemplate
         }
