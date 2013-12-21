@@ -5,7 +5,7 @@
 
 define(["avalon", "avalon.draggable"], function (avalon) {
 
-    bizui.vmodels['viewport'] = avalon.mix(true, {}, bizui.containerVModel, {
+    bizui.vmodels['viewport'] = avalon.mix(true, {}, bizui.container, {
         $bizuiType: 'viewport',
         $regions: [],
         $regionOrders: {},
@@ -154,7 +154,7 @@ define(["avalon", "avalon.draggable"], function (avalon) {
                 vm.setSize(size)
             }
 
-            vm.$callback = function (child) {
+            vm.$onChildAdded = function (child) {
                 var me = this
                 child.$containerId = me.bizuiId
                 me.$childIds.push(child.bizuiId)

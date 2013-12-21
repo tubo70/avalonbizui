@@ -14,6 +14,16 @@ define(['avalon'], function (avalon) {
             }
         }
     })
+    bizui.classes['menu']=avalon.mix(true,{},bizui.classes['container'],{
+        icon: '',
+        iconAlign: 'left',
+        iconCls: ''
+    })
+    bizui.classes['menuitem']=avalon.mix(true,{},bizui.classes['component'],{
+        icon: '',
+        iconAlign: 'left',
+        iconCls: ''
+    })
     bizui.vmodels['menu'] = avalon.mix(true, {}, bizui.containerVModel, {
         $bizuiType: 'menu',
         hidden: false,

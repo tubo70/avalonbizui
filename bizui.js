@@ -66,6 +66,24 @@
         arguments[arguments.length++] = true
         return avalon.mix.apply(avalon, arguments)
     }
+    avalon.fn.mix({
+        attrs: function (attrs) {
+            var el = this[0],
+                attr, index, attrName, attrValue
+            for (var i = 0, il = attrs.length; i < il; i++) {
+                attr = attrs[i]
+                if (attr) {
+                    index = attr.indexOf('=')
+                    if (index >= 1) {
+                        attrName = attr.substring(0, index)
+                        attrValue = attr.substring(index + 2, attr.length - 1)
+                        el.setAttribute(attrName, attrValue)
+                    }
+                }
+            }
+
+        }
+    })
     var userAgent = navigator.userAgent.toLowerCase(),
         check = function (regex) {
             return regex.test(userAgent);
@@ -249,7 +267,7 @@
             config: {
                 baseCls: '',
                 ui: 'default',
-                itemCls: '',
+                itemCls: [],
                 uiCls: [],
                 autoEl: {
                     tag: 'div',
@@ -257,58 +275,117 @@
                     hidefocus: 'on',
                     unselectable: 'on'
                 },
-                computedClasses: [],
-                computedStyles: [
-                    {name: 'width', value: 'width'}
+                computedAttributes: [
+                    {name: 'if', values: []},
+                    {name: 'class', values: ['', '']},
+                    {name: 'css', values: [
+                        {name: 'width', value: ''}
+                    ]},
+                    {name: 'click', values: []},
+                    {name: 'on-keydown', values: []}
                 ],
-                computedOns: [],
-                computedHovers: [],
-                computedAttrs: [],
-                computedActives: [],
-                computedVisibles: [],
-                computedIfs: [],
-                computedDatas: [],
-                styles: [
-                    {name: 'width', value: 0}
-                ],
+                style: '',
                 attributes: [],
                 layout: {
-                    type: 'auto'
-
+                    type: 'auto',
+                    size: null
+                },
+                componentLayout: {
+                    type: 'autocomponet',
+                    size: null
                 }
             },
-            render: function (config) {
+            render: function (config, returnAttributes) {
                 var autoEl = config.autoEl,
                     tag = autoEl && autoEl.tag || 'div',
                     role = autoEl && autoEl.role || '',
                     hidefocus = autoEl && autoEl.hidefocus || '',
                     unselectable = autoEl && autoEl.unselectable || '',
-                    template = []
+                    template = [], index = 80,
+                    layout = config.layout || config.componentLayout,
+                    layoutName = layout && layout.name,
+                    layoutSize = layout && layout.size,
+                    attributes = []
+                layout = bizui.containerLayout[layoutName]
+                var targetCls = layout && layout.targetCls || ''
+                var getComputedAttributes = function (computedAttributes, start) {
+                    var result = []
+                    if (computedAttributes && computedAttributes.length) {
+                        for (var i = 0, il = computedAttributes.length; i < il; i++) {
+                            var msName = computedAttributes[i].name, values = computedAttributes[i].values
+                            if (!msName || !values) {
+                                continue
+                            }
+                            if (typeof values === 'string') {
+                                result.push('ms-' + msName + '="' + values + '"')
+                            } else {
+                                for (var j = 0, jl = values.length; j < jl; j++) {
+                                    var name = values[j].name, value = values[j].value
+                                    name = name || (start + j)
+                                    value = value || values[j]
+                                    if (value) {
+                                        result.push('ms-' + msName + '-' + name + '="' + value + '"')
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+
+                    return result//.join(' ')
+                }
+                var uiCls = bizui.clsHelper.addUICls(config.baseCls, config.ui, config.uiCls),
+                    classes = [config.baseCls, config.baseCls + '-' + config.ui, targetCls],
+                    itemCls = config.itemCls
+                itemCls = itemCls || ''
+                if (Array.isArray(itemCls)) {
+                    itemCls = itemCls.join(' ')
+                }
+                classes = classes.join(' ') + ' ' + uiCls.join(' ') + ' ' + itemCls
                 template.push('<' + tag)
-                template.push(role ? 'role="' + role + '" ' : '')
-                template.push(unselectable ? 'unselectable="' + unselectable + '" ' : '')
-                template.push(hidefocus ? 'hidefocus="' + hidefocus + '" ' : '')
-
-
-                template.push('>[[content]]')
-                template.push('</'+tag+'>')
-
+                attributes.push('class="' + classes + '"')
+                attributes.push(role ? 'role="' + role + '" ' : '')
+                attributes.push(unselectable ? 'unselectable="' + unselectable + '" ' : '')
+                attributes.push(hidefocus ? 'hidefocus="' + hidefocus + '" ' : '')
+                attributes = attributes.concat(getComputedAttributes(config.computedAttributes, index))
+                if (config.style) {
+                    attributes.push('style="' + config.style + '"')
+                }
+                if (config.attributes) {
+                    attributes = attributes.concat(config.attributes)
+                }
+                template.push(attributes.join(' '))
+                template.push('>')
+                if (layout) {
+                    template.push(layout.getTemplate(config, layoutSize))
+                } else {
+                    template.push('[[content]]')
+                }
+                template.push('</' + tag + '>')
+                if (returnAttributes) {
+                    return attributes//.join(' ')
+                }
+                return template.join(' ')
             }
 
         }
     )
+    bizui.classes = {}
+    bizui.classes['component'] = {
+        baseCls: bizui.baseCSSPrefix + 'component',
+        ui: 'default',
+        uiCls: [],
+        disabledCls: bizui.baseCSSPrefix + 'item-disabled'
+    }
+    bizui.classes['container'] = avalon.mix(true, {}, bizui.classes['component'])
     bizui.component = {
         bizuiId: '',
         $bizuiType: 'component',
-        $layout: '',
+        layout: 'auto',
         $containerId: '',
         $callback: avalon.noop,
         hidden: false,
         disabled: false,
-        baseCls: bizui.baseCSSPrefix + 'component',
-        ui: 'default',
-        uiCls: [],
-        disabledCls: bizui.baseCSSPrefix + 'item-disabled',
         left: 0,
         top: 0,
         width: 0,
@@ -358,8 +435,7 @@
     bizui.container = avalon.mix(true, {}, bizui.component, {
         $bizuiType: 'container',
         $childIds: [],
-        src: '',
-        $callback: function (vm) {
+        $onChildAdded: function (vm) {
             var me = this
             vm.$containerId = me.bizuiId
             me.$childIds.push(vm.bizuiId)
@@ -403,7 +479,7 @@
         container: {
             targetCls: '',
             getTemplate: function (comp) {
-                return '{{bodyTemplate}}'
+                return '[[content]]'
             }
         },
         auto: {
@@ -414,7 +490,7 @@
                     template = [
                         '<span ms-attr-id="{{bizuiId}}-outerCt" style="display:table;table-layout: fixed; height: 100%;">',
                         '  <div ms-attr-id="{{bizuiId}}-innerCt" style="display:table-cell;height:100%;vertical-align:top;">',
-                        '    {{bodyTemplate}}',
+                        '    [[content]]',
                         '  </div>',
                         '</span>'
                     ]
@@ -423,7 +499,7 @@
                     template = [
                         '<div ms-attr-id="{{bizuiId}}-outerCt" style="height: 100%; zoom: 1;">',
                         '  <div ms-attr-id="{{bizuiId}}-innerCt" style="height: 100%;zoom: 1;">',
-                        '    {{bodyTemplate}}',
+                        '    [[content]]',
                         '    <div ms-attr-id="{{bizuiId}}-clearEl" class="' + bizui.baseCSSPrefix + 'clear"></div>',
                         '  </div>',
                         '</div>'
@@ -441,7 +517,7 @@
         border: {
             targetCls: bizui.baseCSSPrefix + 'border-layout-ct',
             getTemplate: function (comp) {
-                return '{{bodyTemplate}}'
+                return '[[content]]'
             }
         },
         column: {
@@ -460,7 +536,7 @@
             targetCls: '',
             getTemplate: function (comp) {
                 return '<table ms-attr-id="{{bizuiId}}-formTable" class="x-form-layout-table" style="width:100%" cellpadding="0">' +
-                    '{{bodyTemplate}}' +
+                    '[[content]]' +
                     '</table>'
             }
         },
@@ -468,15 +544,16 @@
             targetCls: bizui.baseCSSPrefix + 'box-layout-ct',
             getTemplate: function (comp, size) {
                 var widthStyle = 'width:0px;', heightStyle = '',
-                    computedWidth = '', computedHeight = ''
+                    computedWidth = '' , computedHeight = ''
                 if (size) {
                     if (size.computedWidth) {
                         computedWidth = 'ms-css-width="' + size.computedWidth + '"'
-                        delete  size.width
+                        widthStyle = ''
+                        //delete  size.width
                     }
                     if (size.computedHeight) {
                         computedHeight = 'ms-css-height="' + size.computedHeight + '"'
-                        delete size.height
+                        //delete size.height
                     }
                     if (size.width && !computedWidth) {
                         widthStyle = 'width:' + size.width + 'px;'
@@ -492,7 +569,7 @@
                     '  <div ms-attr-id="{{bizuiId}}-targetEl" class="x-box-target" ',
                     computedWidth,
                     ' style="' + widthStyle + '">',
-                    '    {{bodyTemplate}}',
+                    '    [[content]]',
                     '  </div>',
                     '</div>'
                 ]
@@ -502,7 +579,7 @@
         vbox: {
             targetCls: bizui.baseCSSPrefix + 'box-layout-ct',
             getTemplate: function (comp, size) {
-                return bizui.containerLayout['hbox'].getTemplate(arguments)
+                return bizui.containerLayout['hbox'].getTemplate(comp, size)
             }
         },
         table: {
@@ -547,8 +624,8 @@
             data[ widget + "Options"] = avalon.mix({}, constructor.defaults, vmOptions, elemData)
             element.stopScan = false
             var newModel = constructor(element, data, vmodels)
-            if (vmodel && vmodel.$callback && newModel) {
-                vmodel.$callback.apply(vmodel, [newModel])
+            if (vmodel && vmodel.$onChildAdded && newModel) {
+                vmodel.$onChildAdded.apply(vmodel, [newModel])
             }
             ret = 1
         } //如果碰到此组件还没有加载的情况，将停止扫描它的内部
@@ -557,7 +634,7 @@
     var initExtCss = function () {
         // find the body element
         var bd = bizui.body,
-            prefix = 'x-',
+            prefix = bizui.baseCSSPrefix,
             cls = [prefix + 'body'],
             htmlCls = [],
         //supportsLG = bizui.supports.CSS3LinearGradient,
@@ -715,6 +792,9 @@
                 i = 0,
                 length,
                 cls
+            if (!uiCls) {
+                return clsArray
+            }
             if (typeof uiCls === "string") {
                 uiCls = (uiCls.indexOf(' ') < 0) ? [uiCls] : uiCls.split(' ')
             }

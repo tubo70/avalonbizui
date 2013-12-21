@@ -2,6 +2,11 @@
  * Created by quan on 13-12-4.
  */
 define(['avalon', 'bizui.menu'], function (avalon) {
+    bizui.classes['button']=avalon.mix(true,{},bizui.classes['component'],{
+        icon: '',
+        iconAlign: 'left',
+        iconCls: ''
+    })
     bizui.vmodels['button'] = avalon.mix(true, {}, bizui.component, {
         $bizuiType: 'button',
         scale: 'small',
@@ -15,13 +20,7 @@ define(['avalon', 'bizui.menu'], function (avalon) {
         toggled: false,
         handler: avalon.noop,
         split: false,
-        arrowAlign: 'right',
-        baseCls: bizui.baseCSSPrefix + 'btn',
-        ui: 'default',
-        uiCls: [],
-        icon: '',
-        iconAlign: 'left',
-        iconCls: ''
+        arrowAlign: 'right'
     })
     avalon.bizui['button'] = function (element, data, vmodels) {
         element.stopScan = true

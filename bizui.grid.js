@@ -2,15 +2,7 @@
  * Created by quan on 13-12-17.
  */
 define(['avalon', 'bizui.panel'], function (avalon) {
-    bizui.vmodels['grid'] = avalon.mix(true, {}, bizui.vmodels['panel'], {
-        $bizuiType: 'grid',
-        //lines: true,
-        rowLines: true,
-        //useArrows: false,
-        baseCls: bizui.baseCSSPrefix + 'panel',
-        ui: 'default',
-        uiCls: '',
-        selectedIndex: -1,
+    bizui.classes['grid'] = avalon.mix(true, {}, bizui.classes['panel'], {
         tableBaseCls: bizui.baseCSSPrefix + 'grid-table',
         //Ext.panel.Table
         extraBaseCls: bizui.baseCSSPrefix + 'grid',
@@ -24,7 +16,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         emptyCls: bizui.baseCSSPrefix + 'grid-empty',
         viewBaseCls: bizui.baseCSSPrefix + 'grid-view',
         viewUi: 'default',
-        viewLayout: 'tableview',
+
 ///src/view/Table.js
         firstCls: bizui.baseCSSPrefix + 'grid-cell-first',
         lastCls: bizui.baseCSSPrefix + 'grid-cell-last',
@@ -42,6 +34,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         dirtyCls: bizui.baseCSSPrefix + 'grid-dirty-cell',
         rowClsRe: new RegExp('(?:^|\\s*)' + bizui.baseCSSPrefix + 'grid-row-(first|last|alt)(?:\\s+|$)', 'g'),
         cellRe: new RegExp(bizui.baseCSSPrefix + 'grid-cell-([^\\s]+) ', ''),
+
         ///src/grid/header/Container.js
         gridHeaderBaseCls: bizui.baseCSSPrefix + 'grid-header-ct',
         gridHeaderUi: 'default',
@@ -54,13 +47,21 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         menuColsIcon: bizui.baseCSSPrefix + 'cols-icon',
         ///src/grid/column/Column.js
         columnBaseCls: bizui.baseCSSPrefix + 'column-header',
-        columUi: 'default',
+        columnUi: 'default',
         columnHoverCls: bizui.baseCSSPrefix + 'column-header-over',
+    })
+    bizui.vmodels['grid'] = avalon.mix(true, {}, bizui.vmodels['panel'], {
+        $bizuiType: 'grid',
+        rowLines: true,
+        selectedIndex: -1,
+        viewLayout: 'tableview',
+        gridHeaderDock: 'top',
         getViewTemplate: function (viewCls) {
             var me = this, layout = bizui.containerLayout[me.viewLayout],
-                viewCls = (viewCls || '') + ' ' + bizui.baseCSSPrefix + 'unselectable'
+                viewCls = (viewCls || '') + ' ' + bizui.baseCSSPrefix + 'unselectable',
+                gridClasses = bizui.classes[me.$bizuiType]
             var template = [
-                '<div class="' + me.viewBaseCls + ' ' + me.viewBaseCls + '-' + me.viewUi + ' ' + layout.targetCls + ' ' + viewCls,
+                '<div class="' + gridClasses.viewBaseCls + ' ' + gridClasses.viewBaseCls + '-' + gridClasses.viewUi + ' ' + layout.targetCls + ' ' + viewCls,
                 ' style="overflow: auto; margin: 0px;"',
                 ' ms-css-width="width" ms-css-height="height-headerHeight - 2">',
                 ' {{viewTemplate}}',
@@ -102,98 +103,208 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             ]
             return rowsTemplate.join('')
         },
-        getGridHeaderTemplate: function (headerCls, size, locked) {
-            var me = this, uiCls = [me.gridHeaderDock, 'docked-' + me.gridHeaderDock],
-                layout = bizui.containerLayout[me.gridHeaderLayout],
-                cls = [me.gridHeaderBaseCls, me.gridHeaderBaseCls + '-' + me.gridHeaderUi,
-                    bizui.baseCSSPrefix + 'docked'],
-                styleTop = '', widthExp = 'ms-css-width="width"', topExp = 'ms-css-top="headerHeight-1"'
-            headerCls = headerCls || ''
-            size = size || {computedWidth: 'gridHeaderWidth', height: 22}
-            uiCls = bizui.clsHelper.addUICls(me.gridHeaderBaseCls, me.gridHeaderUi, uiCls)
-            cls = cls.join(' ') + ' ' + headerCls + ' ' + uiCls + ' ' + layout.targetCls
+        getGridHeaderTemplate: function (config, locked) {
+            var me = this,
+                gridClasses = bizui.classes[me.$bizuiType],
+                widthExp = 'width', topExp = 'headerHeight',
+                style = 'border-width:1px;right:auto;left:0px;'
             if (locked === false) {
-                widthExp = 'ms-css-width="unlockedWidth"'
-                styleTop = 'top:0px;'
-                topExp=''
+                widthExp = 'unlockedWidth'
+                style += 'top:0px;'
+                topExp = null
             }
             if (locked === true) {
-                widthExp = 'ms-css-width="lockedWidth"'
-                styleTop = 'top:0px;'
-                topExp=''
+                widthExp = 'lockedWidth'
+                style += 'top:0px;'
+                topExp = null
             }
-            var template = '<div class="' + cls + '" style="border-width:1px;right:auto;left:0px;'+styleTop+'"' +
-                '  ' + widthExp + ' '+topExp+'>' +
-                layout.getTemplate(me, size) +
-                '</div>'
+            var $default = {
+                baseCls: gridClasses.gridHeaderBaseCls,
+                ui: gridClasses.gridHeaderUi,
+                uiCls: ['docked-' + me.gridHeaderDock],
+                itemCls: [bizui.baseCSSPrefix + 'docked'],
+                computedAttributes: [
+                    {name: 'css', values: [
+                        {name: 'width', value: widthExp},
+                        {name: 'top', value: topExp}
+                    ]},
+                ],
+                style: style,
+                layout: {
+                    name: gridClasses.gridHeaderLayout,
+                    size: {computedWidth: 'width', height: 22}
+                }
+            }
+
+             var finallyConfig =   avalon.mix(true,{},$default, config)
+
+            var template = bizui.template.render(finallyConfig)
+            delete finallyConfig
+
+            /*
+             uiCls = [me.gridHeaderDock, 'docked-' + me.gridHeaderDock],
+             layout = bizui.containerLayout[me.gridHeaderLayout],
+             cls = [me.gridHeaderBaseCls, me.gridHeaderBaseCls + '-' + me.gridHeaderUi,
+             bizui.baseCSSPrefix + 'docked'],
+             styleTop = ''
+             headerCls = headerCls || ''
+             size = size || {computedWidth: 'gridHeaderWidth', height: 22}
+             uiCls = bizui.clsHelper.addUICls(me.gridHeaderBaseCls, me.gridHeaderUi, uiCls)
+             cls = cls.join(' ') + ' ' + headerCls + ' ' + uiCls + ' ' + layout.targetCls
+             if (locked === false) {
+             widthExp = 'ms-css-width="unlockedWidth"'
+             styleTop = 'top:0px;'
+             topExp = ''
+             }
+             if (locked === true) {
+             widthExp = 'ms-css-width="lockedWidth"'
+             styleTop = 'top:0px;'
+             topExp = ''
+             }
+             var template = '<div class="' + cls + '" style="border-width:1px;right:auto;left:0px;' + styleTop + '"' +
+             '  ' + widthExp + ' ' + topExp + '>' +
+             layout.getTemplate(me, size) +
+             '</div>'*/
             return template
         },
         getGridHeaderColumnTemplate: function (colsName, hasLocked) {
-            var me = this, template = [], idSuffix = hasLocked ? '-locked' : ''
+            var me = this, template = [], idSuffix = hasLocked ? '-locked' : '',
+                gridClasses = bizui.classes[me.$bizuiType]
             colsName = colsName || 'unlockedCols'
             if (!hasLocked) {
-                var cls = [me.columnBaseCls, me.columnBaseCls + '-' + me.columUi,
-                    bizui.baseCSSPrefix + 'box-item', bizui.baseCSSPrefix + 'unselectable']
-                template = [
-                    '<div ms-repeat-col="' + colsName + '" ms-attr-id="column{{$outer.bizuiId}}-{{$index}}' + idSuffix + '"',
-                    '  class="' + cls.join(' ') + '"',
-                    '  ms-class-90="' + me.columnBaseCls + '-first:$first"',
-                    '  ms-class-91="' + me.columnBaseCls + '-last:$last"',
-                    '  ms-class-92="' + me.columnBaseCls + '-align-{{col.align}}"',
-                    '  ms-css-width="col.width" ms-css-left="col.left"',
-                    '  style="border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; right: auto; top: 0px; margin: 0px;">',
-                    '  <div ms-attr-id="column{{$outer.bizuiId}}-{{$index}}-titleEl" class="' + me.columnBaseCls + '-inner"',
-                    '    ms-hover="' + me.columnHoverCls + '">',
-                    '    <span ms-attr-id="column{{$outer.bizuiId}}-{{$index}}-textEl" class="' + me.columnBaseCls + '-text">',
+                var config = {
+                    baseCls: gridClasses.columnBaseCls,
+                    ui: gridClasses.columnUi,
+                    itemCls: [bizui.baseCSSPrefix + 'box-item', bizui.baseCSSPrefix + 'unselectable'],
+                    computedAttributes: [
+                        {name: 'repeat-col', values: colsName},
+                        {name: 'attr-id', values: 'column{{$outer.bizuiId}}-{{$index}}' + idSuffix},
+                        {name: 'class', values: [
+                            gridClasses.columnBaseCls + '-first:$first',
+                            gridClasses.columnBaseCls + '-last:$last',
+                            gridClasses.columnBaseCls + '-align-{{col.align}}',
+                        ]},
+                        {name: 'css', values: [
+                            {name: 'width', value: 'col.width'},
+                            {name: 'left', value: 'col.left'}
+                        ]}
+                    ],
+                    style: 'border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; right: auto; top: 0px; margin: 0px;'
+                }
+                template = bizui.template.render(config)
+                template = template.replace('[[content]]', [
+                    '  <div ms-attr-id="column{{$outer.bizuiId}}-{{$index}}-titleEl' + idSuffix + '" class="' + gridClasses.columnBaseCls + '-inner"',
+                    '    ms-hover="' + gridClasses.columnHoverCls + '">',
+                    '    <span ms-attr-id="column{{$outer.bizuiId}}-{{$index}}-textEl' + idSuffix + '" class="' + gridClasses.columnBaseCls + '-text">',
                     '      {{text}}',
                     '    </span>',
-                    '    <div ms-attr-id="column{{$outer.bizuiId}}-{{$index}}-triggerEl" class="' + me.columnBaseCls + '-trigger">',
+                    '    <div ms-attr-id="column{{$outer.bizuiId}}-{{$index}}-triggerEl' + idSuffix + '" class="' + gridClasses.columnBaseCls + '-trigger">',
                     '    </div>',
-                    '  </div>',
-                    '</div>'
-                ]
-                return template.join('')
+                    '  </div>'
+                ].join(' '))
+                return template//.join('')
             }
-            var lockedTemplate = [], unlockedTemplate = [],
+            var bodyConfig = {
+                baseCls: gridClasses.baseCls + '-body',
+                ui: gridClasses.ui,
+                computedAttributes: [
+                    {name: 'css', values: [
+                        {name: 'width', value: 'width'},
+                        {name: 'top', value: 'headerHeight'},
+                        {name: 'height', value: 'width-headerHeight'}
+                    ]}
+                ],
+                style: 'left:0px;',
+                layout: {
+                    name: 'hbox',
+                    size: {
+                        computedWidth: 'width-2',
+                        computedHeight: 'height-headerHeight-2'
+                    }
+                }
+            }
+            var bodyTemplate = bizui.template.render(bodyConfig)
+            var itemCls = []
+            if (me.rowLines) {
+                itemCls.push(me.rowLinesCls)
+            } else {
+                itemCls.push(me.noRowLinesCls)
+            }
+            itemCls.push(bizui.baseCSSPrefix + 'box-item')
+            itemCls.push(gridClasses.extraBaseCls)
+            var lockedConfig = {
+                    baseCls: gridClasses.baseCls,
+                    ui: gridClasses.ui,
+                    itemCls: itemCls.concat([gridClasses.extraBaseCls + '-inner-locked']),
+                    computedAttributes: [
+                        {name: 'css', values: [
+                            {name: 'width', value: 'lockedWidth'},
+                            {name: 'height', value: 'height-headerHeight+1'}
+                        ]}
+                    ],
+                    style: 'right: auto; left: 0px; top: 0px; margin: 0px;'
+
+                },
+                lockedTemplate = bizui.template.render(lockedConfig),
+                unlockedConfig = {
+                    baseCls: gridClasses.baseCls,
+                    ui: gridClasses.ui,
+                    itemCls: itemCls,
+                    computedAttributes: [
+                        {name: 'css', values: [
+                            {name: 'width', value: 'unlockedWidth'},
+                            {name: 'height', value: 'height-headerHeight+1'},
+                            {name: 'left', value: 'lockedWidth'}
+                        ]}
+                    ],
+                    style: 'right: auto; top: 0px; margin: 0px;'
+                },
+                unlockedTemplate = bizui.template.render(unlockedConfig),
+
                 noborderCls = [bizui.baseCSSPrefix + 'docked-noborder-top',
                     bizui.baseCSSPrefix + 'docked-noborder-right',
-                    bizui.baseCSSPrefix + 'docked-noborder-left']
-            var panelCls = [me.baseCls, me.baseCls + '-' + me.ui,
-                    me.extraBaseCls, bizui.baseCSSPrefix + 'box-item'],
-                lockedCls = me.baseCls + '-inner-locked'
-
-            if (me.rowLines) {
-                panelCls.push(me.rowLinesCls)
-            } else {
-                panelCls.push(me.noRowLinesCls)
-            }
-            lockedTemplate = [
-                '<div ms-attr-id="{{bizuiId}}-locked" class="' + panelCls.join(' ') + ' ' + lockedCls + '"',
-                '  ms-css-width="lockedWidth" ms-css-height="height-headerHeight+1"',
-                '  style="right: auto; left: 0px; top: 0px; margin: 0px;">',
-                '  {{headerTemplate}}',
-                '  {{bodyTemplate}}',
-                '</div>'
-            ]
-            var gridHeaderTemplate = me.getGridHeaderTemplate(noborderCls.join(' '),
-                {computedWidth: 'lockedWidth', height: 22},true)
-            var bodyTemplate = me.getBodyTemplate([me.extraBodyCls].concat(noborderCls),join(' '))//Todo 继续，layout
-            unlockedTemplate = [
-                '<div ms-attr-id="{{bizuiId}}-normal" class="' + panelCls.join(' ') + '"',
-                '  ms-css-width="unlockedWidth" ms-css-height="height-headerHeight+1" ms-css-left="lockedWidth"',
-                '  style="right: auto; top: 0px; margin: 0px;">',
-                '  {{headerTemplate}}',
-                '  {{bodyTemplate}}',
-                '</div>'
-            ]
+                    bizui.baseCSSPrefix + 'docked-noborder-left'],
+            /*
+             lockedTemplate = [
+             '<div ms-attr-id="{{bizuiId}}-locked" class="' + panelCls.join(' ') + ' ' + lockedCls + '"',
+             '  ms-css-width="lockedWidth" ms-css-height="height-headerHeight+1"',
+             '  style="right: auto; left: 0px; top: 0px; margin: 0px;">',
+             '  {{headerTemplate}}',
+             '  {{bodyTemplate}}',
+             '</div>'
+             ]*/
+                lockedGridHeaderTemplate = me.getGridHeaderTemplate({
+                    itemCls: noborderCls,
+                    layout: {
+                        name: 'hbox',
+                        size: {computedWidth: 'lockedWidth', height: 22}
+                    }
+                }, true),
+                unlockedGridHeaderTemplate = me.getGridHeaderTemplate({
+                    itemCls: noborderCls,
+                    layout: {
+                        name: 'hbox',
+                        size: {computedWidth: 'unlockedWidth', height: 22}
+                    }
+                }, false),
+                lockedGridHeaderColumnTemplate = me.getGridHeaderColumnTemplate('lockedCols', false),
+                unlockedGridHeaderColumnTemplate = me.getGridHeaderColumnTemplate('unlockedCols', false)
+            bodyTemplate = bodyTemplate.replace('[[content]]',
+                lockedTemplate.replace('[[content]]',
+                    lockedGridHeaderTemplate + lockedGridHeaderColumnTemplate + '[[lockedBody]]') +
+                    unlockedTemplate.replace('[[content]]',
+                        unlockedGridHeaderTemplate + unlockedGridHeaderColumnTemplate + '[[unlockedBody]]'))
+            avalon.log(lockedGridHeaderTemplate)
+            return bodyTemplate
         }
     })
     avalon.bizui['grid'] = function (element, data, vmodels) {
         element.stopScan = true
-        var $element = avalon(element)
+        var $element = avalon(element), template = '',
+            gridClass = bizui.classes['grid']
         avalon.clearChild(element)
-        var options = avalon.mix(true, {}, bizui.vmodels['grid'], data.girdOptions)
-        var panelCls = [options.baseCls, options.baseCls + '-' + options.ui,
+        var options = avalon.mix(true, {}, bizui.vmodels['grid'], data.gridOptions)
+        var panelCls = [gridClass.baseCls, gridClass.baseCls + '-' + gridClass.ui,
             options.extraBaseCls, bizui.baseCSSPrefix + 'border-box']
 
         if (options.rowLines) {
@@ -206,15 +317,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             .attr('ms-css-width', 'width')
             .attr('ms-css-height', 'height')
         var toolsTemplate = options.getHeaderToolTemplate()
-        var headerCls = options.getHeaderCls()
-        headerCls.push('x-unselectable')
-        headerCls = headerCls.join(' ')
-        var headerUiCls = options.getHeaderUiCls()
-        var uiCls = bizui.clsHelper.addUICls(options.headerBaseCls, options.headerUi, headerUiCls)
-        headerCls += ' ' + uiCls.join(' ')
-        var headerBodyCls = bizui.clsHelper.addUICls(options.headerBaseCls + '-body', options.headerUi, headerUiCls, true)
-        headerBodyCls.push('x-box-layout-ct')
-        var headerTemplate = options.getHeaderTemplate(headerCls, headerBodyCls.join(' '), toolsTemplate)
+        var headerTemplate = options.getHeaderTemplate(toolsTemplate)
         var columnOptions = {
             align: 'left',
             dataIndex: '',
@@ -236,20 +339,27 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             width: 100,
             ui: 'default'
         }
-        var lockedCols = [], unlockedCols = []
+        var lockedCols = [], unlockedCols = [],lockedLeft=0, unlockedLeft=0
+        options.lockedWidth=0
+        options.unlockedWidth=0
         for (var i = 0, il = options.columns.length; i < il; i++) {
             var col = options.columns[i]
             avalon.mixIf(col, columnOptions)
             if (col.locked) {
                 lockedCols.push(col)
+                col.left=lockedLeft
+                lockedLeft+=col.width
+                options.lockedWidth +=col.width
                 if (col.lockable !== false) {
                     col.lockable = true
                 }
             } else {
                 unlockedCols.push(col)
+                col.left=unlockedLeft
+                unlockedLeft+=col.width
+                options.unlockedWidth +=col.width
             }
         }
-        var gridHeaderTemplate = ''
         var hasLocked = false
         if (lockedCols.length) {
             options.layout = 'hbox'
@@ -260,13 +370,32 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                     col.lockable = true
                 }
             }
+            template = options.getGridHeaderColumnTemplate('',true)
         } else {
-            gridHeaderTemplate = options.getGridHeaderTemplate()
+            var gridHeaderTemplate = options.getGridHeaderTemplate({
+                layout:{
+                    size:{computedWidth:'unlockedWidth',height:22}
+                }
+            })
+            var panelBodyTemplate = options.getBodyTemplate({
+                computedAttributes: [
+                    {name: 'css', values: [
+                        {name: 'top', value: 'headerHeight+23'},
+                        {name: 'height', value: 'height-headerHeight-23'}
+                    ]}
+                ]
+
+            })
+            var headerColumnTemplate = options.getGridHeaderColumnTemplate()
+            var viewTemplate = options.getViewTemplate()
+            var tableTemplate = options.getTableTemplate()
+            template = gridHeaderTemplate.replace('[[content]]', headerColumnTemplate) +
+                panelBodyTemplate.replace('[[content]]',
+                    viewTemplate.replace('[[content]]', tableTemplate))
+
+
         }
-        var panelBodyTemplate = options.getBodyTemplate(options.extraBodyCls)
-        var headerColumnTemplate = options.getGridHeaderColumnTemplate()
-        var viewTemplate = options.getViewTemplate()
-        var tableTemplate = options.getTableTemplate()
+
 
         var cellTemplate = ['<td role="gridcell" class="x-grid-cell x-grid-td  x-grid-cell-treecolumn x-grid-cell-first x-grid-cell-last x-unselectable x-grid-cell-treecolumn">',
             '<div unselectable="on" class="x-grid-cell-inner x-grid-cell-inner-treecolumn" style="text-align:left;">',
@@ -289,82 +418,10 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             '<a ms-if="row.href" ms-href="row.href" ms-attr-target="row.hrefTarget" class="{textCls} {childCls}">{{row.text}}</a>',
             '<span ms-if="!row.href" class="' + options.textCls + '">{{row.text}}</span></div></td>',
         ]
-        rowsTemplate = rowsTemplate.join(' ').replace('{{cellTemplate}}', cellTemplate.join(''))
-        tableTemplate = tableTemplate.replace('{{rowsTemplate}}', rowsTemplate)
-        panelBodyTemplate = panelBodyTemplate.join(' ').replace('{{treeTemplate}}', tableTemplate)
-        var rows = []
-        var oneRow = {parentId: null,
-            index: 0,
-            depth: 0,
-            expanded: false,
-            expandable: true,
-            checked: null,
-            leaf: false,
-            cls: '',
-            iconCls: '',
-            icon: '',
-            root: false,
-            isLast: false,
-            isFirst: false,
-            allowDrop: true,
-            allowDrag: true,
-            loaded: false,
-            loading: false,
-            href: '',
-            hrefTarget: '_blank',
-            qtip: '',
-            qtitle: '',
-            qshowDelay: 0,
-            children: null,
-            $skipArray: ['childern']
-        }
+        //rowsTemplate = rowsTemplate.join(' ').replace('{{cellTemplate}}', cellTemplate.join(''))
+        //tableTemplate = tableTemplate.replace('{{rowsTemplate}}', rowsTemplate)
+        //panelBodyTemplate = panelBodyTemplate.join(' ').replace('{{treeTemplate}}', tableTemplate)
 
-        function processNode(parent, node, out, depth, skips) {
-            skips = skips || -1
-            if (node.children) {
-                node.children[node.children.length - 1].isLast = true
-            }
-            else {
-                node.expandable = false
-                node.expanded = false
-            }
-            if (out.length == 0) {
-                node.root = true
-                node.isFirst = true
-            }
-            if (node.index >= skips) {
-                skips = -1
-                node.index = out.length
-                node.$parentNode = parent
-                node.parentId = parent ? parent.id : null
-                node.depth = depth
-                node.lines = []
-                var parentNode = parent
-                while (parentNode) {
-                    node.lines[ parentNode.depth] = parentNode.isLast ? 0 : 1;
-                    parentNode = parentNode.$parentNode;
-                }
-                out.push(node)
-            }
-            if (node.index == skips - 1) {
-                skips = -1
-            }
-            if (node.children) {
-                for (var i = 0, il = node.children.length; i < il; i++) {
-                    avalon.mixIf(node.children[i], oneRow, {id: 'tree' + setTimeout('1'), $parentNode: node})
-                    if (node.expanded === true) {
-                        processNode(node, node.children[i], out, depth + 1, skips)
-                    }
-                }
-            }
-            node.$skipArray = ['children']
-        }
-
-        if (options.root) {
-            options.root.isLast = true
-            avalon.mixIf(options.root, oneRow, {id: 'tree' + setTimeout('1')})
-            processNode(null, options.root, rows, 0)
-        }
         var vmodel = avalon.define(data.gridId, function (vm) {
             vm.$skipArray = ['root', 'listeners',
                 'extraBaseCls',
@@ -408,65 +465,20 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                 'leafCls',
                 'expanderIconOverCls']
             avalon.mix(vm, options)
-            vm.rows = rows
             vm.selectedIndex = -1
+            vm.lockedCols = lockedCols
+            vm.unlockedCols = unlockedCols
+            vm.lockedWidth = 100
+            vm.unlockedWidth = 300
             if (options.listeners) {
                 for (var name in options.listeners) {
                     vm.$watch(name, options.listeners[name])
                 }
             }
-            vm.nodeClick = function (e) {
-                var me = this.$vmodel,
-                    target = e.target,
-                    $target = avalon(target),
-                    expandAction = false
-                if ($target.hasClass(me.expanderCls)) {
-                    expandAction = true
-                }
 
-                while (target.tagName != 'TR') {
-                    target = target.parentNode
-                }
-                var index = avalon(target).data('index')
-                var node = me.rows[index]
-                if ($target.hasClass(me.checkboxCls)) {
-                    node.checked = !node.checked
-                }
-                if (expandAction) {
-                    node.expanded = !node.expanded
-                    me.rows.splice(index + 1, me.rows.length - index - 1)
-                    processNode(null, me.root, me.rows, 0, index + 1)
-                    if (node.expanded) {
-                        me.$fire.apply(me, ['itemexpand', node.$model])
-                    } else {
-                        me.$fire.apply(me, ['itemcollapse', node.$model])
-                    }
-
-                } else {
-                    me.selectedIndex = index
-                    me.$fire.apply(me, ['itemclick', node.$model, target, index, e])
-                }
-            }
-            vm.nodeDblClick = function (e) {
-                var me = this.$vmodel,
-                    target = e.target
-                if (avalon(target).hasClass(options.expanderCls)) {
-                    return
-                }
-                while (target.tagName != 'TR') {
-                    target = target.parentNode
-                }
-                var index = avalon(target).data('index')
-                var node = me.rows[index]
-                if (node.children) {
-                    node.expanded = !node.expanded
-                    me.rows.splice(index + 1, me.rows.length - index - 1)
-                    processNode(null, me.root, me.rows, 0, index + 1)
-                }
-            }
         })
         avalon.nextTick(function () {
-            avalon.innerHTML(element, headerTemplate + panelBodyTemplate)
+            avalon.innerHTML(element, headerTemplate + template)
             element.stopScan = false
             avalon.scan(element, [vmodel].concat(vmodels))
         })

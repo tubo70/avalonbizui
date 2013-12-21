@@ -2,6 +2,14 @@
  * Created by quan on 13-11-21.
  */
 define(["avalon", "bizui.tool"], function (avalon) {
+    bizui.classes['panel'] = avalon.mix(true, {}, bizui.classes['container'], {
+        baseCls: bizui.baseCSSPrefix + 'panel',
+        //Ext.panel.Header
+        headerBaseCls: bizui.baseCSSPrefix + 'panel-header',
+        headerUi: 'default',
+        headerCls: bizui.baseCSSPrefix + 'header'
+
+    })
     bizui.panel = {}
     bizui.panel.toolTypeMaps = {}
     bizui.panel.toolTypeMaps['north'] = 'collapse-top'
@@ -26,10 +34,8 @@ define(["avalon", "bizui.tool"], function (avalon) {
         border: true,
         split: false,
         hidden: false,
-        layout: 'auto',
         title: '',
-        baseCls: bizui.baseCSSPrefix + 'panel',
-        ui: 'default',
+        titleAlign: 'left',
         headerHeight: 25,
         headerToolAmount: 0,
         headerOrientation: 'horizontal',
@@ -42,10 +48,6 @@ define(["avalon", "bizui.tool"], function (avalon) {
                 height: this.height - this.headerHeight
             }
         },
-        //Ext.panel.Header
-        headerBaseCls: bizui.baseCSSPrefix + 'panel-header',
-        headerUi: 'default',
-        headerCls: bizui.baseCSSPrefix + 'header',
         getHeaderCls: function () {
             var me = this
             var cls = [me.headerBaseCls, me.headerBaseCls + '-' + me.headerUi,
@@ -56,20 +58,63 @@ define(["avalon", "bizui.tool"], function (avalon) {
             var me = this, uiCls = [me.headerDock, 'docked-' + me.headerDock, me.headerOrientation]
             return uiCls
         },
-        getHeaderTemplate: function (headerCls, headerBodyCls, toolsTemplate) {
-            var headerTemplate = '<div ms-if="headerHeight!=0" class="' + headerCls + '"' +
-                ' style="left: 0px; top: 0px;" ms-css-width="width">' +
-                '<div class="' + headerBodyCls + '" ' +
-                ' ms-css-width="width">' +
-                '<div class="x-box-inner " role="presentation"' +
-                ' ms-css-width="width-12" ms-css-height="headerHeight-8">' +
-                '<div style="position: absolute; left: 0px; top: 0px; height: 1px;" ms-css-width="width-12">' +
-                '<div class="x-component x-panel-header-text-container x-box-item x-component-default"' +
-                ' style="text-align: left; left: 0px; top: 0px; margin: 0px;" ms-css-width="width-12-headerToolAmount*16">' +
-                '<span class="x-panel-header-text x-panel-header-text-default">{{title}}</span>' +
-                '</div>' +
-                toolsTemplate +
-                '</div></div></div></div>'
+        getHeaderTemplate: function (toolsTemplate) {
+            var me = this,
+                panelClass = bizui.classes[me.$bizuiType],
+                headerConfig = {
+                    baseCls: panelClass.headerBaseCls,
+                    ui: panelClass.headerUi,
+                    uiCls: [me.headerDock, 'docked-' + me.headerDock, me.headerOrientation],
+                    itemCls: [panelClass.headerCls, panelClass.headerCls + '-' + me.headerOrientation, bizui.baseCSSPrefix + 'docked'],
+                    computedAttributes: [
+                        {name: 'css', values: [
+                            {name: 'width', value: 'width'}
+                        ]},
+                        {name: 'if', values: 'headerHeight!=0'},
+                        {name: 'attr-id', values: '{{bizuiId}}_header'}
+                    ],
+                    styles: 'left:0px;top:0px;'
+
+                },
+                bodyConfig = {
+                    baseCls: panelClass.headerBaseCls + '-body',
+                    ui: panelClass.headerUi,
+                    uiCls: [me.headerDock, 'docked-' + me.headerDock, me.headerOrientation],
+                    computedAttributes: [
+                        {name: 'css', values: [
+                            {name: 'width', value: 'width'}
+                        ]},
+                        {name: 'attr-id', values: '{{bizuiId}}_header-body'}
+                    ],
+                    layout: {
+                        name: 'hbox',
+                        size: {
+                            computedWidth: 'width-12',
+                            computedHeight: 'headerHeight-7'
+                        }
+                    }
+                },
+                titleConfig = {
+                    baseCls: bizui.baseCSSPrefix + 'component',
+                    ui: 'default',
+                    itemCls: [panelClass.headerBaseCls + 'text-container', bizui.baseCSSPrefix + 'box-item'],
+                    computedAttributes: [
+                        {name: 'css', values: [
+                            {name: 'width', value: 'width-12-headerToolAmount*16'},
+                            {name: 'text-align', value: 'titleAlign'}
+                        ]},
+                        {name: 'attr-id', values: '{{bizuiId}}_header-hd'}
+                    ],
+                    style: 'left: 0px; top: 0px; margin: 0px;'
+                },
+                headerTemplate = bizui.template.render(headerConfig)
+            headerTemplate = headerTemplate.replace('[[content]]', bizui.template.render(bodyConfig))
+            headerTemplate = headerTemplate.replace('[[content]]', bizui.template.render(titleConfig))
+            headerTemplate = headerTemplate.replace('[[content]]',
+                '<span ms-attr-id="{{bizuiId}}_header-hd-textEl"' +
+                    '  class="' + panelClass.headerCls + '-text ' + panelClass.headerBaseCls + '-text ' +
+                    panelClass.headerBaseCls + '-text-' + panelClass.headerUi + '">{{title}}</span>' +
+                    toolsTemplate)
             return headerTemplate
         },
         getHeaderToolTemplate: function () {
@@ -104,7 +149,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
             for (var i = 0, il = headerTools.length; i < il; i++) {
                 var tool = headerTools[i]
                 if (i == 0) {
-                    toolsTemplate += '<div  style="position:absolute !important;" ms-css-left="width-12-headerToolAmount*16">'
+                    toolsTemplate += '<div  style="position:absolute !important;top:0px;" ms-css-left="width-12-headerToolAmount*16">'
                 }
                 toolsTemplate += '<div ms-bizui="tool" data-tool-type="' + tool.type + '"' + 'data-tool-left="' + 16 * i + '"'
                 if (tool.handler) {
@@ -119,21 +164,64 @@ define(["avalon", "bizui.tool"], function (avalon) {
             return toolsTemplate
         },
 
-        getBodyTemplate: function (config, bodyCls) {
-            var me = this
-            config = config || me
-            var layout = bizui.containerLayout[config.layout],
-                computedClasses = config.computedClasses || [],
-                computedStyles = config.computedStyles || []
-            var bodyTemplate = ' <div class="' + config.baseCls + '-body ' + config.baseCls + '-body-' + config.ui + ' ' + layout.targetCls + ' ' + config.itemCls + '"' +
-                ' ms-class-0="x-docked-noborder-top:!border"' +
-                ' ms-class-1="x-docked-noborder-left:!border"' +
-                ' ms-class-2="x-docked-noborder-right:!border"' +
-                ' ms-class-3="x-docked-noborder-bottom:!border"' +
-                ' ms-css-top="headerHeight" ms-css-width="width" ms-css-height="height-headerHeight">' +
-                layout.getTemplate(config) +
-                '</div>'
+        getBodyTemplate: function (config) {
+            var me = this,
+                panelClass = bizui.classes['panel'],
+                noBorderCls = bizui.baseCSSPrefix + 'docked-noborder-',
+                $default = {
+                    baseCls: panelClass.baseCls + '-body',
+                    ui: panelClass.ui,
+                    computedAttributes: [
+                        {name: 'class', values: [noBorderCls + 'top ' + noBorderCls + 'left ' + noBorderCls + 'right ' + noBorderCls + 'bottom:!border']},
+                        {name: 'css', values: [
+                            {name: 'top', value: 'headerHeight'},
+                            {name: 'width', value: 'width'},
+                            {name: 'height', value: 'height-headerHeight'}
+                        ]}
+                    ],
+                    layout: {
+                        name: me.layout
+                    }
+                },
+                finallyConfig = avalon.mix(true,{},$default,config)
+
+            var bodyTemplate = bizui.template.render(finallyConfig)
             return bodyTemplate
+        },
+        getCollapseElement: function (region, containerNode) {
+            var me = this, collapseTemplate = ''
+            if (me.region in bizui.eastWestRegion) {
+                collapseTemplate = '<div ms-if="collapsible" ms-visible="collapsed"  ms-class="x-panel-header x-region-collapsed-placeholder x-region-collapsed-{{region==\'west\' ? \'left\':\'right\'}}-placeholder collapsed x-border-item x-box-item x-panel-header-default x-vertical x-panel-header-vertical x-panel-header-default-vertical x-left x-panel-header-left x-panel-header-default-left x-collapsed x-panel-header-collapsed x-panel-header-default-collapsed x-collapsed-left x-panel-header-collapsed-left x-panel-header-default-collapsed-left x-collapsed-border-left x-panel-header-collapsed-border-left x-panel-header-default-collapsed-border-left x-unselectable"' +
+                    ' style="margin: 0px;" ms-css-left="region == \'west\' ? 0: left+width-26"' +
+                    ' ms-css-top="top" ms-css-height="height">' +
+                    '<div class="x-panel-header-body x-panel-header-body-default x-panel-header-body-vertical x-panel-header-body-default-vertical x-panel-header-body-left x-panel-header-body-default-left x-panel-header-body-collapsed x-panel-header-body-default-collapsed x-panel-header-body-collapsed-left x-panel-header-body-default-collapsed-left x-panel-header-body-collapsed-border-left x-panel-header-body-default-collapsed-border-left x-panel-header-body-default-vertical x-panel-header-body-default-left x-panel-header-body-default-collapsed x-panel-header-body-default-collapsed-left x-panel-header-body-default-collapsed-border-left x-box-layout-ct"' +
+                    ' ms-css-height="height-12">' +
+                    '<div class="x-box-inner " role="presentation" style="width:16px;" ms-css-height="height-12">' +
+                    '<div style="position: absolute; width: 16px; left: 0px; top: 0px; height: 1px;">' +
+                    '<div  ms-bizui="tool" data-tool-handler="onCollapseClick" ms-attr-data-tool-type="{{region==\'west\'?\'expand-right\':\'expand-left\'}}"></div>' +
+                    '<div class="x-surface x-box-item x-surface-default" style="width: 16px; left: 0px; top: 19px; margin: 0px;" ms-css-height="height-31" >' +
+                    '<span class="x-panel-header-text x-panel-header-text-default" ms-attr-style="text-align:{{region==\'west\'?\'right\':\'left\'}};height:16px;width:{{height-31}}px;display:block;transform:rotate({{region==\'west\'?\'-90\':\'90\'}}deg);transform-origin: {{(height-31)/2}}px {{(height-31)/2 + \'px\'}}; -webkit-transform: rotate({{region==\'west\'?\'-90\':\'90\'}}deg); -moz-transform: rotate(90deg); -webkit-transform-origin: {{region==\'west\' ? (height-31)/2:8}}px {{region==\'west\' ? (height-31)/2 + \'px\':\'\'}}; -moz-transform-origin: 0% 0%; filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1);">{{title}}</span>' +
+                    '</div></div></div></div></div>'
+            }
+            if (me.region in bizui.southNorthRegion) {
+                collapseTemplate = '<div ms-if="collapsible" ms-visible="collapsed" class="x-panel-header x-region-collapsed-placeholder x-region-collapsed-{{region==\'north\'?\'top\':\'bottom\'}}-placeholder collapsed x-border-item x-box-item x-panel-header-default x-horizontal x-panel-header-horizontal x-panel-header-default-horizontal x-top x-panel-header-top x-panel-header-default-top x-collapsed x-panel-header-collapsed x-panel-header-default-collapsed x-collapsed-top x-panel-header-collapsed-top x-panel-header-default-collapsed-top x-collapsed-border-top x-panel-header-collapsed-border-top x-panel-header-default-collapsed-border-top x-unselectable" tabindex="-1"' +
+                    ' style="left: 0px; margin: 0px;" ms-css-top="top" ms-css-width="width">' +
+                    '<div class="x-panel-header-body x-panel-header-body-default x-panel-header-body-horizontal x-panel-header-body-default-horizontal x-panel-header-body-top x-panel-header-body-default-top x-panel-header-body-collapsed x-panel-header-body-default-collapsed x-panel-header-body-collapsed-top x-panel-header-body-default-collapsed-top x-panel-header-body-collapsed-border-top x-panel-header-body-default-collapsed-border-top x-panel-header-body-default-horizontal x-panel-header-body-default-top x-panel-header-body-default-collapsed x-panel-header-body-default-collapsed-top x-panel-header-body-default-collapsed-border-top x-box-layout-ct"' +
+                    ' ms-css-width="width-12">' +
+                    '<div class="x-box-inner " role="presentation" style="height: 17px;" ms-css-width="width-12">' +
+                    '<div style="position: absolute; left: 0px; top: 0px; height: 1px;" ms-css-width="width-12">' +
+                    '<div class="x-component x-panel-header-text-container x-box-item x-component-default" style="text-align: left; left: 0px; top: 0px; margin: 0px;" ms-css-width="width-29">' +
+                    '<span class="x-panel-header-text x-panel-header-text-default">{{title}}</span></div>' +
+                    '<div   style="position:absolute !important;" ms-css-left="width-12-16"><div ms-bizui="tool" data-tool-handler="onCollapseClick" ms-attr-data-tool-type="{{region==\'north\'?\'expand-bottom\':\'expand-top\'}}"></div></div>' +
+                    '</div></div></div></div>'
+            }
+            var el
+            if (collapseTemplate) {
+                el = avalon.parseHTML(collapseTemplate)
+                containerNode.appendChild(el)
+                el = containerNode.lastChild
+            }
+            return el
         }
     })
     avalon.bizui['panel'] = function (element, data, vmodels) {
@@ -142,19 +230,28 @@ define(["avalon", "bizui.tool"], function (avalon) {
         element.stopScan = true
         var comps = bizui.getChildren(element, data.panelId, vmodels)
         var toolsTemplate = options.getHeaderToolTemplate()
-        var headerCls = options.getHeaderCls()
-        headerCls.push('x-unselectable')
-        headerCls = headerCls.join(' ')
-        var headerUiCls = options.getHeaderUiCls()
-        var uiCls = bizui.clsHelper.addUICls(options.headerBaseCls, options.headerUi, headerUiCls)
-        headerCls += ' ' + uiCls.join(' ')
-        var headerBodyCls = bizui.clsHelper.addUICls(options.headerBaseCls + '-body', options.headerUi, headerUiCls, true)
-        headerBodyCls.push('x-box-layout-ct')
-        var headerTemplate = options.getHeaderTemplate(headerCls, headerBodyCls.join(' '), toolsTemplate)
+        var headerTemplate = options.getHeaderTemplate(toolsTemplate)
         var parentNode = element.parentNode
         var bodyTemplate = options.getBodyTemplate()
-        bodyTemplate = bodyTemplate.replace('{{bodyTemplate}}', element.innerHTML)
-
+        bodyTemplate = bodyTemplate.replace('[[content]]', element.innerHTML)
+        var panelClass = bizui.classes['panel']
+        var panleConfig = {
+            baseCls: panelClass.baseCls,
+            ui: panelClass.ui,
+            itemCls: bizui.baseCSSPrefix + 'border-box',
+            computedAttributes: [
+                {name: 'visible', values: '!collapsed && !hidden'},
+                {name: 'css', values: [
+                    {name: 'left', value: 'left'},
+                    {name: 'top', value: 'top'},
+                    {name: 'width', value: 'width'},
+                    {name: 'height', value: 'height'}
+                ]}
+            ],
+            style: 'margin:0px;'
+        }
+        var panelAttributes = bizui.template.render(panleConfig, true)
+        $element.attrs(panelAttributes)
         //定义vmodel
         var vmodel = avalon.define(data.panelId, function (vm) {
             avalon.mix(vm, options)
@@ -193,7 +290,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
                 var me = this
                 var $me = avalon(me)
                 var datas = $me.data()
-                $me.addClass('x-splitter-active')
+                $me.addClass(bizui.baseCSSPrefix + 'splitter-active')
                 var leftOrTop = dragRegionMaps[datas.region]
                 if (leftOrTop) {
                     me.style[leftOrTop] = data[leftOrTop] + 'px'
@@ -315,21 +412,10 @@ define(["avalon", "bizui.tool"], function (avalon) {
 
         var collapseEl = getCollapseElement(options.region, parentNode)
         var splitEl = getSplitElement(options.region, parentNode)
-
-
-        //console.log(el.outerHTML)
-        $element.addClass('x-panel x-border-item x-box-item x-panel-default')
-            .attr('ms-visible', '!collapsed && !hidden')
-            .attr('style', 'margin: 0px;')
-            .attr('ms-css-left', 'left')
-            .attr('ms-css-top', 'top')
-            .attr('ms-css-width', 'width')
-            .attr('ms-css-height', 'height')
-        if (bizui.isie8m) {
+        if (bizui.isIE8m) {
             avalon.css($element, 'position', 'absolute')
         }
         avalon.nextTick(function () {
-            //avalon(element).attr('ms-visible', '!collapsed')
             avalon.innerHTML(element, headerTemplate + bodyTemplate)
             element.stopScan = false
             avalon.scan(element, [vmodel].concat(vmodels))
