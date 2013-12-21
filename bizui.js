@@ -320,9 +320,9 @@
                                 result.push('ms-' + msName + '="' + values + '"')
                             } else {
                                 for (var j = 0, jl = values.length; j < jl; j++) {
-                                    var name = values[j].name, value = values[j].value
+                                    var name = values[j].name, value = name ? values[j].value : values[j]
                                     name = name || (start + j)
-                                    value = value || values[j]
+                                    //value = value || values[j]
                                     if (value) {
                                         result.push('ms-' + msName + '-' + name + '="' + value + '"')
                                     }
