@@ -293,7 +293,8 @@
                 componentLayout: {
                     type: 'autocomponet',
                     size: null
-                }
+                },
+                replaceTemplate: '[[content]]'
             },
             render: function (config, returnAttributes) {
                 var autoEl = config.autoEl,
@@ -305,7 +306,8 @@
                     layout = config.layout || config.componentLayout,
                     layoutName = layout && layout.name,
                     layoutSize = layout && layout.size,
-                    attributes = []
+                    attributes = [],
+                    replaceTemplate = config.replaceTemplate || '[[content]]'
                 layout = bizui.containerLayout[layoutName]
                 var targetCls = layout && layout.targetCls || ''
                 var getComputedAttributes = function (computedAttributes, start) {
@@ -320,10 +322,10 @@
                                 result.push('ms-' + msName + '="' + values + '"')
                             } else {
                                 for (var j = 0, jl = values.length; j < jl; j++) {
-                                    var name = values[j].name, value = name ? values[j].value : values[j]
+                                    var name = values[j].name, value = values[j].value
                                     name = name || (start + j)
-                                    //value = value || values[j]
-                                    if (value) {
+                                    value = value || values[j]
+                                    if (typeof value === 'string') {
                                         result.push('ms-' + msName + '-' + name + '="' + value + '"')
                                     }
                                 }
@@ -335,7 +337,7 @@
                     return result//.join(' ')
                 }
                 var uiCls = bizui.clsHelper.addUICls(config.baseCls, config.ui, config.uiCls),
-                    classes = [config.baseCls, config.baseCls + '-' + config.ui, targetCls],
+                    classes = [config.baseCls, config.ui ? config.baseCls + '-' + config.ui : '', targetCls],
                     itemCls = config.itemCls
                 itemCls = itemCls || ''
                 if (Array.isArray(itemCls)) {
@@ -356,10 +358,17 @@
                 }
                 template.push(attributes.join(' '))
                 template.push('>')
+                if (config.children) {
+                    var childTemplate = ''
+                    for (var name in config.children) {
+                        childTemplate += bizui.template.render(config.children[name])
+                    }
+                    replaceTemplate = childTemplate
+                }
                 if (layout) {
-                    template.push(layout.getTemplate(config, layoutSize))
+                    template.push(layout.getTemplate(config, layoutSize, replaceTemplate))
                 } else {
-                    template.push('[[content]]')
+                    template.push(replaceTemplate)
                 }
                 template.push('</' + tag + '>')
                 if (returnAttributes) {
@@ -594,6 +603,12 @@
             targetCls: bizui.baseCSSPrefix + 'fit-item',
             getTemplate: function (comp) {
                 return '{{bodyTemplate}}'
+            }
+        },
+        gridcell: {
+            targetCls: '',
+            getTemplate: function (comp) {
+                return '<div unselectable="on" class="' + bizui.baseCSSPrefix + 'grid-cell-inner " ms-css-text-align="col.align">[[content]]</div>'
             }
         }
     })

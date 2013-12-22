@@ -90,7 +90,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
                         name: 'hbox',
                         size: {
                             computedWidth: 'width-12',
-                            computedHeight: 'headerHeight-7'
+                            computedHeight: 'headerHeight-9'
                         }
                     }
                 },
