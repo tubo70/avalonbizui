@@ -384,7 +384,8 @@
         baseCls: bizui.baseCSSPrefix + 'component',
         ui: 'default',
         uiCls: [],
-        disabledCls: bizui.baseCSSPrefix + 'item-disabled'
+        disabledCls: bizui.baseCSSPrefix + 'item-disabled',
+        listeners:{}
     }
     bizui.classes['container'] = avalon.mix(true, {}, bizui.classes['component'])
     bizui.component = {

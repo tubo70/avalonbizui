@@ -48,7 +48,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         ///src/grid/column/Column.js
         columnBaseCls: bizui.baseCSSPrefix + 'column-header',
         columnUi: 'default',
-        columnHoverCls: bizui.baseCSSPrefix + 'column-header-over',
+        columnHoverCls: bizui.baseCSSPrefix + 'column-header-over'
     })
     bizui.vmodels['grid'] = avalon.mix(true, {}, bizui.vmodels['panel'], {
         $bizuiType: 'grid',
@@ -57,14 +57,21 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         viewLayout: 'tableview',
         gridHeaderDock: 'top',
         gridHeaderHeight: 23,
-        getViewTemplate: function (config) {
+        getViewTemplate: function (config, isLocked) {
             var me = this,
                 gridClasses = bizui.classes[me.$bizuiType],
+                widthExp = isLocked ? 'lockedWidth' : 'unlockedWidth',
                 $default = {
                     baseCls: gridClasses.viewBaseCls,
                     ui: gridClasses.viewUi,
                     itemCls: [bizui.baseCSSPrefix + 'unselectable'],
-                    style: 'overflow: auto;'
+                    style: 'overflow: auto;',
+                    computedAttributes: [
+                        {name: 'css', values: [
+                            {name: 'width', value: 'width'},
+                            {name:'height', value:'height-headerHeight-gridHeaderHeight'}
+                        ]}
+                    ]
                 },
                 finallyConfig = avalon.mix(true, {}, $default, config),
                 template = bizui.template.render(finallyConfig)
@@ -108,7 +115,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             var rowsTemplate = me.getRowTemplate()
             tableTemplate = tableTemplate.replace('[[content]]',
                 colGroupTemplate +
-                    '<tbody ms-attr-id="view{{bizuiId}}-body" ms-each-row="rows">' +
+                    '<tbody ms-attr-id="view{{bizuiId}}-body" ms-each-row="rows" data-each-rendered="rowsRendered" >' +
                     rowsTemplate +
                     '</tbody>'
             )
@@ -141,7 +148,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                             gridClass.focusedItemCls + ':$index==selectedIndex',
                             gridClass.beforeSelectedItemCls + ':($index+1) == selectedIndex',
                             //gridClass.beforeOverItemCls + ':?????"',
-                            gridClass.beforeFocusedItemCls + ':($index+1) == selectedIndex',
+                            gridClass.beforeFocusedItemCls + ':($index+1) == selectedIndex'
                         ]},
                         {name: 'hover', values: gridClass.overItemCls},
                         {name: 'data-recordid', values: 'row.id'},
@@ -187,7 +194,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                                     {name: 'text-align', value: 'col.align'}
                                 ]}
                             ],
-                            replaceTemplate: '{{rows[$outer.$index][col.dataIndex]}}'
+                            replaceTemplate: '{{row[col.dataIndex]}}'
                         }
                     }
                 },
@@ -252,7 +259,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                         {name: 'class', values: [
                             gridClasses.columnBaseCls + '-first:$first',
                             gridClasses.columnBaseCls + '-last:$last',
-                            gridClasses.columnBaseCls + '-align-{{col.align}}',
+                            gridClasses.columnBaseCls + '-align-{{col.align}}'
                         ]},
                         {name: 'on-mousemove', values: 'columnHeaderMouseMove($event,$index,\'' + colsName + '\')'},
                         {name: 'css', values: [
@@ -458,7 +465,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                     viewTemplate.replace('[[content]]', tableTemplate))
         }
 
-
+avalon.log(options.rows.length)
         var vmodel = avalon.define(data.gridId, function (vm) {
             vm.$skipArray = ['root', 'listeners', 'data']
             avalon.mix(vm, options)
@@ -485,10 +492,14 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                     }
                 }
             }
+            vm.rowsRendered=function(){
+                avalon.log(new Date().getTime())
+            }
         })
         avalon.nextTick(function () {
             avalon.innerHTML(element, headerTemplate + template)
             element.stopScan = false
+            avalon.log(new Date().getTime())
             avalon.scan(element, [vmodel].concat(vmodels))
         })
         return vmodel
