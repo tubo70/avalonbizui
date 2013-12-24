@@ -48,20 +48,11 @@ define(["avalon", "bizui.tool"], function (avalon) {
                 height: this.height - this.headerHeight
             }
         },
-        getHeaderCls: function () {
-            var me = this
-            var cls = [me.headerBaseCls, me.headerBaseCls + '-' + me.headerUi,
-                me.headerCls, me.headerCls + '-' + me.headerOrientation, bizui.baseCSSPrefix + 'docked']
-            return cls
-        },
-        getHeaderUiCls: function () {
-            var me = this, uiCls = [me.headerDock, 'docked-' + me.headerDock, me.headerOrientation]
-            return uiCls
-        },
-        getHeaderTemplate: function (toolsTemplate) {
+        getHeaderTemplate: function (config) {
             var me = this,
                 panelClass = bizui.classes[me.$bizuiType],
-                headerConfig = {
+                toolsTemplate = me.getHeaderToolTemplate(),
+                $default = {
                     baseCls: panelClass.headerBaseCls,
                     ui: panelClass.headerUi,
                     uiCls: [me.headerDock, 'docked-' + me.headerDock, me.headerOrientation],
@@ -73,48 +64,50 @@ define(["avalon", "bizui.tool"], function (avalon) {
                         {name: 'if', values: 'headerHeight!=0'},
                         {name: 'attr-id', values: '{{bizuiId}}_header'}
                     ],
-                    styles: 'left:0px;top:0px;'
+                    styles: 'left:0px;top:0px;',
+                    children: {
+                        body: {
+                            baseCls: panelClass.headerBaseCls + '-body',
+                            ui: panelClass.headerUi,
+                            uiCls: [me.headerDock, 'docked-' + me.headerDock, me.headerOrientation],
+                            computedAttributes: [
+                                {name: 'css', values: [
+                                    {name: 'width', value: 'width'}
+                                ]},
+                                {name: 'attr-id', values: '{{bizuiId}}_header-body'}
+                            ],
+                            layout: {
+                                name: 'hbox',
+                                size: {
+                                    computedWidth: 'width-12',
+                                    computedHeight: 'headerHeight-9'
+                                }
+                            },
+                            children: {
+                                title: {
+                                    baseCls: bizui.baseCSSPrefix + 'component',
+                                    ui: 'default',
+                                    itemCls: [panelClass.headerBaseCls + 'text-container', bizui.baseCSSPrefix + 'box-item'],
+                                    computedAttributes: [
+                                        {name: 'css', values: [
+                                            {name: 'width', value: 'width-12-headerToolAmount*16'},
+                                            {name: 'text-align', value: 'titleAlign'}
+                                        ]},
+                                        {name: 'attr-id', values: '{{bizuiId}}_header-hd'}
+                                    ],
+                                    style: 'left: 0px; top: 0px; margin: 0px;',
 
-                },
-                bodyConfig = {
-                    baseCls: panelClass.headerBaseCls + '-body',
-                    ui: panelClass.headerUi,
-                    uiCls: [me.headerDock, 'docked-' + me.headerDock, me.headerOrientation],
-                    computedAttributes: [
-                        {name: 'css', values: [
-                            {name: 'width', value: 'width'}
-                        ]},
-                        {name: 'attr-id', values: '{{bizuiId}}_header-body'}
-                    ],
-                    layout: {
-                        name: 'hbox',
-                        size: {
-                            computedWidth: 'width-12',
-                            computedHeight: 'headerHeight-9'
+                                    contentTemplate: '<span ms-attr-id="{{bizuiId}}_header-hd-textEl"' +
+                                        '  class="' + panelClass.headerCls + '-text ' + panelClass.headerBaseCls + '-text ' +
+                                        panelClass.headerBaseCls + '-text-' + panelClass.headerUi + '">{{title}}</span>' +
+                                        toolsTemplate
+                                }
+                            }
                         }
                     }
                 },
-                titleConfig = {
-                    baseCls: bizui.baseCSSPrefix + 'component',
-                    ui: 'default',
-                    itemCls: [panelClass.headerBaseCls + 'text-container', bizui.baseCSSPrefix + 'box-item'],
-                    computedAttributes: [
-                        {name: 'css', values: [
-                            {name: 'width', value: 'width-12-headerToolAmount*16'},
-                            {name: 'text-align', value: 'titleAlign'}
-                        ]},
-                        {name: 'attr-id', values: '{{bizuiId}}_header-hd'}
-                    ],
-                    style: 'left: 0px; top: 0px; margin: 0px;'
-                },
-                headerTemplate = bizui.template.render(headerConfig)
-            headerTemplate = headerTemplate.replace('[[content]]', bizui.template.render(bodyConfig))
-            headerTemplate = headerTemplate.replace('[[content]]', bizui.template.render(titleConfig))
-            headerTemplate = headerTemplate.replace('[[content]]',
-                '<span ms-attr-id="{{bizuiId}}_header-hd-textEl"' +
-                    '  class="' + panelClass.headerCls + '-text ' + panelClass.headerBaseCls + '-text ' +
-                    panelClass.headerBaseCls + '-text-' + panelClass.headerUi + '">{{title}}</span>' +
-                    toolsTemplate)
+                finallyConfig = avalon.mix(true, {}, $default, config),
+                headerTemplate = bizui.template.render(finallyConfig)
             return headerTemplate
         },
         getHeaderToolTemplate: function () {
@@ -163,7 +156,28 @@ define(["avalon", "bizui.tool"], function (avalon) {
             }
             return toolsTemplate
         },
-
+        setElementAttributes: function (config, element) {
+            var me = this,
+                panelClass = bizui.classes[me.$bizuiType],
+                $default = {
+                    baseCls: panelClass.baseCls,
+                    ui: panelClass.ui,
+                    itemCls: bizui.baseCSSPrefix + 'border-box',
+                    computedAttributes: [
+                        {name: 'visible', values: '!collapsed && !hidden'},
+                        {name: 'css', values: [
+                            {name: 'left', value: 'left'},
+                            {name: 'top', value: 'top'},
+                            {name: 'width', value: 'width'},
+                            {name: 'height', value: 'height'}
+                        ]}
+                    ],
+                    style: 'margin:0px;'
+                },
+                finallyConfig = avalon.mix(true, {}, $default, config),
+                panelAttributes = bizui.template.render(finallyConfig, true)
+            avalon(element).attrs(panelAttributes)
+        },
         getBodyTemplate: function (config) {
             var me = this,
                 panelClass = bizui.classes['panel'],
@@ -183,9 +197,10 @@ define(["avalon", "bizui.tool"], function (avalon) {
                         name: me.layout
                     }
                 },
-                finallyConfig = avalon.mix(true,{},$default,config)
+                finallyConfig = avalon.mix(true, {}, $default, config)
 
             var bodyTemplate = bizui.template.render(finallyConfig)
+            delete finallyConfig
             return bodyTemplate
         },
         getCollapseElement: function (region, containerNode) {
@@ -229,33 +244,15 @@ define(["avalon", "bizui.tool"], function (avalon) {
         var $element = avalon(element)
         element.stopScan = true
         var comps = bizui.getChildren(element, data.panelId, vmodels)
-        var toolsTemplate = options.getHeaderToolTemplate()
-        var headerTemplate = options.getHeaderTemplate(toolsTemplate)
+        var headerTemplate = options.getHeaderTemplate()
         var parentNode = element.parentNode
-        var bodyTemplate = options.getBodyTemplate()
-        bodyTemplate = bodyTemplate.replace('[[content]]', element.innerHTML)
-        var panelClass = bizui.classes['panel']
-        var panleConfig = {
-            baseCls: panelClass.baseCls,
-            ui: panelClass.ui,
-            itemCls: bizui.baseCSSPrefix + 'border-box',
-            computedAttributes: [
-                {name: 'visible', values: '!collapsed && !hidden'},
-                {name: 'css', values: [
-                    {name: 'left', value: 'left'},
-                    {name: 'top', value: 'top'},
-                    {name: 'width', value: 'width'},
-                    {name: 'height', value: 'height'}
-                ]}
-            ],
-            style: 'margin:0px;'
-        }
-        var panelAttributes = bizui.template.render(panleConfig, true)
-        $element.attrs(panelAttributes)
+        var bodyTemplate = options.getBodyTemplate({
+            contentTemplate: element.innerHTML
+        })
+        options.setElementAttributes(null, element)
         //定义vmodel
         var vmodel = avalon.define(data.panelId, function (vm) {
             avalon.mix(vm, options)
-            vm.children = comps.children
             for (var opts in comps.bizuiOptions) {
                 vm[opts] = comps.bizuiOptions[opts]
             }

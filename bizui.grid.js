@@ -60,17 +60,23 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         getViewTemplate: function (config, isLocked) {
             var me = this,
                 gridClasses = bizui.classes[me.$bizuiType],
-                widthExp = isLocked ? 'lockedWidth' : 'unlockedWidth',
+                widthExp = isLocked ? 'lockedWidth' : 'width-lockedWidth',
+                idSuffix = isLocked ? 'locked' : 'normal',
                 $default = {
                     baseCls: gridClasses.viewBaseCls,
                     ui: gridClasses.viewUi,
-                    itemCls: [bizui.baseCSSPrefix + 'unselectable'],
+                    itemCls: [bizui.baseCSSPrefix + 'unselectable', bizui.baseCSSPrefix + 'fit-item'],
                     style: 'overflow: auto;',
                     computedAttributes: [
                         {name: 'css', values: [
-                            {name: 'width', value: 'width'},
-                            {name:'height', value:'height-headerHeight-gridHeaderHeight'}
-                        ]}
+                            {name: 'width', value: widthExp},
+                            {name: 'height', value: 'height-headerHeight-gridHeaderHeight'},
+                            {name: 'border-bottom-width', value: isLocked ? '(unlockedWidth>(width-lockedWidth))&&hasLocked?\'17\':\'\'' : ''},
+                            {name: 'border-bottom-style', value: isLocked ? '(unlockedWidth>(width-lockedWidth))&&hasLocked?\'solid\':\'\'' : ''},
+                            {name: 'border-bottom-color', value: isLocked ? '(unlockedWidth>(width-lockedWidth))&&hasLocked?\'rgb(246, 246, 246)\':\'\'' : ''}
+                        ]},
+                        {name: 'on-scroll', values: 'viewScroll'},
+                        {name: 'attr-id', values: '{{bizuiId}}-view-' + idSuffix}
                     ]
                 },
                 finallyConfig = avalon.mix(true, {}, $default, config),
@@ -112,7 +118,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             var tableTemplate = bizui.template.render(finallyConfig)
             delete finallyConfig
             var colGroupTemplate = me.getColGroupTemplate(isLocked ? 'lockedCols' : 'unlockedCols')
-            var rowsTemplate = me.getRowTemplate()
+            var rowsTemplate = me.getRowTemplate(null, isLocked)
             tableTemplate = tableTemplate.replace('[[content]]',
                 colGroupTemplate +
                     '<tbody ms-attr-id="view{{bizuiId}}-body" ms-each-row="rows" data-each-rendered="rowsRendered" >' +
@@ -125,14 +131,15 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             var template
             colsName = colsName || 'unlockedCols'
             template = [
-                '<colgroup ms-each-col="' + colsName + '">',
+                '<colgroup ms-repeat-col="' + colsName + '">',
                 '  <col ms-css-width="col.width">',
                 '</colgroup>'
             ]
             return template.join('')
         },
-        getRowTemplate: function (config) {
+        getRowTemplate: function (config, isLocked) {
             var me = this,
+                colsName = isLocked ? 'lockedCols' : 'unlockedCols',
                 gridClass = bizui.classes[me.$bizuiType],
                 $default = {
                     baseCls: '',
@@ -151,9 +158,9 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                             gridClass.beforeFocusedItemCls + ':($index+1) == selectedIndex'
                         ]},
                         {name: 'hover', values: gridClass.overItemCls},
-                        {name: 'data-recordid', values: 'row.id'},
+                        //{name: 'data-recordid', values: 'row.id'},
                         {name: 'data-index', values: '$index'},
-                        {name: 'each-col', values: 'unlockedCols'}
+                        {name: 'each-col', values: colsName}
                     ]
                 },
                 finallyConfig = avalon.mix(true, {}, $default, config),
@@ -170,7 +177,9 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                 $default = {
                     baseCls: '',
                     ui: '',
-                    itemCls: [gridClass.extraBaseCls + '-cell', gridClass.extraBaseCls + '-td', bizui.baseCSSPrefix + 'unselectable'],
+                    itemCls: [gridClass.extraBaseCls + '-cell',
+                        gridClass.extraBaseCls + '-td',
+                        bizui.baseCSSPrefix + 'unselectable'],
                     autoEl: {
                         tag: 'td',
                         role: 'gridcell'
@@ -194,7 +203,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                                     {name: 'text-align', value: 'col.align'}
                                 ]}
                             ],
-                            replaceTemplate: '{{row[col.dataIndex]}}'
+                            contentTemplate: '{{row[col.dataIndex]}}'
                         }
                     }
                 },
@@ -208,17 +217,19 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         getGridHeaderTemplate: function (config, locked) {
             var me = this,
                 gridClasses = bizui.classes[me.$bizuiType],
-                widthExp = 'width', topExp = 'headerHeight',
-                style = 'border-width:1px;right:auto;left:0px;'
+                widthExp = 'width+17', topExp = 'headerHeight',
+                style = 'border-width:1px;right:auto;left:0px;',
+                idSuffix = 'normal'
             if (locked === false) {
-                widthExp = 'unlockedWidth'
+                widthExp = 'unlockedWidth+17'
                 style += 'top:0px;'
                 topExp = null
             }
             if (locked === true) {
-                widthExp = 'lockedWidth'
+                widthExp = 'lockedWidth+17'
                 style += 'top:0px;'
                 topExp = null
+                idSuffix = 'locked'
             }
             var $default = {
                 baseCls: gridClasses.gridHeaderBaseCls,
@@ -227,20 +238,23 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                 itemCls: [bizui.baseCSSPrefix + 'docked'],
                 computedAttributes: [
                     {name: 'css', values: [
-                        {name: 'width', value: widthExp},
+                        {name: 'width', value: 'width-lockedWidth'},
                         {name: 'top', value: topExp}
                     ]},
+                    {name: 'attr-id', values: '{{bizuiId}}-headercontainer-' + idSuffix}
                 ],
                 style: style,
                 layout: {
                     name: gridClasses.gridHeaderLayout,
                     size: {computedWidth: widthExp, height: 22}
-                }
+                },
+                idSuffix: idSuffix
             }
 
             var finallyConfig = avalon.mix(true, {}, $default, config)
 
             var template = bizui.template.render(finallyConfig)
+            avalon.log(template)
             delete finallyConfig
             return template
         },
@@ -248,7 +262,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             var me = this, template = [], idSuffix = hasLocked ? '-locked' : '',
                 gridClasses = bizui.classes[me.$bizuiType]
             colsName = colsName || 'unlockedCols'
-            if (!hasLocked) {
+            if (true) {
                 var config = {
                     baseCls: gridClasses.columnBaseCls,
                     ui: gridClasses.columnUi,
@@ -268,20 +282,20 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                             {name: 'cursor', value: '$index==resizeColumnIndex?\'col-resize\':\'\''}
                         ]}
                     ],
-                    style: 'border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; right: auto; top: 0px; margin: 0px;'
+                    style: 'border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; right: auto; top: 0px; margin: 0px;',
+                    contentTemplate: [
+                        '  <div ms-attr-id="column{{$outer.bizuiId}}-{{$index}}-titleEl' + idSuffix + '" class="' + gridClasses.columnBaseCls + '-inner"',
+                        '    ms-hover="' + gridClasses.columnHoverCls + '">',
+                        '    <span ms-attr-id="column{{$outer.bizuiId}}-{{$index}}-textEl' + idSuffix + '" class="' + gridClasses.columnBaseCls + '-text">',
+                        '      {{text}}',
+                        '    </span>',
+                        '    <div ms-attr-id="column{{$outer.bizuiId}}-{{$index}}-triggerEl' + idSuffix + '" class="' + gridClasses.columnBaseCls + '-trigger"',
+                        '       ms-css-cursor="$index==resizeColumnIndex?\'col-resize\':\'\'">',
+                        '    </div>',
+                        '  </div>'
+                    ].join(' ')
                 }
                 template = bizui.template.render(config)
-                template = template.replace('[[content]]', [
-                    '  <div ms-attr-id="column{{$outer.bizuiId}}-{{$index}}-titleEl' + idSuffix + '" class="' + gridClasses.columnBaseCls + '-inner"',
-                    '    ms-hover="' + gridClasses.columnHoverCls + '">',
-                    '    <span ms-attr-id="column{{$outer.bizuiId}}-{{$index}}-textEl' + idSuffix + '" class="' + gridClasses.columnBaseCls + '-text">',
-                    '      {{text}}',
-                    '    </span>',
-                    '    <div ms-attr-id="column{{$outer.bizuiId}}-{{$index}}-triggerEl' + idSuffix + '" class="' + gridClasses.columnBaseCls + '-trigger"',
-                    '       ms-css-cursor="$index==resizeColumnIndex?\'col-resize\':\'\'">',
-                    '    </div>',
-                    '  </div>'
-                ].join(' '))
                 return template//.join('')
             }
             var bodyConfig = {
@@ -367,6 +381,127 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                         unlockedGridHeaderTemplate + unlockedGridHeaderColumnTemplate + '[[unlockedBody]]'))
             avalon.log(lockedGridHeaderTemplate)
             return bodyTemplate
+        },
+        getHasLockedBodyTemplate: function (config) {
+            var me = this, gridClasses = bizui.classes[me.$bizuiType],
+                itemCls = []
+            if (me.rowLines) {
+                itemCls.push(gridClasses.rowLinesCls)
+            } else {
+                itemCls.push(gridClasses.noRowLinesCls)
+            }
+            itemCls.push(bizui.baseCSSPrefix + 'box-item')
+            itemCls.push(gridClasses.extraBaseCls)
+            var $default = {
+                    baseCls: gridClasses.baseCls + '-body',
+                    ui: gridClasses.ui,
+                    computedAttributes: [
+                        {name: 'css', values: [
+                            {name: 'width', value: 'width'},
+                            {name: 'top', value: 'headerHeight'},
+                            {name: 'height', value: 'width-headerHeight'}
+                        ]}
+                    ],
+                    style: 'left:0px;',
+                    layout: {
+                        name: 'hbox',
+                        size: {
+                            computedWidth: 'width-2',
+                            computedHeight: 'height-headerHeight-2'
+                        }
+                    },
+                    children: {
+                        locked: {
+                            baseCls: gridClasses.baseCls,
+                            ui: gridClasses.ui,
+                            itemCls: itemCls.concat([gridClasses.extraBaseCls + '-inner-locked']),
+                            computedAttributes: [
+                                {name: 'css', values: [
+                                    {name: 'width', value: 'lockedWidth'},
+                                    {name: 'height', value: 'height-headerHeight+1'}
+                                ]}
+                            ],
+                            style: 'right: auto; left: 0px; top: 0px; margin: 0px;',
+                            contentTemplate: '[[lockedBody]]'
+                        },
+                        unlocked: {
+                            baseCls: gridClasses.baseCls,
+                            ui: gridClasses.ui,
+                            itemCls: itemCls,
+                            computedAttributes: [
+                                {name: 'css', values: [
+                                    {name: 'width', value: 'width-lockedWidth'},
+                                    {name: 'height', value: 'height-headerHeight+1'},
+                                    {name: 'left', value: 'lockedWidth'}
+                                ]}
+                            ],
+                            style: 'right: auto; top: 0px; margin: 0px;',
+                            contentTemplate: '[[unlockedBody]]'
+                        }
+                    }
+                },
+                finallyConfig = avalon.mix(true, {}, $default, config),
+                template = bizui.template.render(finallyConfig)
+            delete finallyConfig
+            return template
+        },
+        processColumns: function () {
+            var me = this,
+                columnOptions = {
+                    align: 'left',
+                    dataIndex: '',
+                    editor: '',
+                    emptyCellText: '&#160;',
+                    groupable: false,
+                    hideable: true,
+                    lockable: null,
+                    locked: false,
+                    menuDisabled: false,
+                    menuText: '',
+                    renderer: avalon.noop,
+                    scope: null,
+                    resizable: true,
+                    sortable: true,
+                    tdCls: '',
+                    text: '&#160;',
+                    tooltip: '',
+                    width: 100,
+                    ui: 'default'
+                }
+            var lockedCols = [], unlockedCols = [], lockedLeft = 0, unlockedLeft = 0, rows = []
+            me.lockedWidth = 0
+            me.unlockedWidth = 0
+            for (var i = 0, il = me.columns.length; i < il; i++) {
+                var col = me.columns[i]
+                avalon.mixIf(col, columnOptions)
+                if (col.locked) {
+                    lockedCols.push(col)
+                    col.left = lockedLeft
+                    lockedLeft += col.width
+                    me.lockedWidth += col.width
+                    if (col.lockable !== false) {
+                        col.lockable = true
+                    }
+                } else {
+                    unlockedCols.push(col)
+                    col.left = unlockedLeft
+                    unlockedLeft += col.width
+                    me.unlockedWidth += col.width
+                }
+            }
+            me.lockedCols = lockedCols
+            me.unlockedCols = unlockedCols
+            me.hasLocked = false
+            if (lockedCols.length) {
+                me.layout = 'hbox'
+                me.hasLocked = true
+                for (var i = 0, il = unlockedCols.length; i < il; i++) {
+                    var col = unlockedCols[i]
+                    if (col.lockable !== false) {
+                        col.lockable = true
+                    }
+                }
+            }
         }
     })
     avalon.bizui['grid'] = function (element, data, vmodels) {
@@ -375,103 +510,107 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             gridClass = bizui.classes['grid']
         avalon.clearChild(element)
         var options = avalon.mix(true, {}, bizui.vmodels['grid'], data.gridOptions)
-        var panelCls = [gridClass.baseCls, gridClass.baseCls + '-' + gridClass.ui,
-            options.extraBaseCls, bizui.baseCSSPrefix + 'border-box']
+        var itemCls = [gridClass.extraBaseCls, bizui.baseCSSPrefix + 'border-box']
 
         if (options.rowLines) {
-            panelCls.push(options.rowLinesCls)
+            itemCls.push(options.rowLinesCls)
         } else {
-            panelCls.push(options.noRowLinesCls)
+            itemCls.push(options.noRowLinesCls)
         }
-        panelCls = panelCls.join(' ')
-        $element.addClass(panelCls)
-            .attr('ms-css-width', 'width')
-            .attr('ms-css-height', 'height')
-        var toolsTemplate = options.getHeaderToolTemplate()
-        var headerTemplate = options.getHeaderTemplate(toolsTemplate)
-        var columnOptions = {
-            align: 'left',
-            dataIndex: '',
-            editor: '',
-            emptyCellText: '&#160;',
-            groupable: false,
-            hideable: true,
-            lockable: null,
-            locked: false,
-            menuDisabled: false,
-            menuText: '',
-            renderer: avalon.noop,
-            scope: null,
-            resizable: true,
-            sortable: true,
-            tdCls: '',
-            text: '&#160;',
-            tooltip: '',
-            width: 100,
-            ui: 'default'
-        }
-        var lockedCols = [], unlockedCols = [], lockedLeft = 0, unlockedLeft = 0, rows = []
-        options.lockedWidth = 0
-        options.unlockedWidth = 0
-        for (var i = 0, il = options.columns.length; i < il; i++) {
-            var col = options.columns[i]
-            avalon.mixIf(col, columnOptions)
-            if (col.locked) {
-                lockedCols.push(col)
-                col.left = lockedLeft
-                lockedLeft += col.width
-                options.lockedWidth += col.width
-                if (col.lockable !== false) {
-                    col.lockable = true
-                }
+        options.setElementAttributes({
+            baseCls: gridClass.baseCls,
+            ui: gridClass.ui,
+            itemCls: itemCls
+        }, element)
+        var headerTemplate = options.getHeaderTemplate()
+        var gridHeaderTemplate = '', bodyTemplate
+        options.processColumns()
+        if (options.hasLocked) {
+            itemCls = []
+            if (options.rowLines) {
+                itemCls.push(options.rowLinesCls)
             } else {
-                unlockedCols.push(col)
-                col.left = unlockedLeft
-                unlockedLeft += col.width
-                options.unlockedWidth += col.width
+                itemCls.push(options.noRowLinesCls)
             }
+            var lockedHeaderColumnTemplate = options.getGridHeaderColumnTemplate('lockedCols')
+            var lockedGridHeaderTemplate = options.getGridHeaderTemplate({
+                contentTemplate: lockedHeaderColumnTemplate
+            }, true)
+            var lockedTableTemplate = options.getTableTemplate(null, true)
+            var lockedViewTemplate = options.getViewTemplate({
+                contentTemplate: lockedTableTemplate,
+                style: ''
+            }, true)
+            var lockedBodyTemplate = options.getBodyTemplate({
+                layout: {
+                    name: 'fit'
+                },
+                computedAttributes: [
+                    {name: 'css', values: [
+                        {name: 'top', value: 'gridHeaderHeight'},
+                        {name: 'height', value: 'height-headerHeight-gridHeaderHeight'},
+                        {name: 'width', value: 'lockedWidth'}
+                    ]}
+                ],
+                contentTemplate: lockedViewTemplate
+            })
+            var unlockedHeaderColumnTemplate = options.getGridHeaderColumnTemplate()
+            var unlockedGridHeaderTemplate = options.getGridHeaderTemplate({
+                contentTemplate: unlockedHeaderColumnTemplate
+            }, false)
+            var unlockedTableTemplate = options.getTableTemplate()
+            var unlockedViewTemplate = options.getViewTemplate({
+                contentTemplate: unlockedTableTemplate
+            }, false)
+            var unlockedBodyTemplate = options.getBodyTemplate({
+                layout: {
+                    name: 'fit'
+                },
+                computedAttributes: [
+                    {name: 'css', values: [
+                        {name: 'top', value: 'gridHeaderHeight'},
+                        {name: 'height', value: 'height-headerHeight-gridHeaderHeight'},
+                        {name: 'width', value: 'width-lockedWidth'}
+                    ]}
+                ],
+                contentTemplate: unlockedViewTemplate
+            })
+            bodyTemplate = options.getHasLockedBodyTemplate({
+                itemCls: [bizui.baseCSSPrefix + 'grid-body']
+            })
+                .replace('[[lockedBody]]', lockedGridHeaderTemplate + lockedBodyTemplate)
+                .replace('[[unlockedBody]]', unlockedGridHeaderTemplate + unlockedBodyTemplate)
         }
-        var hasLocked = false
-        if (lockedCols.length) {
-            options.layout = 'hbox'
-            hasLocked = true
-            for (var i = 0, il = unlockedCols.length; i < il; i++) {
-                var col = unlockedCols[i]
-                if (col.lockable !== false) {
-                    col.lockable = true
-                }
-            }
-            template = options.getGridHeaderColumnTemplate('', true)
-        } else {
-            var gridHeaderTemplate = options.getGridHeaderTemplate({
+        else {
+            var headerColumnTemplate = options.getGridHeaderColumnTemplate()
+            gridHeaderTemplate = options.getGridHeaderTemplate({
                 layout: {
                     size: {computedWidth: 'unlockedWidth', height: 22}
-                }
+                },
+                contentTemplate: headerColumnTemplate
             })
-            var panelBodyTemplate = options.getBodyTemplate({
+            var tableTemplate = options.getTableTemplate()
+            var viewTemplate = options.getViewTemplate({
+                contentTemplate: tableTemplate
+            })
+            bodyTemplate = options.getBodyTemplate({
+                layout: {
+                    name: 'fit'
+                },
+                itemCls: [bizui.baseCSSPrefix + 'grid-body'],
                 computedAttributes: [
                     {name: 'css', values: [
                         {name: 'top', value: 'headerHeight+gridHeaderHeight'},
                         {name: 'height', value: 'height-headerHeight-gridHeaderHeight'}
                     ]}
-                ]
-
+                ],
+                contentTemplate: viewTemplate
             })
-            var headerColumnTemplate = options.getGridHeaderColumnTemplate()
-            var viewTemplate = options.getViewTemplate()
-            var tableTemplate = options.getTableTemplate()
-            template = gridHeaderTemplate.replace('[[content]]', headerColumnTemplate) +
-                panelBodyTemplate.replace('[[content]]',
-                    viewTemplate.replace('[[content]]', tableTemplate))
         }
-
-avalon.log(options.rows.length)
         var vmodel = avalon.define(data.gridId, function (vm) {
             vm.$skipArray = ['root', 'listeners', 'data']
             avalon.mix(vm, options)
             vm.selectedIndex = -1
-            vm.lockedCols = lockedCols
-            vm.unlockedCols = unlockedCols
             if (options.listeners) {
                 for (var name in options.listeners) {
                     vm.$watch(name, options.listeners[name])
@@ -482,22 +621,37 @@ avalon.log(options.rows.length)
             vm.columnHeaderMouseMove = function (e, index, colsName) {
                 var cols = vm[colsName]
                 if (cols) {
-                    avalon.log(e)
                     if ((avalon(e.target).hasClass(bizui.baseCSSPrefix + 'column-header-inner') && e.offsetX < 4)
                         || (avalon(e.target).hasClass(bizui.baseCSSPrefix + 'column-header-trigger') && (e.offsetX > 10))) {
                         vm.resizeColumnIndex = index
                     }
-                    else{
+                    else {
                         vm.resizeColumnIndex = -1
                     }
                 }
             }
-            vm.rowsRendered=function(){
+            vm.rowsRendered = function () {
                 avalon.log(new Date().getTime())
+            }
+            vm.viewScroll = function (e) {
+                var me = this.$vmodel
+                var headerId = me.bizuiId + '-headercontainer-normal',
+                    header = document.getElementById(headerId),
+                    lockedId = me.bizuiId + '-view-locked',
+                    lockedView = document.getElementById(lockedId)
+
+                if (header) {
+                    //avalon.log(el)
+                    header.scrollLeft = e.target.scrollLeft
+                }
+                if (lockedView) {
+                    lockedView.scrollTop = e.target.scrollTop
+                }
+
             }
         })
         avalon.nextTick(function () {
-            avalon.innerHTML(element, headerTemplate + template)
+            avalon.innerHTML(element, headerTemplate + gridHeaderTemplate + bodyTemplate)
             element.stopScan = false
             avalon.log(new Date().getTime())
             avalon.scan(element, [vmodel].concat(vmodels))

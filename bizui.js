@@ -294,7 +294,7 @@
                     type: 'autocomponet',
                     size: null
                 },
-                replaceTemplate: '[[content]]'
+                contentTemplate: '[[content]]'
             },
             render: function (config, returnAttributes) {
                 var autoEl = config.autoEl,
@@ -307,7 +307,7 @@
                     layoutName = layout && layout.name,
                     layoutSize = layout && layout.size,
                     attributes = [],
-                    replaceTemplate = config.replaceTemplate || '[[content]]'
+                    contentTemplate = config.contentTemplate || '[[content]]'
                 layout = bizui.containerLayout[layoutName]
                 var targetCls = layout && layout.targetCls || ''
                 var getComputedAttributes = function (computedAttributes, start) {
@@ -344,7 +344,7 @@
                     itemCls = itemCls.join(' ')
                 }
                 classes = classes.join(' ') + ' ' + uiCls.join(' ') + ' ' + itemCls
-                template.push('<' + tag)
+                template.push('<' + tag +' ')
                 attributes.push('class="' + classes + '"')
                 attributes.push(role ? 'role="' + role + '" ' : '')
                 attributes.push(unselectable ? 'unselectable="' + unselectable + '" ' : '')
@@ -363,18 +363,18 @@
                     for (var name in config.children) {
                         childTemplate += bizui.template.render(config.children[name])
                     }
-                    replaceTemplate = childTemplate
+                    contentTemplate = childTemplate
                 }
                 if (layout) {
-                    template.push(layout.getTemplate(config, layoutSize, replaceTemplate))
+                    template.push(layout.getTemplate(config, layoutSize, contentTemplate))
                 } else {
-                    template.push(replaceTemplate)
+                    template.push(contentTemplate)
                 }
                 template.push('</' + tag + '>')
                 if (returnAttributes) {
                     return attributes//.join(' ')
                 }
-                return template.join(' ')
+                return template.join('')
             }
 
         }
@@ -488,19 +488,20 @@
     avalon.mix(bizui.containerLayout, {
         container: {
             targetCls: '',
-            getTemplate: function (comp) {
-                return '[[content]]'
+            getTemplate: function (comp,size,contentTemplate) {
+                return contentTemplate
             }
         },
         auto: {
             targetCls: '',
-            getTemplate: function (comp) {
+            getTemplate: function (comp,size,contentTemplate) {
                 var template = []
+                contentTemplate = contentTemplate || '[[content]]'
                 if (!bizui.isIE7m) {
                     template = [
                         '<span ms-attr-id="{{bizuiId}}-outerCt" style="display:table;table-layout: fixed; height: 100%;">',
                         '  <div ms-attr-id="{{bizuiId}}-innerCt" style="display:table-cell;height:100%;vertical-align:top;">',
-                        '    [[content]]',
+                        contentTemplate,
                         '  </div>',
                         '</span>'
                     ]
@@ -509,7 +510,7 @@
                     template = [
                         '<div ms-attr-id="{{bizuiId}}-outerCt" style="height: 100%; zoom: 1;">',
                         '  <div ms-attr-id="{{bizuiId}}-innerCt" style="height: 100%;zoom: 1;">',
-                        '    [[content]]',
+                        contentTemplate,
                         '    <div ms-attr-id="{{bizuiId}}-clearEl" class="' + bizui.baseCSSPrefix + 'clear"></div>',
                         '  </div>',
                         '</div>'
@@ -520,41 +521,42 @@
         },
         anchor: {
             targetCls: '',
-            getTemplate: function (comp) {
-                return bizui.containerLayout['auto'].getTemplate(comp)
+            getTemplate: function (comp,size,contentTemplate) {
+                return bizui.containerLayout['auto'].getTemplate(comp,size,contentTemplate)
             }
         },
         border: {
             targetCls: bizui.baseCSSPrefix + 'border-layout-ct',
-            getTemplate: function (comp) {
-                return '[[content]]'
+            getTemplate: function (comp,size,contentTemplate) {
+                return contentTemplate
             }
         },
         column: {
             targetCls: bizui.baseCSSPrefix + 'column-layout-ct',
-            getTemplate: function (comp) {
-                return bizui.containerLayout['auto'].getTemplate(comp)
+            getTemplate: function (comp,size,contentTemplate) {
+                return bizui.containerLayout['auto'].getTemplate(comp,size,contentTemplate)
             }
         },
         fit: {
             targetCls: bizui.baseCSSPrefix + 'layout-fit',
-            getTemplate: function (comp) {
-                return bizui.containerLayout['border'].getTemplate(comp)
+            getTemplate: function (comp,size,contentTemplate) {
+                return bizui.containerLayout['border'].getTemplate(comp,size,contentTemplate)
             }
         },
         form: {
             targetCls: '',
-            getTemplate: function (comp) {
+            getTemplate: function (comp,size,contentTemplate) {
                 return '<table ms-attr-id="{{bizuiId}}-formTable" class="x-form-layout-table" style="width:100%" cellpadding="0">' +
-                    '[[content]]' +
+                    contentTemplate +
                     '</table>'
             }
         },
         hbox: {
             targetCls: bizui.baseCSSPrefix + 'box-layout-ct',
-            getTemplate: function (comp, size) {
+            getTemplate: function (comp, size,contentTemplate) {
                 var widthStyle = 'width:0px;', heightStyle = '',
                     computedWidth = '' , computedHeight = ''
+                    contentTemplate = contentTemplate || '[[content]]'
                 if (size) {
                     if (size.computedWidth) {
                         computedWidth = 'ms-css-width="' + size.computedWidth + '"'
@@ -572,14 +574,15 @@
                         heightStyle = 'height:' + size.height + 'px;'
                     }
                 }
+                var idSuffix = comp.idSuffix?'-'+comp.idSuffix:''
                 var template = [
-                    '<div ms-attr-id="{{bizuiId}}-innerCt" class="x-box-inner " role="presentation" ',
+                    '<div ms-attr-id="{{bizuiId}}-innerCt'+idSuffix+'" class="x-box-inner " role="presentation" ',
                     computedWidth + ' ' + computedHeight,
                     ' style="' + widthStyle + ' ' + heightStyle + '">',
-                    '  <div ms-attr-id="{{bizuiId}}-targetEl" class="x-box-target" ',
+                    '  <div ms-attr-id="{{bizuiId}}-targetEl'+idSuffix+'" class="x-box-target" ',
                     computedWidth,
                     ' style="' + widthStyle + '">',
-                    '    [[content]]',
+                    contentTemplate,
                     '  </div>',
                     '</div>'
                 ]
@@ -588,28 +591,28 @@
         },
         vbox: {
             targetCls: bizui.baseCSSPrefix + 'box-layout-ct',
-            getTemplate: function (comp, size) {
-                return bizui.containerLayout['hbox'].getTemplate(comp, size)
+            getTemplate: function (comp, size,contentTemplate) {
+                return bizui.containerLayout['hbox'].getTemplate(comp, size, contentTemplate)
             }
         },
         table: {
             targetCls: bizui.baseCSSPrefix + 'table-layout-ct',
-            getTemplate: function (comp) {
+            getTemplate: function (comp,size,contentTemplate) {
                 return '<table role="presentation" class="x-table-layout" cellspacing="0" cellpadding="0"><tbody>' +
-                    '  {{bodyTemplate}}' +
+                    contentTemplate +
                     '</tbody></table>'
             }
         },
         tableview: {
             targetCls: bizui.baseCSSPrefix + 'fit-item',
-            getTemplate: function (comp) {
-                return '{{bodyTemplate}}'
+            getTemplate: function (comp,size,contentTemplate) {
+                return contentTemplate
             }
         },
         gridcell: {
             targetCls: '',
-            getTemplate: function (comp) {
-                return '<div unselectable="on" class="' + bizui.baseCSSPrefix + 'grid-cell-inner " ms-css-text-align="col.align">[[content]]</div>'
+            getTemplate: function (comp,size,contentTemplate) {
+                return '<div unselectable="on" class="' + bizui.baseCSSPrefix + 'grid-cell-inner " ms-css-text-align="col.align">'+contentTemplate+'</div>'
             }
         }
     })
