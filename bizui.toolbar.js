@@ -19,7 +19,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             var options = avalon.mix(true, {}, bizui.vmodels['toolbar'], data.toolbarOptions)
             var $element = avalon(element)
             element.stopScan = true
-            var comps = bizui.getChildren(element, data.toolbarId, vmodels, null, true)
+            var comps = bizui.processChildren(element, data.toolbarId, vmodels, null, true)
             for (var id in comps.bizuiOptions) {
                 var bizuiOption = comps.bizuiOptions[id]
                 bizuiOption.box = true

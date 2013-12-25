@@ -607,15 +607,16 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                 contentTemplate: viewTemplate
             })
         }
+        var listeners = options.listeners
+        delete options.listeners
         var vmodel = avalon.define(data.gridId, function (vm) {
             vm.$skipArray = ['root', 'listeners', 'data']
             avalon.mix(vm, options)
             vm.selectedIndex = -1
-            if (options.listeners) {
-                for (var name in options.listeners) {
-                    vm.$watch(name, options.listeners[name])
+            if (listeners) {
+                for (var name in listeners) {
+                    vm.$watch(name, listeners[name])
                 }
-                delete vm.listeners
             }
             vm.resizeColumnIndex = -1
             vm.columnHeaderMouseMove = function (e, index, colsName) {

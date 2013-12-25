@@ -3,9 +3,7 @@
  */
 define(['avalon', 'bizui.menu'], function (avalon) {
     bizui.classes['button']=avalon.mix(true,{},bizui.classes['component'],{
-        icon: '',
-        iconAlign: 'left',
-        iconCls: ''
+
     })
     bizui.vmodels['button'] = avalon.mix(true, {}, bizui.component, {
         $bizuiType: 'button',
@@ -20,14 +18,17 @@ define(['avalon', 'bizui.menu'], function (avalon) {
         toggled: false,
         handler: avalon.noop,
         split: false,
-        arrowAlign: 'right'
+        arrowAlign: 'right',
+        icon: '',
+        iconAlign: 'left',
+        iconCls: ''
     })
     avalon.bizui['button'] = function (element, data, vmodels) {
         element.stopScan = true
         var options = avalon.mix(true, {}, bizui.vmodels['button'], data.buttonOptions)
         var $element = avalon(element), menu, menuOptions,
             baseCls, ui, iconAlign, uiCls, conditionalCls = [],
-            comps = bizui.getChildren(element, data.buttonId, vmodels, 'menu')
+            comps = bizui.processChildren(element, data.buttonId, vmodels, 'menu')
         options.split = false
         if (comps.children.length > 0) {
             options.split = true

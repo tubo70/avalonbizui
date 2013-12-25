@@ -201,7 +201,7 @@
         var id = prefix + setTimeout('1')
         return {bizuiId: id}
     }
-    bizui.getChildren = function (element, vmodelId, vmodels, childName, onlyBizui, attachChild) {
+    bizui.processChildren = function (element, vmodelId, vmodels, childName, onlyBizui, attachChild) {
         var comps = [], children = [], bizuiOptions = {}, el, deletes = []
 
         for (var i = 0, il = element.childNodes.length; i < il; i++) {
@@ -276,6 +276,12 @@
                     unselectable: 'on'
                 },
                 computedAttributes: [
+                    {click: ['onClick']},
+                    {name: 'class', values: []},
+                    {css: {
+                        width: 'width',
+                        height: 'height'
+                    }},
                     {name: 'if', values: []},
                     {name: 'class', values: ['', '']},
                     {name: 'css', values: [
@@ -307,29 +313,62 @@
                     layoutName = layout && layout.name,
                     layoutSize = layout && layout.size,
                     attributes = [],
-                    contentTemplate = config.contentTemplate || '[[content]]'
+                    contentTemplate = config.contentTemplate
+                contentTemplate = contentTemplate == null || contentTemplate == undefined ? '[[content]]' : contentTemplate
                 layout = bizui.containerLayout[layoutName]
                 var targetCls = layout && layout.targetCls || ''
+                var processValues = function (result, msName, values, start) {
+                    if (typeof values === 'string') {
+                        result.push('ms-' + msName + '="' + values + '"')
+                        return
+                    } else if (!Array.isArray(values)) {
+                        values =[values]
+                    }
+                    for (var j = 0, jl = values.length; j < jl; j++) {
+                        var value = values[j],
+                            name = values[j].name
+                        if (typeof value === 'string') {
+                            name = start + j
+                            result.push('ms-' + msName + '-' + name + '="' + value + '"')
+                            continue
+                        }
+                        if (name) {
+                            result.push('ms-' + msName + '-' + name + '="' + values[j].value + '"')
+                            continue
+                        }
+                        for (name in value) {
+                            result.push('ms-' + msName + '-' + name + '="' + value[name] + '"')
+                        }
+
+                    }
+
+                }
                 var getComputedAttributes = function (computedAttributes, start) {
                     var result = []
                     if (computedAttributes && computedAttributes.length) {
                         for (var i = 0, il = computedAttributes.length; i < il; i++) {
                             var msName = computedAttributes[i].name, values = computedAttributes[i].values
                             if (!msName || !values) {
-                                continue
-                            }
-                            if (typeof values === 'string') {
-                                result.push('ms-' + msName + '="' + values + '"')
-                            } else {
-                                for (var j = 0, jl = values.length; j < jl; j++) {
-                                    var name = values[j].name, value = values[j].value
-                                    name = name || (start + j)
-                                    value = value || values[j]
-                                    if (typeof value === 'string') {
-                                        result.push('ms-' + msName + '-' + name + '="' + value + '"')
-                                    }
+                                for (var name in computedAttributes[i]) {
+                                    msName = name
+                                    values = computedAttributes[i][name]
+                                    processValues(result, msName, values,start)
                                 }
                             }
+                            processValues(result, msName, values,start)
+                            /*
+                             if (typeof values === 'string') {
+                             result.push('ms-' + msName + '="' + values + '"')
+                             } else {
+                             for (var j = 0, jl = values.length; j < jl; j++) {
+                             var name = values[j].name, value = values[j].value
+                             name = name || (start + j)
+                             value = value || values[j]
+                             if (typeof value === 'string') {
+                             result.push('ms-' + msName + '-' + name + '="' + value + '"')
+                             }
+                             }
+                             }*/
 
                         }
                     }
@@ -344,7 +383,7 @@
                     itemCls = itemCls.join(' ')
                 }
                 classes = classes.join(' ') + ' ' + uiCls.join(' ') + ' ' + itemCls
-                template.push('<' + tag +' ')
+                template.push('<' + tag + ' ')
                 attributes.push('class="' + classes + '"')
                 attributes.push(role ? 'role="' + role + '" ' : '')
                 attributes.push(unselectable ? 'unselectable="' + unselectable + '" ' : '')
@@ -385,7 +424,7 @@
         ui: 'default',
         uiCls: [],
         disabledCls: bizui.baseCSSPrefix + 'item-disabled',
-        listeners:{}
+        listeners: {}
     }
     bizui.classes['container'] = avalon.mix(true, {}, bizui.classes['component'])
     bizui.component = {
@@ -488,13 +527,13 @@
     avalon.mix(bizui.containerLayout, {
         container: {
             targetCls: '',
-            getTemplate: function (comp,size,contentTemplate) {
+            getTemplate: function (comp, size, contentTemplate) {
                 return contentTemplate
             }
         },
         auto: {
             targetCls: '',
-            getTemplate: function (comp,size,contentTemplate) {
+            getTemplate: function (comp, size, contentTemplate) {
                 var template = []
                 contentTemplate = contentTemplate || '[[content]]'
                 if (!bizui.isIE7m) {
@@ -521,31 +560,31 @@
         },
         anchor: {
             targetCls: '',
-            getTemplate: function (comp,size,contentTemplate) {
-                return bizui.containerLayout['auto'].getTemplate(comp,size,contentTemplate)
+            getTemplate: function (comp, size, contentTemplate) {
+                return bizui.containerLayout['auto'].getTemplate(comp, size, contentTemplate)
             }
         },
         border: {
             targetCls: bizui.baseCSSPrefix + 'border-layout-ct',
-            getTemplate: function (comp,size,contentTemplate) {
+            getTemplate: function (comp, size, contentTemplate) {
                 return contentTemplate
             }
         },
         column: {
             targetCls: bizui.baseCSSPrefix + 'column-layout-ct',
-            getTemplate: function (comp,size,contentTemplate) {
-                return bizui.containerLayout['auto'].getTemplate(comp,size,contentTemplate)
+            getTemplate: function (comp, size, contentTemplate) {
+                return bizui.containerLayout['auto'].getTemplate(comp, size, contentTemplate)
             }
         },
         fit: {
             targetCls: bizui.baseCSSPrefix + 'layout-fit',
-            getTemplate: function (comp,size,contentTemplate) {
-                return bizui.containerLayout['border'].getTemplate(comp,size,contentTemplate)
+            getTemplate: function (comp, size, contentTemplate) {
+                return bizui.containerLayout['border'].getTemplate(comp, size, contentTemplate)
             }
         },
         form: {
             targetCls: '',
-            getTemplate: function (comp,size,contentTemplate) {
+            getTemplate: function (comp, size, contentTemplate) {
                 return '<table ms-attr-id="{{bizuiId}}-formTable" class="x-form-layout-table" style="width:100%" cellpadding="0">' +
                     contentTemplate +
                     '</table>'
@@ -553,10 +592,10 @@
         },
         hbox: {
             targetCls: bizui.baseCSSPrefix + 'box-layout-ct',
-            getTemplate: function (comp, size,contentTemplate) {
+            getTemplate: function (comp, size, contentTemplate) {
                 var widthStyle = 'width:0px;', heightStyle = '',
                     computedWidth = '' , computedHeight = ''
-                    contentTemplate = contentTemplate || '[[content]]'
+                contentTemplate = contentTemplate || '[[content]]'
                 if (size) {
                     if (size.computedWidth) {
                         computedWidth = 'ms-css-width="' + size.computedWidth + '"'
@@ -574,12 +613,12 @@
                         heightStyle = 'height:' + size.height + 'px;'
                     }
                 }
-                var idSuffix = comp.idSuffix?'-'+comp.idSuffix:''
+                var idSuffix = comp.idSuffix ? '-' + comp.idSuffix : ''
                 var template = [
-                    '<div ms-attr-id="{{bizuiId}}-innerCt'+idSuffix+'" class="x-box-inner " role="presentation" ',
+                    '<div ms-attr-id="{{bizuiId}}-innerCt' + idSuffix + '" class="x-box-inner " role="presentation" ',
                     computedWidth + ' ' + computedHeight,
                     ' style="' + widthStyle + ' ' + heightStyle + '">',
-                    '  <div ms-attr-id="{{bizuiId}}-targetEl'+idSuffix+'" class="x-box-target" ',
+                    '  <div ms-attr-id="{{bizuiId}}-targetEl' + idSuffix + '" class="x-box-target" ',
                     computedWidth,
                     ' style="' + widthStyle + '">',
                     contentTemplate,
@@ -591,13 +630,13 @@
         },
         vbox: {
             targetCls: bizui.baseCSSPrefix + 'box-layout-ct',
-            getTemplate: function (comp, size,contentTemplate) {
+            getTemplate: function (comp, size, contentTemplate) {
                 return bizui.containerLayout['hbox'].getTemplate(comp, size, contentTemplate)
             }
         },
         table: {
             targetCls: bizui.baseCSSPrefix + 'table-layout-ct',
-            getTemplate: function (comp,size,contentTemplate) {
+            getTemplate: function (comp, size, contentTemplate) {
                 return '<table role="presentation" class="x-table-layout" cellspacing="0" cellpadding="0"><tbody>' +
                     contentTemplate +
                     '</tbody></table>'
@@ -605,14 +644,14 @@
         },
         tableview: {
             targetCls: bizui.baseCSSPrefix + 'fit-item',
-            getTemplate: function (comp,size,contentTemplate) {
+            getTemplate: function (comp, size, contentTemplate) {
                 return contentTemplate
             }
         },
         gridcell: {
             targetCls: '',
-            getTemplate: function (comp,size,contentTemplate) {
-                return '<div unselectable="on" class="' + bizui.baseCSSPrefix + 'grid-cell-inner " ms-css-text-align="col.align">'+contentTemplate+'</div>'
+            getTemplate: function (comp, size, contentTemplate) {
+                return '<div unselectable="on" class="' + bizui.baseCSSPrefix + 'grid-cell-inner " ms-css-text-align="col.align">' + contentTemplate + '</div>'
             }
         }
     })

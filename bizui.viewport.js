@@ -22,7 +22,7 @@ define(["avalon", "avalon.draggable"], function (avalon) {
         element.stopScan = true
         var options = avalon.mix(true, {}, bizui.vmodels['viewport'], data.viewportOptions)
         var index = 0, regionOrders = {}
-        var comps = bizui.getChildren(element, data.viewportId, vmodels)
+        var comps = bizui.processChildren(element, data.viewportId, vmodels)
         for (var i = 0, il = comps.children.length; i < il; i++) {
             var child = comps.children[i]
             if (child.$bizuiId) {

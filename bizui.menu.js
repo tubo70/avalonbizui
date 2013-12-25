@@ -1,7 +1,7 @@
 /**
  * Created by weiwei on 13-12-4.
  */
-define(['avalon'], function (avalon) {
+define(['avalon', 'bizui.panel'], function (avalon) {
     bizui.subMenuIds = []
     avalon(window).bind('click', function () {
         if (bizui.subMenuIds.length != 0) {
@@ -14,24 +14,103 @@ define(['avalon'], function (avalon) {
             }
         }
     })
-    bizui.classes['menu']=avalon.mix(true,{},bizui.classes['container'],{
-        icon: '',
-        iconAlign: 'left',
-        iconCls: ''
+    bizui.classes['menu'] = avalon.mix(true, {}, bizui.classes['panel'], {
+
     })
-    bizui.classes['menuitem']=avalon.mix(true,{},bizui.classes['component'],{
-        icon: '',
-        iconAlign: 'left',
-        iconCls: ''
+    bizui.classes['menuitem'] = avalon.mix(true, {}, bizui.classes['component'], {
+
     })
-    bizui.vmodels['menu'] = avalon.mix(true, {}, bizui.containerVModel, {
+    bizui.vmodels['menu'] = avalon.mix(true, {}, bizui.vmodels['panel'], {
         $bizuiType: 'menu',
         hidden: false,
         ignoreParentClicks: false, //True to ignore clicks on any item in this menu that is a parent item (displays a submenu) so that the submenu is not dismissed when clicking the parent item.
         plain: false,//True to remove the incised line down the left side of the menu and to not indent general Component items.
         showSeparator: true, //True to show the icon separator.
         isSubMenu: false,
-        zIndex: -1
+        zIndex: -1,
+        icon: '',
+        iconAlign: 'left',
+        iconCls: '',
+        getMenuBodyTemplate: function (config) {
+            var me = this,
+                menuClass = bizui.classes[me.$bizuiType],
+                $default = {
+                    baseCls: menuClass.baseCls + '-body',
+                    ui: menuClass.ui,
+                    itemCls: [bizui.baseCSSPrefix + 'menu-body'],
+                    computedAttributes: [
+                        {name: 'class', values: [
+                            bizui.baseCSSPrefix + 'scroller ' + menuClass.baseCls + '-body-scroller ' +
+                                menuClass.baseCls + '-body-' + menuClass.ui + '-scroller:hasScroller'
+                        ]},
+                        {css: {width: 'width', height: 'height'}}
+                    ],
+                    style: 'left: 0px; top: 0px;',
+                    children: {
+                        scrollTop: {
+                            itemCls: [bizui.baseCSSPrefix + 'box-inner',
+                                bizui.baseCSSPrefix + 'box-scroller-top'],
+                            children: {
+                                scroller: {
+                                    itemCls: [bizui.baseCSSPrefix + 'box-scroller',
+                                        bizui.baseCSSPrefix + 'menu-scroller-top'],
+                                    computedAttributes: [
+                                        {name: 'visible', values: 'hasScroller'},
+                                        {name: 'click', values: ['scrollTop']}
+                                    ],
+                                    contentTemplate: ''
+                                }
+                            }
+                        },
+                        innerCt: {
+                            itemCls: [bizui.baseCSSPrefix + 'box-inner',
+                                bizui.baseCSSPrefix + 'vertical-box-overflow-body'],
+                            autoEl: {
+                                role: 'presentation'
+                            },
+                            computedAttributes: [
+                                {'attr-id': '{{bizuiId}}-innerCt'},
+                                {css: {width: 'width-6', height: 'height-8-scrollerHeight'}}
+                            ],
+                            children: {
+                                separator: {
+                                    itemCls: [bizui.baseCSSPrefix + 'menu-icon-separator'],
+                                    computedAttributes: [
+                                        {'css-height': 'innerHeight'},
+                                        {visible: 'showSeparator'}
+                                    ],
+                                    contentTemplate: '&nbsp;'
+                                },
+                                menu: {
+                                    style: 'position: absolute; left: 0px; top: 0px; height: 1px;',
+                                    computedAttributes: [
+                                        {'css-height': 'width-6'}
+                                    ]
+                                }
+                            }
+                        },
+                        scrollDown: {
+                            itemCls: [bizui.baseCSSPrefix + 'box-inner',
+                                bizui.baseCSSPrefix + 'box-scroller-bottom'],
+                            children: {
+                                scroller: {
+                                    itemCls: [bizui.baseCSSPrefix + 'box-scroller',
+                                        bizui.baseCSSPrefix + 'menu-scroller-bottom'],
+                                    computedAttributes: [
+                                        {name: 'visible', values: 'hasScroller'},
+                                        {name: 'click', values: ['scrollDown']}
+                                    ],
+                                    contentTemplate: ''
+                                }
+                            }
+                        }
+                    }
+                },
+                finallyConfig = avalon.mix(true, {}, $default, config),
+                template = bizui.template.render(finallyConfig)
+            delete finallyConfig
+            return template
+        }
     })
     bizui.vmodels['menuitem'] = avalon.mix(true, {}, bizui.baseVModel, {
         $bizuiType: 'menuitem',
@@ -51,9 +130,10 @@ define(['avalon'], function (avalon) {
     })
     avalon.bizui['menu'] = function (element, data, vmodels) {
         var options = avalon.mix(true, {}, bizui.vmodels['menu'], data.menuOptions)
-        var $element = avalon(element)
+        var $element = avalon(element),
+            menuClass = bizui.classes[options.$bizuiType]
         element.stopScan = true
-        var comps = bizui.getChildren(element, data.menuId, vmodels, 'menuitem')
+        var comps = bizui.processChildren(element, data.menuId, vmodels, 'menuitem')
         var childOptions = comps.bizuiOptions, index = 0, itemHeight = 24
         var height = 0
         var innerHeight = 0
@@ -90,6 +170,30 @@ define(['avalon'], function (avalon) {
             options.zIndex = bizui.zIndex
             options.hidden = true
         }
+        options.setElementAttributes({
+            baseCls: menuClass.baseCls,
+            ui: menuClass.ui,
+            itemCls: [bizui.baseCSSPrefix + 'menu'],
+            computedAttributes: [
+                {name: 'css', values: [
+                    {name: 'left', value: '{{isSubMenu?left:\'\'}}'},
+                    {name: 'top', value: '{{isSubMenu?top:\'\'}}'},
+                    {name: 'z-index', value: '{{isSubMenu?zIndex+1:\'\'}}'}
+                ]},
+                {name: 'mouseenter', values: 'enterSubMenu'},
+                {name: 'visible', values: '!hidden'},
+                {name: 'class', values: [
+                    bizui.baseCSSPrefix + 'item-disabled ' + bizui.baseCSSPrefix + 'masked-relative' +
+                        bizui.baseCSSPrefix + 'masked:disabled',
+                    bizui.baseCSSPrefix + 'scroller ' + menuClass.baseCls + '-scroller' +
+                        menuClass.baseCls + '-' + menuClass.ui + '-scroller:hasScroller',
+                    bizui.baseCSSPrefix + 'layer:isSubMenu'
+                ]}
+            ],
+            style: 'margin: 0px 0px 10px;'
+        }, element)
+        var template = options.getMenuBodyTemplate()
+        template = template.replace('[[content]]', element.innerHTML)
         var vmodel = avalon.define(data.menuId, function (vm) {
             avalon.mix(vm, options)
             for (var opts in childOptions) {
@@ -125,23 +229,6 @@ define(['avalon'], function (avalon) {
             }
         })
 
-        var template = '<div class="x-panel-body x-menu-body x-panel-body-default x-panel-body-default x-box-layout-ct"' +
-            ' ms-css-width="width" ms-css-height="height" style="left: 0px; top: 0px;"' +
-            ' ms-class-0="x-scroller x-panel-body-scroller x-panel-body-default-scroller:hasScroller">' +
-            '<div class="x-box-inner x-box-scroller-top">' +
-            '<div ms-visible="hasScroller" class="x-box-scroller x-menu-scroll-top" ms-click-0="scrollTop"></div>' +
-            '</div>' +
-            '<div id="' + options.bizuiId + '-innerCt" class="x-box-inner x-vertical-box-overflow-body" role="presentation"' +
-            ' ms-css-height="height-8-scrollerHeight" ms-css-width="width-6">' +
-            '<div ms-visible="showSeparator" class="x-menu-icon-separator" ms-css-height="innerHeight">&nbsp;</div>' +
-            '<div ms-css-width="width-6" style="position: absolute; left: 0px; top: 0px; height: 1px;">' +
-            element.innerHTML +
-            '</div>' +
-            '</div>' +
-            '<div class="x-box-inner x-box-scroller-bottom">' +
-            '<div ms-visible="hasScroller" class="x-box-scroller x-menu-scroll-bottom" ms-click="scrollDown"></div>' +
-            '</div>' +
-            '</div>'
         var shadowElement
         if (options.isSubMenu) {
             var cls = 'x-css-shadow'
@@ -161,18 +248,7 @@ define(['avalon'], function (avalon) {
             $element.addClass('x-border-box')
         }
 
-        $element.addClass('x-panel x-panel-default x-menu')
-            .attr('style', 'margin: 0px 0px 10px;')
-            .attr('ms-css-width', 'width')
-            .attr('ms-css-height', 'height')
-            .attr('ms-css-left', '{{isSubMenu?left:\'\'}}')
-            .attr('ms-css-top', '{{isSubMenu?top:\'\'}}')
-            .attr('ms-css-z-index', '{{isSubMenu?zIndex+1:\'\'}}')
-            .attr('ms-mouseenter', 'enterSubMenu')
-            .attr('ms-visible', '!hidden')
-            .attr('ms-class-0', 'x-item-disabled x-masked-relative x-masked:disabled')
-            .attr('ms-class-1', 'x-scroller x-panel-scroller x-panel-default-scroller:hasScroller')
-            .attr('ms-class-2', 'x-layer:isSubMenu')
+
         avalon.nextTick(function () {
             element.stopScan = false
             avalon.innerHTML(element, template)
@@ -193,7 +269,7 @@ define(['avalon'], function (avalon) {
         var $element = avalon(element), subMenu, subMenuOptions
         element.stopScan = true
         options.hasSubMenu = false
-        var comps = bizui.getChildren(element, data.menuId, vmodels, 'menu')
+        var comps = bizui.processChildren(element, data.menuId, vmodels, 'menu')
         if (comps.children.length > 0) {
             options.hasSubMenu = true
             subMenu = element.firstChild

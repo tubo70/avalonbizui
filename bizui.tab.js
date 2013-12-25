@@ -24,7 +24,7 @@ define(['avalon', 'bizui.panel', 'bizui.button'], function (avalon) {
     avalon.bizui['tab'] = function (element, data, vmodels) {
         element.stopScan = true
         var options = avalon.mix(true, {}, bizui.vmodels['tab'], data.tabOptions),
-            comps = bizui.getChildren(element, data.tabId, vmodels, null, true, true),
+            comps = bizui.processChildren(element, data.tabId, vmodels, null, true, true),
             tabTemplates = [], tabPanelTemplates = [],
             $element = avalon(element)
         options.$tabIds = {}

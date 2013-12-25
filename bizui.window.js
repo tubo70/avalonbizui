@@ -40,7 +40,7 @@ define(['avalon', 'bizui.mask', 'bizui.tool', 'bizui.button', 'bizui.toolbar', '
         element.stopScan = true
         bizui.zIndex += 10
         options.zIndex = bizui.zIndex
-        var comps = bizui.getChildren(element, data.windowId, vmodels, null, null, true)
+        var comps = bizui.processChildren(element, data.windowId, vmodels, null, null, true)
         for (var i = 0, il = comps.children.length; i < il; i++) {
             var child = comps.children[i]
             if (child.$bizuiId) {

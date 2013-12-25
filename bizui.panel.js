@@ -243,7 +243,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
         var options = avalon.mix(true, {}, bizui.vmodels['panel'], data.panelOptions)
         var $element = avalon(element)
         element.stopScan = true
-        var comps = bizui.getChildren(element, data.panelId, vmodels)
+        var comps = bizui.processChildren(element, data.panelId, vmodels)
         var headerTemplate = options.getHeaderTemplate()
         var parentNode = element.parentNode
         var bodyTemplate = options.getBodyTemplate({
