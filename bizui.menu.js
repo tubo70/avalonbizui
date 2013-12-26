@@ -39,7 +39,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                     ui: menuClass.ui,
                     itemCls: [bizui.baseCSSPrefix + 'menu-body'],
                     computedAttributes: [
-                        {name: 'class', values: [
+                        {'class': [
                             bizui.baseCSSPrefix + 'scroller ' + menuClass.baseCls + '-body-scroller ' +
                                 menuClass.baseCls + '-body-' + menuClass.ui + '-scroller:hasScroller'
                         ]},
@@ -55,8 +55,8 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                                     itemCls: [bizui.baseCSSPrefix + 'box-scroller',
                                         bizui.baseCSSPrefix + 'menu-scroller-top'],
                                     computedAttributes: [
-                                        {name: 'visible', values: 'hasScroller'},
-                                        {name: 'click', values: ['scrollTop']}
+                                        {visible: 'hasScroller'},
+                                        {click: ['scrollTop']}
                                     ],
                                     contentTemplate: ''
                                 }
@@ -97,8 +97,8 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                                     itemCls: [bizui.baseCSSPrefix + 'box-scroller',
                                         bizui.baseCSSPrefix + 'menu-scroller-bottom'],
                                     computedAttributes: [
-                                        {name: 'visible', values: 'hasScroller'},
-                                        {name: 'click', values: ['scrollDown']}
+                                        {visible: 'hasScroller'},
+                                        {click: ['scrollDown']}
                                     ],
                                     contentTemplate: ''
                                 }
@@ -176,13 +176,13 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             itemCls: [bizui.baseCSSPrefix + 'menu'],
             computedAttributes: [
                 {name: 'css', values: [
-                    {name: 'left', value: '{{isSubMenu?left:\'\'}}'},
-                    {name: 'top', value: '{{isSubMenu?top:\'\'}}'},
-                    {name: 'z-index', value: '{{isSubMenu?zIndex+1:\'\'}}'}
+                    {left: '{{isSubMenu?left:\'\'}}'},
+                    {top: '{{isSubMenu?top:\'\'}}'},
+                    {'z-index': '{{isSubMenu?zIndex+1:\'\'}}'}
                 ]},
-                {name: 'mouseenter', values: 'enterSubMenu'},
-                {name: 'visible', values: '!hidden'},
-                {name: 'class', values: [
+                {mouseenter: 'enterSubMenu'},
+                {visible: '!hidden'},
+                {'class': [
                     bizui.baseCSSPrefix + 'item-disabled ' + bizui.baseCSSPrefix + 'masked-relative' +
                         bizui.baseCSSPrefix + 'masked:disabled',
                     bizui.baseCSSPrefix + 'scroller ' + menuClass.baseCls + '-scroller' +
@@ -228,22 +228,45 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                 }
             }
         })
-
         var shadowElement
         if (options.isSubMenu) {
-            var cls = 'x-css-shadow'
+            var cls = 'x-css-shadow',
+                topExp = 'top+4',
+                heightExp = 'height-4',
+                style = 'right: auto; box-shadow: rgb(136, 136, 136) 0px 0px 6px;'
             if (bizui.isIE) {
                 cls = 'x-ie-shadow'
             }
-            var shadowTemplate = '<div ms-if="isSubMenu" ms-visible="!hidden" class="' + cls + '" role="presentation" ms-css-z-index="zIndex" style="right: auto; box-shadow: rgb(136, 136, 136) 0px 0px 6px;" ms-css-left="left" ms-css-top="top+4" ms-css-width="width" ms-css-height="height-4"></div>'
-            if (bizui.isIE8m) {
-                shadowTemplate = '<div ms-if="isSubMenu" ms-visible="!hidden" class="x-ie-shadow" role="presentation" style="right: auto; position: ; filter: progid:DXImageTransform.Microsoft.alpha(opacity=50) progid:DXImageTransform.Microsoft.Blur(pixelradius=4);"  ms-css-z-index="zIndex" ms-css-left="left-5" ms-css-top="top-3" ms-css-width="width-1" ms-css-height="height+1"></div>'
-            }
-            shadowElement = avalon.parseHTML(shadowTemplate)
-            shadowElement.stopScan = true
-            document.body.appendChild(shadowElement)
-            shadowElement = document.body.lastChild
+            if (bizui.isIE8m)
+                topExp = 'top+4'
+            heightExp = 'height-4'
+            style = 'right: auto; position: ; filter: progid:DXImageTransform.Microsoft.alpha(opacity=50) progid:DXImageTransform.Microsoft.Blur(pixelradius=4);'
         }
+        var shadowConfig = {
+                itemCls: [cls],
+                style: style,
+                autoEl: {role: 'presentation'},
+                computedAttributes: {
+                    'if': 'isSubMenu',
+                    visible: '!hidden',
+                    'z-index': 'zIndex',
+                    'css-left': 'left',
+                    'css-top': topExp,
+                    'css-width': 'width',
+                    'css-height': heightExp
+                }
+
+            },
+            shadowTemplate = bizui.template.render(shadowConfig)
+        //var shadowTemplate = '<div ms-if="isSubMenu" ms-visible="!hidden" class="' + cls + '" role="presentation" ms-css-z-index="zIndex" style="right: auto; box-shadow: rgb(136, 136, 136) 0px 0px 6px;" ms-css-left="left" ms-css-top="top+4" ms-css-width="width" ms-css-height="height-4"></div>'
+        //if (bizui.isIE8m) {
+        //    shadowTemplate = '<div ms-if="isSubMenu" ms-visible="!hidden" class="x-ie-shadow" role="presentation" style="right: auto; position: ; filter: progid:DXImageTransform.Microsoft.alpha(opacity=50) progid:DXImageTransform.Microsoft.Blur(pixelradius=4);"  ms-css-z-index="zIndex" ms-css-left="left-5" ms-css-top="top-3" ms-css-width="width-1" ms-css-height="height+1"></div>'
+        //}
+        shadowElement = avalon.parseHTML(shadowTemplate)
+        shadowElement.stopScan = true
+        document.body.appendChild(shadowElement)
+        shadowElement = document.body.lastChild
+
         if (!bizui.isIE || bizui.isIE8p) {
             $element.addClass('x-border-box')
         }
@@ -262,6 +285,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         })
         return vmodel
     }
+
     avalon.bizui['menu'].defaults = {}
 
     avalon.bizui['menuitem'] = function (element, data, vmodels) {
@@ -310,6 +334,35 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                 }
             }
         })
+        var itemConfig ={
+            itemCls:[bizui.baseCSSPrefix + 'menu-item-link'],
+            autoEl:{tag:'a',unselectable:'on'},
+            computedAttributes:{
+                'attr-id':'{{bizuiId}}-itemEl',
+                href:'href',
+                'attr-target':'hrefTarget'
+            },
+            attributes:['hidefocus="true"'],
+            children:{
+                iconEl:{
+                    autoEl:{role:'img'},
+                    computedAttributes:{
+                        'attr-id':'{{bizuiId}}-iconEl',
+                        'class':[bizui.baseCSSPrefix + 'menu-item-icon {{iconCls}}'],
+                        'css-background-image':'{{icon!=\'\'?\'url(\' + icon+\');\':\'\'}}'
+                    }
+                },
+                textEl:{
+                    autoEl:{tag:'span',unselectable:'on'},
+                    itemCls:[bizui.baseCSSPrefix + 'menu-item-text'],
+                    computedAttributes:{'attr-id':'{{bizuiId}}-textEl'},
+                    contentTemplate:'{{text}}'
+                },
+                arrowEl:{
+
+                }
+            }
+        }
         //copy from ext-js
         var renderTpl = [
 
