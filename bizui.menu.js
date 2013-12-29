@@ -43,7 +43,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                             bizui.baseCSSPrefix + 'scroller ' + menuClass.baseCls + '-body-scroller ' +
                                 menuClass.baseCls + '-body-' + menuClass.ui + '-scroller:hasScroller'
                         ]},
-                        {css: {width: 'width', height: 'height'}}
+                        {'css-width': 'height'}
                     ],
                     style: 'left: 0px; top: 0px;',
                     children: {
@@ -68,17 +68,17 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                             autoEl: {
                                 role: 'presentation'
                             },
-                            computedAttributes: [
-                                {'attr-id': '{{bizuiId}}-innerCt'},
-                                {css: {width: 'width-6', height: 'height-8-scrollerHeight'}}
-                            ],
+                            computedAttributes:
+                                {'attr-id': '{{bizuiId}}-innerCt',
+                                width: 'width-6', height: 'height-8-scrollerHeight'}
+                            ,
                             children: {
                                 separator: {
                                     itemCls: [bizui.baseCSSPrefix + 'menu-icon-separator'],
-                                    computedAttributes: [
-                                        {'css-height': 'innerHeight'},
-                                        {visible: 'showSeparator'}
-                                    ],
+                                    computedAttributes:
+                                        {'css-height': 'innerHeight',
+                                        visible: 'showSeparator'}
+                                    ,
                                     contentTemplate: '&nbsp;'
                                 },
                                 menu: {

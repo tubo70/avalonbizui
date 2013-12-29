@@ -322,7 +322,7 @@
                         result.push('ms-' + msName + '="' + values + '"')
                         return
                     } else if (!Array.isArray(values)) {
-                        values =[values]
+                        values = [values]
                     }
                     for (var j = 0, jl = values.length; j < jl; j++) {
                         var value = values[j],
@@ -352,10 +352,10 @@
                                 for (var name in computedAttributes[i]) {
                                     msName = name
                                     values = computedAttributes[i][name]
-                                    processValues(result, msName, values,start)
+                                    processValues(result, msName, values, start)
                                 }
                             }
-                            processValues(result, msName, values,start)
+                            processValues(result, msName, values, start)
                             /*
                              if (typeof values === 'string') {
                              result.push('ms-' + msName + '="' + values + '"')
@@ -423,8 +423,7 @@
         baseCls: bizui.baseCSSPrefix + 'component',
         ui: 'default',
         uiCls: [],
-        disabledCls: bizui.baseCSSPrefix + 'item-disabled',
-        listeners: {}
+        disabledCls: bizui.baseCSSPrefix + 'item-disabled'
     }
     bizui.classes['container'] = avalon.mix(true, {}, bizui.classes['component'])
     bizui.component = {
@@ -440,6 +439,19 @@
         width: 0,
         height: 0,
         tooltip: '',
+        listeners: {},
+        contentConfig: {},
+        getContentTemplate: function (config) {
+            var me = this,
+                finallyConfig = avalon.mix(true, {}, me.contentConfig, config)
+            return bizui.template.render(finallyConfig)
+        },
+        targetConfig: {},
+        getTargetTemplate: function (config) {
+            var me = this,
+                finallyConfig = avalon.mix(true, {}, me.targetConfig, config)
+            return bizui.template.render(finallyConfig)
+        },
         setLeft: function (left) {
             if (typeof left == 'number') {
                 this.left = left
