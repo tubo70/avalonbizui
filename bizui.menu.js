@@ -68,24 +68,23 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                             autoEl: {
                                 role: 'presentation'
                             },
-                            computedAttributes:
-                                {'attr-id': '{{bizuiId}}-innerCt',
-                                width: 'width-6', height: 'height-8-scrollerHeight'}
-                            ,
+                            computedAttributes: {'attr-id': '{{bizuiId}}-innerCt',
+                                width: 'width-6', height: 'height-8-scrollerHeight'},
                             children: {
                                 separator: {
                                     itemCls: [bizui.baseCSSPrefix + 'menu-icon-separator'],
-                                    computedAttributes:
-                                        {'css-height': 'innerHeight',
-                                        visible: 'showSeparator'}
-                                    ,
+                                    computedAttributes: {
+                                        'css-height': 'innerHeight',
+                                        visible: 'showSeparator'
+                                    },
                                     contentTemplate: '&nbsp;'
                                 },
                                 menu: {
                                     style: 'position: absolute; left: 0px; top: 0px; height: 1px;',
-                                    computedAttributes: [
-                                        {'css-height': 'width-6'}
-                                    ]
+                                    computedAttributes: {
+                                        'css-height': 'width-6'
+                                    }
+
                                 }
                             }
                         },
@@ -96,10 +95,10 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                                 scroller: {
                                     itemCls: [bizui.baseCSSPrefix + 'box-scroller',
                                         bizui.baseCSSPrefix + 'menu-scroller-bottom'],
-                                    computedAttributes: [
-                                        {visible: 'hasScroller'},
-                                        {click: ['scrollDown']}
-                                    ],
+                                    computedAttributes: {
+                                        visible: 'hasScroller',
+                                        click: ['scrollDown']
+                                    },
                                     contentTemplate: ''
                                 }
                             }
@@ -170,28 +169,25 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             options.zIndex = bizui.zIndex
             options.hidden = true
         }
-        options.setElementAttributes({
+        options.setAttributes(element, {
             baseCls: menuClass.baseCls,
             ui: menuClass.ui,
             itemCls: [bizui.baseCSSPrefix + 'menu'],
-            computedAttributes: [
-                {name: 'css', values: [
-                    {left: '{{isSubMenu?left:\'\'}}'},
-                    {top: '{{isSubMenu?top:\'\'}}'},
-                    {'z-index': '{{isSubMenu?zIndex+1:\'\'}}'}
-                ]},
-                {mouseenter: 'enterSubMenu'},
-                {visible: '!hidden'},
-                {'class': [
+            computedAttributes: {
+                'css-left': '{{isSubMenu?left:\'\'}}',
+                'css-top': '{{isSubMenu?top:\'\'}}',
+                'css-z-index': '{{isSubMenu?zIndex+1:\'\'}}',
+                mouseenter: 'enterSubMenu',
+                visible: '!hidden',
+                'class': [
                     bizui.baseCSSPrefix + 'item-disabled ' + bizui.baseCSSPrefix + 'masked-relative' +
                         bizui.baseCSSPrefix + 'masked:disabled',
                     bizui.baseCSSPrefix + 'scroller ' + menuClass.baseCls + '-scroller' +
                         menuClass.baseCls + '-' + menuClass.ui + '-scroller:hasScroller',
-                    bizui.baseCSSPrefix + 'layer:isSubMenu'
-                ]}
-            ],
+                    bizui.baseCSSPrefix + 'layer:isSubMenu']
+            },
             style: 'margin: 0px 0px 10px;'
-        }, element)
+        })
         var template = options.getMenuBodyTemplate()
         template = template.replace('[[content]]', element.innerHTML)
         var vmodel = avalon.define(data.menuId, function (vm) {
@@ -237,10 +233,11 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             if (bizui.isIE) {
                 cls = 'x-ie-shadow'
             }
-            if (bizui.isIE8m)
+            if (bizui.isIE8m) {
                 topExp = 'top+4'
-            heightExp = 'height-4'
-            style = 'right: auto; position: ; filter: progid:DXImageTransform.Microsoft.alpha(opacity=50) progid:DXImageTransform.Microsoft.Blur(pixelradius=4);'
+                heightExp = 'height-4'
+                style = 'right: auto; position: ; filter: progid:DXImageTransform.Microsoft.alpha(opacity=50) progid:DXImageTransform.Microsoft.Blur(pixelradius=4);'
+            }
         }
         var shadowConfig = {
                 itemCls: [cls],
@@ -304,7 +301,6 @@ define(['avalon', 'bizui.panel'], function (avalon) {
             options.$subMenuId = subMenuOptions.bizuiId
             while (element.firstChild) {
                 var el = element.firstChild
-
                 element.removeChild(el)
             }
         }
@@ -334,31 +330,31 @@ define(['avalon', 'bizui.panel'], function (avalon) {
                 }
             }
         })
-        var itemConfig ={
-            itemCls:[bizui.baseCSSPrefix + 'menu-item-link'],
-            autoEl:{tag:'a',unselectable:'on'},
-            computedAttributes:{
-                'attr-id':'{{bizuiId}}-itemEl',
-                href:'href',
-                'attr-target':'hrefTarget'
+        var itemConfig = {
+            itemCls: [bizui.baseCSSPrefix + 'menu-item-link'],
+            autoEl: {tag: 'a', unselectable: 'on'},
+            computedAttributes: {
+                'attr-id': '{{bizuiId}}-itemEl',
+                href: 'href',
+                'attr-target': 'hrefTarget'
             },
-            attributes:['hidefocus="true"'],
-            children:{
-                iconEl:{
-                    autoEl:{role:'img'},
-                    computedAttributes:{
-                        'attr-id':'{{bizuiId}}-iconEl',
-                        'class':[bizui.baseCSSPrefix + 'menu-item-icon {{iconCls}}'],
-                        'css-background-image':'{{icon!=\'\'?\'url(\' + icon+\');\':\'\'}}'
+            attributes: ['hidefocus="true"'],
+            children: {
+                iconEl: {
+                    autoEl: {role: 'img'},
+                    computedAttributes: {
+                        'attr-id': '{{bizuiId}}-iconEl',
+                        'class': [bizui.baseCSSPrefix + 'menu-item-icon {{iconCls}}'],
+                        'css-background-image': '{{icon!=\'\'?\'url(\' + icon+\');\':\'\'}}'
                     }
                 },
-                textEl:{
-                    autoEl:{tag:'span',unselectable:'on'},
-                    itemCls:[bizui.baseCSSPrefix + 'menu-item-text'],
-                    computedAttributes:{'attr-id':'{{bizuiId}}-textEl'},
-                    contentTemplate:'{{text}}'
+                textEl: {
+                    autoEl: {tag: 'span', unselectable: 'on'},
+                    itemCls: [bizui.baseCSSPrefix + 'menu-item-text'],
+                    computedAttributes: {'attr-id': '{{bizuiId}}-textEl'},
+                    contentTemplate: '{{text}}'
                 },
-                arrowEl:{
+                arrowEl: {
 
                 }
             }

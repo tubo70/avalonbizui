@@ -30,7 +30,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
     splitterStyleMaps['west'] = 'width: 5px; height: {{height}}px; left: {{left + width}}px; top: {{top}}px;'
     bizui.vmodels['panel'] = avalon.mix(true, {}, bizui.containerVModel, {
         $bizuiType: 'panel',
-        $classes:bizui.classes['panel'],
+        $classes: bizui.classes['panel'],
         region: 'none',
         border: true,
         split: false,
@@ -58,25 +58,21 @@ define(["avalon", "bizui.tool"], function (avalon) {
                     ui: panelClass.headerUi,
                     uiCls: [me.headerDock, 'docked-' + me.headerDock, me.headerOrientation],
                     itemCls: [panelClass.headerCls, panelClass.headerCls + '-' + me.headerOrientation, bizui.baseCSSPrefix + 'docked'],
-                    computedAttributes: [
-                        {name: 'css', values: [
-                            {name: 'width', value: 'width'}
-                        ]},
-                        {name: 'if', values: 'headerHeight!=0'},
-                        {name: 'attr-id', values: '{{bizuiId}}_header'}
-                    ],
+                    computedAttributes: {
+                        'css-width': 'width',
+                        'if': 'headerHeight!=0',
+                        'attr-id': '{{bizuiId}}_header'
+                    },
                     style: 'left:0px;top:0px;',
                     children: {
                         body: {
                             baseCls: panelClass.headerBaseCls + '-body',
                             ui: panelClass.headerUi,
                             uiCls: [me.headerDock, 'docked-' + me.headerDock, me.headerOrientation],
-                            computedAttributes: [
-                                {name: 'css', values: [
-                                    {name: 'width', value: 'width'}
-                                ]},
-                                {name: 'attr-id', values: '{{bizuiId}}_header-body'}
-                            ],
+                            computedAttributes: {
+                                'css-width': 'width',
+                                'attr-id': '{{bizuiId}}_header-body'
+                            },
                             layout: {
                                 name: 'hbox',
                                 size: {
@@ -89,15 +85,12 @@ define(["avalon", "bizui.tool"], function (avalon) {
                                     baseCls: bizui.baseCSSPrefix + 'component',
                                     ui: 'default',
                                     itemCls: [panelClass.headerBaseCls + 'text-container', bizui.baseCSSPrefix + 'box-item'],
-                                    computedAttributes: [
-                                        {name: 'css', values: [
-                                            {name: 'width', value: 'width-12-headerToolAmount*16'},
-                                            {name: 'text-align', value: 'titleAlign'}
-                                        ]},
-                                        {name: 'attr-id', values: '{{bizuiId}}_header-hd'}
-                                    ],
+                                    computedAttributes: {
+                                        'css-width': 'width-12-headerToolAmount*16',
+                                        'css-text-align': 'titleAlign',
+                                        'attr-id': '{{bizuiId}}_header-hd'
+                                    },
                                     style: 'left: 0px; top: 0px; margin: 0px;',
-
                                     contentTemplate: '<span ms-attr-id="{{bizuiId}}_header-hd-textEl"' +
                                         '  class="' + panelClass.headerCls + '-text ' + panelClass.headerBaseCls + '-text ' +
                                         panelClass.headerBaseCls + '-text-' + panelClass.headerUi + '">{{title}}</span>' +
@@ -164,15 +157,13 @@ define(["avalon", "bizui.tool"], function (avalon) {
                     baseCls: panelClass.baseCls,
                     ui: panelClass.ui,
                     itemCls: bizui.baseCSSPrefix + 'border-box',
-                    computedAttributes: [
-                        {name: 'visible', values: '!collapsed && !hidden'},
-                        {name: 'css', values: [
-                            {name: 'left', value: 'left'},
-                            {name: 'top', value: 'top'},
-                            {name: 'width', value: 'width'},
-                            {name: 'height', value: 'height'}
-                        ]}
-                    ],
+                    computedAttributes: {
+                        visible: '!collapsed && !hidden',
+                        'css-left': 'left',
+                        'css-top': 'top',
+                        'css-width': 'width',
+                        'css-height': 'height'
+                    },
                     style: 'margin:0px;'
                 },
                 finallyConfig = avalon.mix(true, {}, $default, config),
@@ -186,14 +177,12 @@ define(["avalon", "bizui.tool"], function (avalon) {
                 $default = {
                     baseCls: panelClass.baseCls + '-body',
                     ui: panelClass.ui,
-                    computedAttributes: [
-                        {name: 'class', values: [noBorderCls + 'top ' + noBorderCls + 'left ' + noBorderCls + 'right ' + noBorderCls + 'bottom:!border']},
-                        {name: 'css', values: [
-                            {name: 'top', value: 'headerHeight'},
-                            {name: 'width', value: 'width'},
-                            {name: 'height', value: 'height-headerHeight'}
-                        ]}
-                    ],
+                    computedAttributes: {
+                        'class': [noBorderCls + 'top ' + noBorderCls + 'left ' + noBorderCls + 'right ' + noBorderCls + 'bottom:!border'],
+                        'css-top': 'headerHeight',
+                        'css-width': 'width',
+                        'css-height': 'height-headerHeight'
+                    },
                     layout: {
                         name: me.layout
                     }

@@ -12,7 +12,30 @@
                 vm.item3Click = function () {
                     alert('item3 click')
                 }
-
+                vm.$menu = {
+                    width: 130,
+                    height: 100,
+                    items: [
+                        {
+                            text: 'item 1',
+                            href: 'http://google.com',
+                            hrefTarget: '_blank'
+                        },
+                        {
+                            type:'separator'
+                        },
+                        {
+                            text:'item 3',
+                            handler:'item3Click'
+                        },
+                        {
+                            text:'sub menu',
+                            items:[
+                                {}
+                            ]
+                        }
+                    ]
+                }
             })
             avalon.scan()
         })
