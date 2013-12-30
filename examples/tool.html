@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html class="x-border-box x-strict x-viewport">
+<head>
+    <title>Tool</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../resources/css/ext-all-debug.css">
+    <script type="text/javascript" src="../avalon.js"></script>
+    <script type="text/javascript" src="../bizui.js"></script>
+    <script>
+        require('bizui.tool', function () {
+            var model = avalon.define('xxx', function (vm) {
+                vm.click=function(){
+                    alert('hi')
+                }
+            })
+            avalon.scan()
+        })
+    </script>
+</head>
+<body ms-controller="xxx">
+<div ms-bizui="tool" data-tool-handler="click">
+</div>
+</body>
+</html>

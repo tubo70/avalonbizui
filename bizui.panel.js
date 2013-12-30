@@ -30,6 +30,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
     splitterStyleMaps['west'] = 'width: 5px; height: {{height}}px; left: {{left + width}}px; top: {{top}}px;'
     bizui.vmodels['panel'] = avalon.mix(true, {}, bizui.containerVModel, {
         $bizuiType: 'panel',
+        $classes:bizui.classes['panel'],
         region: 'none',
         border: true,
         split: false,
@@ -64,7 +65,7 @@ define(["avalon", "bizui.tool"], function (avalon) {
                         {name: 'if', values: 'headerHeight!=0'},
                         {name: 'attr-id', values: '{{bizuiId}}_header'}
                     ],
-                    styles: 'left:0px;top:0px;',
+                    style: 'left:0px;top:0px;',
                     children: {
                         body: {
                             baseCls: panelClass.headerBaseCls + '-body',

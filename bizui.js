@@ -440,6 +440,7 @@
         height: 0,
         tooltip: '',
         listeners: {},
+
         contentConfig: {},
         getContentTemplate: function (config) {
             var me = this,
@@ -451,6 +452,12 @@
             var me = this,
                 finallyConfig = avalon.mix(true, {}, me.targetConfig, config)
             return bizui.template.render(finallyConfig)
+        },
+        setAttributes: function (element,config) {
+            var me = this,
+                finallyConfig = avalon.mix(true, {}, me.targetConfig, config)
+            var attributes = bizui.template.render(finallyConfig,true)
+            avalon(element).attrs(attributes)
         },
         setLeft: function (left) {
             if (typeof left == 'number') {
@@ -486,7 +493,8 @@
         },
         getSize: function () {
             var me = this
-            return {width: me.width,
+            return {
+                width: me.width,
                 height: me.height
             }
         },
