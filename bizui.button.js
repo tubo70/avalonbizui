@@ -3,7 +3,7 @@
  */
 define(['avalon', 'bizui.menu'], function (avalon) {
     bizui.classes['button']=avalon.mix(true,{},bizui.classes['component'],{
-
+baseCls:bizui.baseCSSPrefix + 'btn'
     })
     bizui.vmodels['button'] = avalon.mix(true, {}, bizui.component, {
         $bizuiType: 'button',
@@ -25,7 +25,8 @@ define(['avalon', 'bizui.menu'], function (avalon) {
     })
     avalon.bizui['button'] = function (element, data, vmodels) {
         element.stopScan = true
-        var options = avalon.mix(true, {}, bizui.vmodels['button'], data.buttonOptions)
+        var options = avalon.mix(true, {}, bizui.vmodels['button'], data.buttonOptions),
+            btnClass = bizui.classes['button']
         var $element = avalon(element), menu, menuOptions,
             baseCls, ui, iconAlign, uiCls, conditionalCls = [],
             comps = bizui.processChildren(element, data.buttonId, vmodels, 'menu')
@@ -63,8 +64,8 @@ define(['avalon', 'bizui.menu'], function (avalon) {
         if (options.closable) {
             options.uiCls.push('closable')
         }
-        baseCls = options.baseCls
-        ui = options.ui
+        baseCls = btnClass.baseCls
+        ui = btnClass.ui
         iconAlign = options.iconAlign
         uiCls = options.uiCls
         if (options.conditionalUiCls) {
@@ -126,16 +127,16 @@ define(['avalon', 'bizui.menu'], function (avalon) {
             })
         }
         var renderTpl = [
-            '<span  ms-class="{{baseCls}}-wrap" ms-class-0="{{baseCls}}-arrow {{baseCls}}-arrow-{{arrowAlign}}:split" unselectable="on">',
-            '  <span ms-class="{{baseCls}}-button">',
-            '    <span ms-class="{{baseCls}}-inner {innerCls}"  unselectable="on">',
+            '<span  class="'+baseCls+'-wrap" ms-class-0="'+baseCls+'-arrow '+baseCls+'-arrow-{{arrowAlign}}:split" unselectable="on">',
+            '  <span class="'+baseCls+'-button">',
+            '    <span class="'+baseCls+'-inner"  unselectable="on">',
             '      {{text}}',
             '    </span>',
-            '    <span role="img" ms-class="{{baseCls}}-icon-el {{iconCls}}" unselectable="on" ms-css-background-image="{{icon!=\'\'?\'url(\'+icon+\')\':\'\'}}">',
+            '    <span role="img" ms-class="'+baseCls+'-icon-el {{iconCls}}" unselectable="on" ms-css-background-image="{{icon!=\'\'?\'url(\'+icon+\')\':\'\'}}">',
             '    </span>',
             '  </span>',
             '</span>',
-            '<span ms-if="closable" ms-attr-id="{{bizuiId}}-closeEl" ms-hover="' + options.closeElOverCls + '" class="' + options.baseCls + '-close-btn" ms-attr-title="{{text}}" tabIndex="0"></span>'
+            '<span ms-if="closable" ms-attr-id="{{bizuiId}}-closeEl" ms-hover="' + btnClass.closeElOverCls + '" class="' + btnClass.baseCls + '-close-btn" ms-attr-title="{{text}}" tabIndex="0"></span>'
         ]
         var handler = 'handler'
         if (typeof vmodel.handler != 'function') {
@@ -168,11 +169,11 @@ define(['avalon', 'bizui.menu'], function (avalon) {
             overUiCls.push(options.position + '-over')
             //overCls += 'x-' + options.position + '-over ' + baseCls + '-' + options.position + '-over ' + baseCls + '-' + ui + '-' + options.position + '-over'
         }
-        var overCls = bizui.clsHelper.addUICls(baseCls, overUiCls)
-        var noiconUiCls = bizui.clsHelper.addUICls(baseCls, ['noicon'])
-        var iconUiCls = bizui.clsHelper.addUICls(baseCls, ['icon-text-' + iconAlign])
-        var pressedUiCls = bizui.clsHelper.addUICls(baseCls, ['pressed'])
-        var disabledUiCls = bizui.clsHelper.addUICls(baseCls, ['disabled'])
+        var overCls = bizui.clsHelper.addUICls(baseCls,ui, overUiCls)
+        var noiconUiCls = bizui.clsHelper.addUICls(baseCls,ui, ['noicon'])
+        var iconUiCls = bizui.clsHelper.addUICls(baseCls,ui, ['icon-text-' + iconAlign])
+        var pressedUiCls = bizui.clsHelper.addUICls(baseCls,ui, ['pressed'])
+        var disabledUiCls = bizui.clsHelper.addUICls(baseCls,ui, ['disabled'])
         $element
             .attr('ms-click', handler)
             .addClass(elementUiCls.join(' '))
@@ -190,6 +191,7 @@ define(['avalon', 'bizui.menu'], function (avalon) {
         avalon.nextTick(function () {
             avalon.innerHTML(element, template)
             element.stopScan = false
+            avalon.log(element.outerHTML)
             avalon.scan(element, [vmodel].concat(vmodels))
             if (menu) {
                 avalon.scan(menu, [vmodel].concat(vmodels))

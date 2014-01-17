@@ -676,16 +676,34 @@
         }
     })
     avalon.bindingHandlers['bizui'] = function (data, vmodels) {
-        var args = data.value.match(avalon.rword), element = data.element, widget = args[0], ret = 0
+        var args = data.value.match(avalon.rword),
+            element = data.element,
+            widget = args[0],
+            vmOptions = {},
+            ret = 0
         if (args[1] === "$") {
             args[1] = void 0
         }
         element.stopScan = true
         var constructor = avalon.bizui[widget]
         if (typeof constructor === "function") {//ms-widget="tabs,tabsAAA,optname"
-
-            var vmodel = vmodels[0], opts = args[2] || widget //options在最近的一个VM中的名字
-            var vmOptions = vmodel && opts && typeof vmodel[opts] == "object" ? vmodel[opts] : {}
+            for (var i = 0, v; v = vmodels[i++]; ) {
+                if (avalon.vmodels[v.$id]) {//取得离它最近由用户定义的VM
+                    var nearestVM = v
+                    break
+                }
+            }
+            var optName = args[2] || widget //尝试获得配置项的名字，没有则取widget的名字
+            if (nearestVM && typeof nearestVM[optName] === "object") {
+                vmOptions = nearestVM[optName]
+                vmOptions = vmOptions.$model || vmOptions
+                var id = vmOptions[widget + "Id"]
+                if (typeof id === "string") {
+                    args[1] = id
+                }
+            }
+            //var vmodel = vmodels[0], opts = args[2] || widget //options在最近的一个VM中的名字
+            // vmOptions = vmodel && opts && typeof vmodel[opts] == "object" ? vmodel[opts] : {}
             if (!args[1]) {
                 if (vmOptions.bizuiId) {
                     args[1] = vmOptions.bizuiId
@@ -696,18 +714,18 @@
             } else {
                 vmOptions.bizuiId = args[1]
             }
-            data.node.value = args.join(",")
+            data.value = args.join(",")
             var elemData = bizui.filterData(avalon(element).data(), args[0])
             data[ widget + "Id"] = args[1]
             data[ widget + "Options"] = avalon.mix({}, constructor.defaults, vmOptions, elemData)
-            element.stopScan = false
+            //element.stopScan = false
             var newModel = constructor(element, data, vmodels)
-            if (vmodel && vmodel.$onChildAdded && newModel) {
-                vmodel.$onChildAdded.apply(vmodel, [newModel])
+            if (nearestVM && nearestVM.$onChildAdded && newModel) {
+                nearestVM.$onChildAdded.apply(nearestVM, [newModel])
             }
-            ret = 1
+            data.evaluator = avalon.noop
         } //如果碰到此组件还没有加载的情况，将停止扫描它的内部
-        data.remove = ret;
+        return true
     }
     var initExtCss = function () {
         // find the body element
