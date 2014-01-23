@@ -345,7 +345,10 @@
                 }
                 var getComputedAttributes = function (computedAttributes, start) {
                     var result = []
-                    if (computedAttributes && computedAttributes.length) {
+                    if (computedAttributes) {
+                        if (!Array.isArray(computedAttributes)) {
+                            computedAttributes = [computedAttributes]
+                        }
                         for (var i = 0, il = computedAttributes.length; i < il; i++) {
                             var msName = computedAttributes[i].name, values = computedAttributes[i].values
                             if (!msName || !values) {
@@ -397,19 +400,22 @@
                 }
                 template.push(attributes.join(' '))
                 template.push('>')
-                if (config.children) {
-                    var childTemplate = ''
-                    for (var name in config.children) {
-                        childTemplate += bizui.template.render(config.children[name])
+                var tags = avalon.oneObject('area,br,col,embed,hr,img,input,link,meta,param')
+                if (!(tag in tags)) {
+                    if (config.children) {
+                        var childTemplate = ''
+                        for (var name in config.children) {
+                            childTemplate += bizui.template.render(config.children[name])
+                        }
+                        contentTemplate = childTemplate
                     }
-                    contentTemplate = childTemplate
+                    if (layout) {
+                        template.push(layout.getTemplate(config, layoutSize, contentTemplate))
+                    } else {
+                        template.push(contentTemplate)
+                    }
+                    template.push('</' + tag + '>')
                 }
-                if (layout) {
-                    template.push(layout.getTemplate(config, layoutSize, contentTemplate))
-                } else {
-                    template.push(contentTemplate)
-                }
-                template.push('</' + tag + '>')
                 if (returnAttributes) {
                     return attributes//.join(' ')
                 }
@@ -453,10 +459,10 @@
                 finallyConfig = avalon.mix(true, {}, me.targetConfig, config)
             return bizui.template.render(finallyConfig)
         },
-        setAttributes: function (element,config) {
+        setAttributes: function (element, config) {
             var me = this,
                 finallyConfig = avalon.mix(true, {}, me.targetConfig, config)
-            var attributes = bizui.template.render(finallyConfig,true)
+            var attributes = bizui.template.render(finallyConfig, true)
             avalon(element).attrs(attributes)
         },
         setLeft: function (left) {
@@ -687,7 +693,7 @@
         element.stopScan = true
         var constructor = avalon.bizui[widget]
         if (typeof constructor === "function") {//ms-widget="tabs,tabsAAA,optname"
-            for (var i = 0, v; v = vmodels[i++]; ) {
+            for (var i = 0, v; v = vmodels[i++];) {
                 if (avalon.vmodels[v.$id]) {//取得离它最近由用户定义的VM
                     var nearestVM = v
                     break

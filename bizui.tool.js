@@ -26,7 +26,7 @@ define(["avalon"], function (avalon) {
     })
     avalon.bizui['tool'] = function (element, data, vmodels) {
         var options = avalon.mix(true, {}, bizui.vmodels['tool'], data.toolOptions)
-        var $element = avalon(element)
+        //var $element = avalon(element)
         element.stopScan = true
         options.setAttributes(element)
         var handler = 'handler'
@@ -41,19 +41,9 @@ define(["avalon"], function (avalon) {
             avalon.mix(vm, options)
         })
 
-
-/*
-        $element.addClass('x-tool x-tool-default')
-        $element.attr('ms-visible', '!hidden')
-        $element.attr('ms-class-0', 'x-box-item:box')
-        $element.attr('ms-class-1', 'x-tool-disabled x-masked-relative x-masked:disabled')
-        $element.attr('ms-hover', 'x-tool-over:!disabled')
-        $element.attr('style', 'width:15px;height:15px;')
-        $element.attr('ms-css-left', 'left')
-        $element.attr('ms-css-top', 'top')*/
-
         avalon.nextTick(function () {
             avalon.innerHTML(element, template)
+            avalon.log(element.outerHTML)
             element.stopScan = false
             avalon.scan(element, [vmodel].concat(vmodels))
         })

@@ -508,7 +508,7 @@ define(['avalon', 'bizui.panel'], function (avalon) {
         element.stopScan = true
         var $element = avalon(element), template = '',
             gridClass = bizui.classes['grid']
-        avalon.clearChild(element)
+        avalon.innerHTML(element,'')
         var options = avalon.mix(true, {}, bizui.vmodels['grid'], data.gridOptions)
         var itemCls = [gridClass.extraBaseCls, bizui.baseCSSPrefix + 'border-box']
 
